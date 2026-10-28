@@ -5,10 +5,10 @@ export function Reveal({ children, delay = 0, className }: { children: ReactNode
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10% 0px" }}
-      transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once: true, margin: "0px 0px -5% 0px" }}
+      transition={{ duration: 0.45, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
@@ -25,7 +25,7 @@ export function SplitHeading({ lines, className }: { lines: string[]; className?
             className="block"
             initial={{ y: "110%" }}
             animate={{ y: 0 }}
-            transition={{ duration: 1.1, delay: 0.15 + i * 0.09, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.05 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
           >
             {l}
           </motion.span>
@@ -41,7 +41,7 @@ export function PageHero({ eyebrow, lines, intro }: { eyebrow: string; lines: st
       <p className="eyebrow mb-8">{eyebrow}</p>
       <SplitHeading lines={lines} className="font-display text-[13vw] font-bold leading-[0.88] tracking-tight md:text-[8.5vw]" />
       {intro && (
-        <Reveal delay={0.4} className="mt-10 max-w-xl text-lg text-muted-foreground">
+        <Reveal delay={0.15} className="mt-10 max-w-xl text-lg text-muted-foreground">
           <p>{intro}</p>
         </Reveal>
       )}

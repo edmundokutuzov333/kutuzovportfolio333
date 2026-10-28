@@ -26,7 +26,7 @@ function Work() {
       </div>
       <section className="grid gap-x-8 gap-y-20 px-6 pb-32 md:grid-cols-2 md:px-12 lg:grid-cols-3">
         {list.map((p, i) => (
-          <Reveal key={p.slug} delay={(i % 3) * 0.1}>
+          <Reveal key={p.slug} delay={(i % 3) * 0.05}>
             <ProjectCard project={p} index={i} />
           </Reveal>
         ))}

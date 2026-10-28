@@ -23,7 +23,7 @@ function Monogram() {
       bevelEnabled: true,
       bevelThickness: 0.06,
       bevelSize: 0.035,
-      bevelSegments: 6,
+      bevelSegments: 4,
     });
     g.center();
     return g;
@@ -43,7 +43,7 @@ function Monogram() {
       <Float speed={1.4} rotationIntensity={0.15} floatIntensity={0.6}>
         <mesh geometry={geometry} castShadow>
           <meshPhysicalMaterial
-            color="#e9e4da"
+            color="#dbe4f3"
             metalness={0.85}
             roughness={0.22}
             clearcoat={1}
@@ -58,16 +58,16 @@ function Monogram() {
 
 export default function Logo3DScene() {
   return (
-    <Canvas camera={{ position: [0, 0, 7], fov: 35 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+    <Canvas camera={{ position: [0, 0, 7], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
       <ambientLight intensity={0.2} />
       <directionalLight position={[4, 5, 6]} intensity={1.2} />
-      <pointLight position={[-5, -2, 3]} intensity={30} color="#ff6a2b" />
+      <pointLight position={[-5, -2, 3]} intensity={30} color="#1d4ed8" />
       <Monogram />
       <ContactShadows position={[0, -1.6, 0]} opacity={0.5} scale={12} blur={2.6} far={3} />
-      <Environment resolution={256}>
+      <Environment resolution={128}>
         <Lightformer form="rect" intensity={4} position={[0, 4, -4]} scale={[10, 2, 1]} />
         <Lightformer form="rect" intensity={2} position={[-6, 0, 2]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} />
-        <Lightformer form="rect" intensity={3} color="#ff6a2b" position={[6, -1, 1]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
+        <Lightformer form="rect" intensity={3} color="#93c5fd" position={[6, -1, 1]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
         <Lightformer form="ring" intensity={2} position={[0, 0, 6]} scale={3} />
       </Environment>
     </Canvas>

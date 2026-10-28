@@ -41,11 +41,11 @@ function Cursor() {
       setLabel(el?.dataset["cursor"] ?? null);
     };
     const loop = () => {
-      cx += (x - cx) * 0.2; cy += (y - cy) * 0.2;
+      cx += (x - cx) * 0.35; cy += (y - cy) * 0.35;
       if (dot.current) dot.current.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
       raf = requestAnimationFrame(loop);
     };
-    window.addEventListener("mousemove", move);
+    window.addEventListener("mousemove", move, { passive: true });
     loop();
     return () => { window.removeEventListener("mousemove", move); cancelAnimationFrame(raf); };
   }, []);
@@ -92,7 +92,7 @@ function Menu({ close }: { close: () => void }) {
       initial={{ clipPath: "inset(0 0 100% 0)" }}
       animate={{ clipPath: "inset(0 0 0% 0)" }}
       exit={{ clipPath: "inset(100% 0 0 0)" }}
-      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+      transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
     >
       <nav className="flex flex-col">
         {nav.map((n, i) => (
@@ -101,7 +101,7 @@ function Menu({ close }: { close: () => void }) {
             className="overflow-hidden"
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 + i * 0.05, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.1 + i * 0.03, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
             <Link
               to={n.to}
@@ -184,7 +184,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ lerp: 0.09 });
+    const lenis = new Lenis({ lerp: 0.14 });
     let raf = 0;
     const loop = (t: number) => { lenis.raf(t); raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
@@ -200,11 +200,11 @@ export function Shell({ children }: { children: ReactNode }) {
       <AnimatePresence>{open && <Menu close={() => setOpen(false)} />}</AnimatePresence>
       <motion.div
         key={pathname + "-curtain"}
-        className="pointer-events-none fixed inset-0 z-[45] bg-primary"
+        className="pointer-events-none fixed inset-0 z-[45] bg-[linear-gradient(180deg,var(--primary),var(--background))]"
         initial={{ scaleY: 1 }}
         animate={{ scaleY: 0 }}
         style={{ originY: 0 }}
-        transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
       />
       <main>{children}</main>
       <Footer />

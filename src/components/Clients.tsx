@@ -28,7 +28,7 @@ export function ClientsGrid() {
           initial={{ opacity: 0, scale: 0.92 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: (i % 5) * 0.06 + Math.floor(i / 5) * 0.05 }}
+          transition={{ duration: 0.4, delay: (i % 5) * 0.03 + Math.floor(i / 5) * 0.02 }}
         >
           <Slot c={c} />
         </motion.div>
