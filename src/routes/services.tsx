@@ -11,7 +11,7 @@ export const Route = createFileRoute("/services")({
 });
 
 function Services() {
-  const [open, setOpen] = useState<string | null>(services[0].slug);
+  const [open, setOpen] = useState<string | null>(services[0]?.slug ?? null);
   return (
     <>
       <PageHero eyebrow="Services" lines={["Visual capabilities", "& disciplines."]} intro="Five practices, one system. Each engagement is built around what the brand needs to be remembered for." />

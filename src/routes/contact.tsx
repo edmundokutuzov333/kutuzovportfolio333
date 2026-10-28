@@ -118,7 +118,7 @@ function Contact() {
                         {Object.keys(budgets).map((c) => <Chip key={c} on={b.currency === c} onClick={() => set("currency", c)}>{c}</Chip>)}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {["Prefer not to say", ...budgets[b.currency]].map((r) => <Chip key={r} on={b.budget === r} onClick={() => set("budget", r)}>{r}</Chip>)}
+                        {["Prefer not to say", ...(budgets[b.currency] ?? [])].map((r) => <Chip key={r} on={b.budget === r} onClick={() => set("budget", r)}>{r}</Chip>)}
                       </div>
                       <div className="grid items-end gap-8 md:grid-cols-2">
                         <Field label="Exact amount (optional)"><input className={input} value={b.exact} onChange={(e) => set("exact", e.target.value)} /></Field>
@@ -133,7 +133,7 @@ function Contact() {
                       <div>
                         <p className="eyebrow mb-3">Preferred channel</p>
                         <div className="flex flex-wrap gap-2">
-                          {(["email", "phone", "whatsapp", "linkedin"] as const).map((c) => <Chip key={c} on={b.channel === c} onClick={() => set("channel", c)}>{c[0].toUpperCase() + c.slice(1)}</Chip>)}
+                          {(["email", "phone", "whatsapp", "linkedin"] as const).map((c) => <Chip key={c} on={b.channel === c} onClick={() => set("channel", c)}>{c.charAt(0).toUpperCase() + c.slice(1)}</Chip>)}
                         </div>
                       </div>
                     </>

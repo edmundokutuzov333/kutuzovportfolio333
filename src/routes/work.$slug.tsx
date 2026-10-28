@@ -20,7 +20,7 @@ export const Route = createFileRoute("/work/$slug")({
 function CaseStudy() {
   const { project } = Route.useLoaderData();
   const idx = projects.findIndex((p) => p.slug === project.slug);
-  const next = projects[(idx + 1) % projects.length];
+  const next = projects[(idx + 1) % projects.length] ?? project;
   const facts = [["Client", project.client], ["Discipline", project.discipline], ["Year", project.year], ["Role", "Art Direction"]];
   return (
     <>
