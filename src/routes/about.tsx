@@ -37,7 +37,7 @@ function About() {
       <section className="px-6 py-32 md:px-12">
         <p className="eyebrow mb-10">Career</p>
         {experience.map((e, i) => (
-          <Reveal key={e.company} delay={i * 0.05}>
+          <Reveal key={e.company} delay={i * 0.03}>
             <div className="grid gap-4 border-t border-border py-10 md:grid-cols-[1fr_2fr_1fr]">
               <p className="font-mono text-sm text-primary">{e.period}</p>
               <div>
@@ -58,7 +58,7 @@ function About() {
               <div key={s.name}>
                 <div className="mb-2 flex justify-between"><span className="font-display text-lg">{s.name}</span><span className="font-mono text-xs">{s.tier} · {s.value}%</span></div>
                 <div className="h-px bg-border">
-                  <motion.div className="h-px bg-primary" initial={{ width: 0 }} whileInView={{ width: `${s.value}%` }} viewport={{ once: true }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} />
+                  <motion.div className="h-px bg-primary" initial={{ width: 0 }} whileInView={{ width: `${s.value}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
                 </div>
               </div>
             ))}
