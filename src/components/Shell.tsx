@@ -15,18 +15,6 @@ const nav = [
   { to: "/contact", label: "Contact" },
 ] as const;
 
-function useMaputoTime() {
-  const [t, setT] = useState("");
-  useEffect(() => {
-    const f = () =>
-      setT(new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Maputo", hour: "2-digit", minute: "2-digit" }).format(new Date()));
-    f();
-    const id = setInterval(f, 30000);
-    return () => clearInterval(id);
-  }, []);
-  return t;
-}
-
 function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
   const [label, setLabel] = useState<string | null>(null);
@@ -63,13 +51,12 @@ function Cursor() {
 }
 
 function Header({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const time = useMaputoTime();
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 mix-blend-difference md:px-12">
       <Link to="/" aria-label="Home" className="text-bone">
         <LogoMark className="h-6 w-auto" />
       </Link>
-      <div className="eyebrow hidden text-bone md:block">Maputo {time} · Available for projects</div>
+      <div className="eyebrow hidden text-bone md:block">Maputo · Available for projects</div>
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-bone"
