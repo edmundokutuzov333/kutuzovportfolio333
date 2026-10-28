@@ -81,8 +81,8 @@ function Contact() {
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="space-y-8">
                   <div>
-                    <h2 className="font-display text-4xl font-bold md:text-5xl">{steps[step].t}</h2>
-                    <p className="mt-3 text-muted-foreground">{steps[step].d}</p>
+                    <h2 className="font-display text-4xl font-bold md:text-5xl">{steps[step]?.t}</h2>
+                    <p className="mt-3 text-muted-foreground">{steps[step]?.d}</p>
                   </div>
 
                   {step === 0 && (

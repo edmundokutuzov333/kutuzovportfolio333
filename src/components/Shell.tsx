@@ -38,7 +38,7 @@ function Cursor() {
       x = e.clientX; y = e.clientY;
       const el = (e.target as HTMLElement).closest("a,button,[data-cursor]") as HTMLElement | null;
       setHover(!!el);
-      setLabel(el?.dataset.cursor ?? null);
+      setLabel(el?.dataset["cursor"] ?? null);
     };
     const loop = () => {
       cx += (x - cx) * 0.2; cy += (y - cy) * 0.2;
