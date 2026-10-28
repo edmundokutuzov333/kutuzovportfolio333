@@ -80,14 +80,14 @@ function Warp({ clock }: { clock: IntroClock }) {
     const len = 0.05 + easeInExpo(t) * 9;
     const dt = Math.min(delta, 0.05);
     for (let i = 0; i < STARS; i++) {
-      let z = stars[i * 3 + 2] + speed * dt;
+      let z = (stars[i * 3 + 2] ?? 0) + speed * dt;
       if (z > 5) z -= 80;
       stars[i * 3 + 2] = z;
-      const x = stars[i * 3], y = stars[i * 3 + 1];
+      const x = stars[i * 3] ?? 0, y = stars[i * 3 + 1] ?? 0;
       positions.set([x, y, z, x, y, z - len], i * 6);
     }
     const g = lines.current?.geometry;
-    if (g) (g.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+    if (g) (g.attributes["position"] as THREE.BufferAttribute).needsUpdate = true;
   });
 
   return (
