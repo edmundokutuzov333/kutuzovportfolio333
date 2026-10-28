@@ -39,7 +39,7 @@ function Cursor() {
     return () => { window.removeEventListener("mousemove", move); cancelAnimationFrame(raf); };
   }, []);
   return (
-    <div ref={dot} className="pointer-events-none fixed left-0 top-0 z-[70] hidden md:block">
+    <div ref={dot} className="pointer-events-none fixed left-0 top-0 z-[90] hidden md:block">
       <div
         className={`flex items-center justify-center rounded-full bg-bone text-background mix-blend-difference transition-all duration-300 ${
           label ? "h-20 w-20" : hover ? "h-10 w-10" : "h-3 w-3"
