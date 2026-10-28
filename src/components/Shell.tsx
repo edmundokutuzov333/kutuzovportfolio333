@@ -4,6 +4,7 @@ import Lenis from "lenis";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { profile } from "@/lib/content";
 import { LogoMark } from "./LogoMark";
+import { Intro, REPLAY_EVENT } from "./Intro";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -104,6 +105,7 @@ function Menu({ close }: { close: () => void }) {
       <div className="flex flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest">
         <a href={`mailto:${profile.email}`}>{profile.email}</a>
         <div className="flex gap-6">
+          <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="uppercase">Replay intro</button>
           {profile.socials.map((s) => (
             <a key={s.label} href={s.href} target="_blank" rel="noreferrer">{s.label}</a>
           ))}
@@ -182,6 +184,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="grain min-h-screen">
+      <Intro />
       <Cursor />
       <Header open={open} setOpen={setOpen} />
       <AnimatePresence>{open && <Menu close={() => setOpen(false)} />}</AnimatePresence>

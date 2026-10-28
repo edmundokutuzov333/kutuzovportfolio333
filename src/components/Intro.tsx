@@ -85,7 +85,7 @@ export function Intro() {
       {phase !== "done" && (
         <motion.div
           key="intro"
-          className="fixed inset-0 z-[80] cursor-pointer overflow-hidden"
+          className="fixed inset-0 z-[80] overflow-hidden"
           onClick={breach}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
@@ -119,7 +119,7 @@ export function Intro() {
               animate={breaching ? { width: "120vw", opacity: [1, 1, 0] } : { width: [1, 2, 1], opacity: [0.6, 1, 0.6] }}
               transition={breaching ? { duration: 1.1, ease: [0.7, 0, 0.84, 0] } : { duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div className="h-full w-full bg-[linear-gradient(180deg,transparent,var(--ice),var(--primary),var(--ice),transparent)] shadow-[0_0_40px_6px_color-mix(in_oklab,var(--primary)_70%,transparent)]" />
+              <div className="h-full w-full bg-[linear-gradient(180deg,transparent,var(--ember),var(--primary),var(--ember),transparent)] shadow-[0_0_40px_6px_color-mix(in_oklab,var(--primary)_70%,transparent)]" />
             </motion.div>
 
             {mounted && (
@@ -132,7 +132,7 @@ export function Intro() {
 
             {/* telemetry */}
             <motion.div
-              className="pointer-events-none absolute inset-0 font-mono text-[10px] uppercase tracking-[0.25em] text-ice/70 md:text-xs"
+              className="pointer-events-none absolute inset-0 font-mono text-[10px] uppercase tracking-[0.25em] text-ember/70 md:text-xs"
               animate={{ opacity: breaching ? 0 : 1, scale: breaching ? 1.15 : 1 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
@@ -148,7 +148,7 @@ export function Intro() {
                 <p className="text-foreground">Click · Scroll · Any key</p>
                 <p>to breach</p>
                 <div className="mt-2 h-px w-40 bg-foreground/15">
-                  <div className="h-px bg-ice" style={{ width: `${count}%` }} />
+                  <div className="h-px bg-ember" style={{ width: `${count}%` }} />
                 </div>
               </div>
               <p className="absolute bottom-10 left-6 hidden md:left-12 md:block">© 2026</p>
@@ -157,7 +157,7 @@ export function Intro() {
 
           {/* impact flash */}
           <motion.div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,var(--ice),var(--primary)_40%,transparent_75%)] mix-blend-screen"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,var(--ember),var(--primary)_40%,transparent_75%)] mix-blend-screen"
             initial={{ opacity: 0 }}
             animate={{ opacity: phase === "flash" ? [0, 1, 0] : 0 }}
             transition={{ duration: 0.45, times: [0, 0.2, 1] }}
