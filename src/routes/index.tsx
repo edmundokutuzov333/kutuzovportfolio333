@@ -5,7 +5,7 @@ import { Logo3D } from "@/components/Logo3D";
 import { Reveal } from "@/components/Reveal";
 import { ClientsMarquee } from "@/components/Clients";
 import { ProjectCard } from "@/components/ProjectCard";
-import { capabilities, metrics, principles, profile, projects, services } from "@/lib/content";
+import { metrics, principles, profile, projects, services } from "@/lib/content";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
@@ -62,27 +62,11 @@ function Word({ children, progress, range }: { children: string; progress: Retur
   return <motion.span style={{ opacity }} className="mr-[0.25em] inline-block">{children}</motion.span>;
 }
 
-function BigMarquee() {
-  const items = [...capabilities, ...capabilities];
-  return (
-    <div className="overflow-hidden border-y border-border py-8">
-      <div className="flex w-max animate-marquee gap-12">
-        {items.map((c, i) => (
-          <span key={i} className={`whitespace-nowrap font-display text-6xl font-bold md:text-8xl ${i % 2 ? "stroke-text" : ""}`}>
-            {c} <span className="text-primary">✦</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function Home() {
   return (
     <>
       <Hero />
       <Manifesto />
-      <BigMarquee />
 
       <section className="px-6 py-32 md:px-12">
         <div className="mb-16 flex items-end justify-between gap-6">
