@@ -229,13 +229,15 @@ export async function completeMediaUpload(input: {
 
 async function rows(context: Awaited<ReturnType<typeof getAdminServerContext>>, table: string): Promise<Row[]> {
   const data = await request<unknown>(context, `/rest/v1/${table}?select=*&limit=1000`);
-  if (!Array.isArray(data)) throw new AdminMediaError("Não foi possível confirmar se o asset é utilizado. A remoção foi bloqueada por segurança.", "unavailable");
+  if (!Array.isArray(data) || data.length >= 1000) {
+    throw new AdminMediaError("A verificação de referências está incompleta. A remoção foi bloqueada por segurança.", "unavailable");
+  }
   return data as Row[];
 }
 
 async function findAssetReferences(context: Awaited<ReturnType<typeof getAdminServerContext>>, path: string): Promise<string[]> {
   const url = publicAssetUrl(context.supabase.url, path);
-  const tables = ["projects", "clients", "pages", "profile_content", "page_sections", "site_settings", "services", "process_steps", "disciplines", "skills", "principles", "metrics", "experience_items"];
+  const tables = ["projects", "clients", "pages", "profile_content", "page_sections", "site_settings", "services", "process_steps", "disciplines", "skills", "principles", "metrics", "experience_items", "content_revisions"];
   const results = await Promise.all(tables.map(async (table) => ({ table, values: await rows(context, table) })));
   const references: string[] = [];
   for (const result of results) {
