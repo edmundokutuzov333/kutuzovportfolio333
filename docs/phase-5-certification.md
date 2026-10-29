@@ -14,7 +14,7 @@ Em 29 de Outubro de 2026, o contrato anónimo detectou privilégios SQL directos
 
 ## Estado de certificação e bloqueios conhecidos
 
-- O projecto Supabase Auth tem zero utilizadores. O login com identidade de proprietário, sessões expiradas, operações autenticadas com utilizador comum e CRUD/Admin real continuam por certificar até existir uma identidade autorizada provisionada por convite.
+- O login Admin usa o PIN fixo `333` e sessão HMAC server-side; zero utilizadores em Supabase Auth já não bloqueia a entrada. Continuam por certificar sessões expiradas, mutações CRUD após aplicar `20261029120000_admin_pin_only_authorization.sql`, e o smoke test HTTP do deploy Lovable activo.
 - Não foi possível confirmar uma cópia de segurança verificada nem um ambiente staging sem custo adicional. Os critérios de backup e validação em staging não podem ser declarados cumpridos.
 - `RESEND_API_KEY` e `MAIL_FROM` não foram verificadas. O envio real de email continua por certificar.
 - A versão publicada de `public-forms` só será considerada alinhada depois de redeploy a partir do SHA candidato aprovado e confirmação de versão activa.
