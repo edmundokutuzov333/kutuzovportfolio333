@@ -233,27 +233,14 @@ async function getPublishedProjectTypes(): Promise<string[]> {
 }
 
 async function getNotificationRecipient(): Promise<string | null> {
-  // Accept only aliases/mailboxes already configured in Hostinger.
-  // Multiple notification addresses may be separated by commas, semicolons or new lines.
-  const configured = Deno.env.get("CONTACT_NOTIFICATION_EMAILS")?.trim()
-    || Deno.env.get("ADMIN_EMAILS")?.trim()
-    || Deno.env.get("ADMIN_EMAIL")?.trim();
-  if (configured) {
-    const recipients = configured.split(/[;,\n]+/).map((item) => item.trim().toLowerCase()).filter(Boolean);
-    if (recipients.length === 0 || recipients.length > 10 ||
-        recipients.some((item) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(item))) return null;
-    return [...new Set(recipients)].join(", ");
-  }
-
-  const url = new URL(apiBase() + "/rest/v1/profile_content");
-  url.searchParams.set("select", "public_email");
-  url.searchParams.set("is_published", "eq.true");
-  url.searchParams.set("limit", "1");
-  const rows = await db(url.pathname + url.search);
-  if (!Array.isArray(rows) || rows.length === 0) return null;
-  const value = (rows[0] as Record<string, unknown>)["public_email"];
-  return typeof value === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim())
-    ? value.trim().toLowerCase() : null;
+  // Project enquiries are routed to the dedicated Hostinger alias.
+  // Set PROJECTS_NOTIFICATION_EMAIL only when a deliberate override is required.
+  const configured = Deno.env.get("PROJECTS_NOTIFICATION_EMAIL")?.trim();
+  const recipient = configured || "projects@edmundokutuzov.art";
+  const recipients = recipient.split(/[;,\\n]+/).map((item) => item.trim().toLowerCase()).filter(Boolean);
+  if (recipients.length === 0 || recipients.length > 10 ||
+      recipients.some((item) => !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(item))) return null;
+  return [...new Set(recipients)].join(", ");
 }
 
 function escapeHtml(value: unknown): string {
@@ -431,7 +418,9 @@ function renderReferenceLinks(value: unknown): { text: string; html: string } {
 
 function formatFileSize(value: unknown): string {
   const size = typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
-  return size < 1024 * 1024 ? Math.round(size / 1024) + " KB" : (size / (1024 * 1024)).toFixed(2) + " MB";
+  if (size < 1024) return size + " B";
+  if (size < 1024 * 1024) return (size / 1024).toFixed(size < 10 * 1024 ? 1 : 0) + " KB";
+  return (size / (1024 * 1024)).toFixed(2) + " MB";
 }
 
 async function downloadPrivateAttachment(path: string, submissionId: string, expectedSize?: number): Promise<Uint8Array> {
@@ -580,7 +569,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
         ["Budget negotiable", metadata["negotiable"] === true ? "Yes" : metadata["negotiable"] === false ? "No" : ""],
         ["Deadline", metadata["deadline"]],
         ["Audience", metadata["audience"]],
-        ["Received at (UTC)", new Date().toISOString()],
+        ["Received at (UTC)", metadata["received_at"] ?? new Date().toISOString()],
       ];
       subject = "NEW PROJECT ENQUIRY [" + submissionId.slice(0, 8).toUpperCase() + "] | " + String(payload["request_type"] ?? "Project request").slice(0, 70) + " | " + String(payload["name"] ?? "Client").slice(0, 60);
       text = [
@@ -824,6 +813,7 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
       role,
       location,
       phone,
+      received_at: new Date().toISOString(),
       urgency,
       currency,
       budget,
