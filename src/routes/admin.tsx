@@ -17,8 +17,6 @@ export const Route = createFileRoute("/admin")({
 
 function AdminEntryPage() {
   const [pin, setPin] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [session, setSession] = useState<AdminSession | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -47,7 +45,7 @@ function AdminEntryPage() {
     setSubmitting(true);
     setStatus(null);
     try {
-      const result = await loginAdminFn({ data: { pin, email, password } });
+      const result = await loginAdminFn({ data: { pin } });
       if (!result.ok) {
         setStatus({
           tone: "error",
@@ -70,7 +68,6 @@ function AdminEntryPage() {
       }
       setSession(currentSession);
       setPin("");
-      setPassword("");
       setStatus(null);
     } catch {
       setStatus({
@@ -87,7 +84,6 @@ function AdminEntryPage() {
     try {
       await logoutAdminFn();
       setSession(null);
-      setPassword("");
       setPin("");
       setStatus({ tone: "info", text: "Sessão terminada." });
     } catch {
@@ -122,8 +118,7 @@ function AdminEntryPage() {
               Acesso administrativo.
             </h1>
             <p className="mt-6 max-w-lg text-sm leading-7 text-white/60">
-              Área privada para gerir o portfólio. A entrada exige o código definido no servidor
-              e uma identidade autorizada no Supabase.
+              Área privada para gerir o portfólio. A entrada é validada no servidor com um código de três dígitos.
             </p>
           </div>
 
@@ -155,38 +150,6 @@ function AdminEntryPage() {
                     O código é validado no servidor e não é persistido no browser.
                   </p>
                 </div>
-                <div>
-                  <label htmlFor="admin-email" className="mb-2 block text-xs text-white/70">
-                    Email autorizado
-                  </label>
-                  <input
-                    id="admin-email"
-                    name="email"
-                    type="email"
-                    autoComplete="username"
-                    maxLength={320}
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                    className="w-full border border-white/20 bg-black/40 px-4 py-3 text-sm outline-none focus:border-[#d7ff64]"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="admin-password" className="mb-2 block text-xs text-white/70">
-                    Palavra-passe Supabase Auth
-                  </label>
-                  <input
-                    id="admin-password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    maxLength={1024}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                    className="w-full border border-white/20 bg-black/40 px-4 py-3 text-sm outline-none focus:border-[#d7ff64]"
-                  />
-                </div>
                 {status && (
                   <p
                     role={status.tone === "error" ? "alert" : "status"}
@@ -197,14 +160,13 @@ function AdminEntryPage() {
                 )}
                 <button
                   type="submit"
-                  disabled={submitting || pin.length !== 3 || !email.trim() || !password}
+                  disabled={submitting || pin.length !== 3}
                   className="w-full bg-[#d7ff64] px-4 py-3 text-sm font-semibold text-[#11130a] transition hover:bg-[#e4ff9b] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? "A validar..." : "Entrar no Admin"}
                 </button>
                 <p className="text-xs leading-5 text-white/40">
-                  Acesso fechado. Conhecer o código não substitui a autenticação da identidade
-                  autorizada.
+                  Sessão assinada no servidor, expiração automática e limitação persistente de tentativas.
                 </p>
               </form>
             )}
@@ -215,7 +177,7 @@ function AdminEntryPage() {
             )}
             {status && !session && (
               <p className="mt-3 text-xs leading-5 text-white/35">
-                Por segurança, o sistema não distingue entre PIN, email ou palavra-passe incorrectos.
+                Por segurança, o sistema não revela o motivo exacto de uma tentativa rejeitada.
               </p>
             )}
           </div>
