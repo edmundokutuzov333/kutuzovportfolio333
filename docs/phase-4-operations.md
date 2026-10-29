@@ -29,10 +29,10 @@ A política de custo-zero impediu a criação de staging. As migrations aditivas
 
 ## Dependências ainda por confirmar
 
-- `RESEND_API_KEY` e `MAIL_FROM` não foram verificadas no ambiente hospedado. Se faltarem, a fila regista `email_provider_not_configured` / falha recuperável, e a newsletter permanece pendente. Não existe sucesso de email simulado.
+- A integração Hostinger SMTP está preparada no código, com `smtp.hostinger.com:465` e SSL/TLS. As variáveis `SMTP_USERNAME`, `SMTP_PASSWORD` e `SMTP_FROM` têm de ser introduzidas em Supabase Edge Function Secrets antes de certificar envio no backend. Enquanto SMTP estiver totalmente ausente, Resend permanece apenas como fallback temporário se estiver configurado. A ausência de ambos os fornecedores deixa a fila em falha recuperável e a newsletter pendente. Não existe sucesso de email simulado.
 - O login Admin usa agora apenas o PIN fixo `333`; não depende de utilizador Supabase Auth. As mutações exigem a sessão HMAC validada no servidor e a migration `20261029121015_admin_pin_only_authorization.sql` tem de estar aplicada antes de certificar CRUD de produção.
 - O domínio público pode continuar a servir a última publicação Lovable até a sincronização/deploy final ser confirmada. O SHA do GitHub não é, por si só, prova de que as alterações estão acessíveis publicamente.
-- Não foi possível fazer um POST HTTP de ponta a ponta à Edge Function com as ferramentas de rede disponíveis. A camada SQL foi testada por transacção/rollback e o deployment é verificado separadamente. Contactos com anexos, fluxo de email real e browser E2E devem ser certificados depois da verificação do deploy, da migration de autorização por PIN e dos segredos de mail.
+- Não foi possível fazer um POST HTTP de ponta a ponta à Edge Function com as ferramentas de rede disponíveis. A camada SQL foi testada por transacção/rollback e o deployment é verificado separadamente. Contactos com anexos, fluxo de email real e browser E2E devem ser certificados depois da verificação do deploy, dos segredos SMTP Hostinger e de um teste real de contacto e newsletter.
 
 ## Segurança e retenção
 

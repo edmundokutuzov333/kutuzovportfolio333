@@ -1,4 +1,5 @@
 import { inspectImageBytes } from "./image-validation.ts";
+import nodemailer from "npm:nodemailer@^9";
 
 const PRODUCTION_ORIGIN = "https://kutuzovportfolio333.lovable.app";
 const ALLOWED_ORIGINS = new Set([
@@ -237,6 +238,81 @@ async function updateOutbox(id: string, patch: Record<string, unknown>): Promise
   });
 }
 
+
+type HostingerSmtpConfig = {
+  host: string;
+  port: 465;
+  user: string;
+  password: string;
+  from: string;
+};
+
+type HostingerSmtpConfigResult =
+  | { status: "missing" }
+  | { status: "invalid"; reason: string }
+  | { status: "ready"; config: HostingerSmtpConfig };
+
+function readHostingerSmtpConfig(): HostingerSmtpConfigResult {
+  const hostRaw = Deno.env.get("SMTP_HOSTNAME")?.trim();
+  const portRaw = Deno.env.get("SMTP_PORT")?.trim();
+  const secureRaw = Deno.env.get("SMTP_SECURE")?.trim().toLowerCase();
+  const user = Deno.env.get("SMTP_USERNAME")?.trim();
+  const password = Deno.env.get("SMTP_PASSWORD");
+  const from = Deno.env.get("SMTP_FROM")?.trim() || user || "";
+  const hasAnySetting = Boolean(hostRaw || portRaw || secureRaw || user || password || Deno.env.get("SMTP_FROM")?.trim());
+
+  if (!hasAnySetting) return { status: "missing" };
+  if (!user || !password?.trim() || !from) {
+    return { status: "invalid", reason: "hostinger_smtp_credentials_incomplete" };
+  }
+
+  const port = portRaw ? Number(portRaw) : 465;
+  if (!Number.isInteger(port) || port !== 465) {
+    return { status: "invalid", reason: "hostinger_smtp_requires_port_465" };
+  }
+  if (secureRaw && secureRaw !== "true") {
+    return { status: "invalid", reason: "hostinger_smtp_ssl_required" };
+  }
+
+  const host = hostRaw || "smtp.hostinger.com";
+  if (!/^[a-z0-9.-]+$/i.test(host)) {
+    return { status: "invalid", reason: "hostinger_smtp_hostname_invalid" };
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(user) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(from.replace(/^.*<([^>]+)>.*$/, "$1"))) {
+    return { status: "invalid", reason: "hostinger_smtp_mailbox_invalid" };
+  }
+
+  return { status: "ready", config: { host, port: 465, user, password, from } };
+}
+
+async function sendViaHostingerSmtp(
+  config: HostingerSmtpConfig,
+  message: { to: string; subject: string; text: string; html: string; replyTo?: string },
+): Promise<void> {
+  const transport = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: true,
+    auth: { user: config.user, pass: config.password },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
+  });
+
+  try {
+    await transport.sendMail({
+      from: config.from,
+      to: message.to,
+      subject: message.subject,
+      text: message.text,
+      html: message.html,
+      ...(message.replyTo ? { replyTo: message.replyTo } : {}),
+    });
+  } finally {
+    transport.close();
+  }
+}
+
 async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: string }> {
   const claimedValue = await db("/rest/v1/rpc/claim_email_outbox", {
     method: "POST", body: JSON.stringify({ p_outbox_id: id, p_now: new Date().toISOString() }),
@@ -244,12 +320,21 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
   const row = firstRecord(claimedValue);
   if (!row || typeof row["id"] !== "string") return { sent: false, reason: "not_claimable" };
 
+  const smtp = readHostingerSmtpConfig();
   const resendKey = Deno.env.get("RESEND_API_KEY")?.trim();
   const mailFrom = Deno.env.get("MAIL_FROM")?.trim();
-  if (!resendKey || !mailFrom) {
-    await updateOutbox(id, { status: "failed", last_error: "email_provider_not_configured",
+
+  if (smtp.status === "invalid") {
+    await updateOutbox(id, { status: "failed", last_error: smtp.reason,
       next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() });
-    return { sent: false, reason: "email_provider_not_configured" };
+    return { sent: false, reason: smtp.reason };
+  }
+  // Temporary migration safety: legacy Resend is used only while SMTP secrets are entirely absent.
+  // Once Hostinger SMTP is configured, all messages use Hostinger exclusively.
+  if (smtp.status === "missing" && (!resendKey || !mailFrom)) {
+    await updateOutbox(id, { status: "failed", last_error: "hostinger_smtp_not_configured",
+      next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() });
+    return { sent: false, reason: "hostinger_smtp_not_configured" };
   }
 
   const payload = row["payload"] && typeof row["payload"] === "object" ? row["payload"] as Record<string, unknown> : {};
@@ -290,19 +375,39 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       throw new Error("unsupported_email_message_type");
     }
 
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { authorization: "Bearer " + resendKey, "content-type": "application/json" },
-      body: JSON.stringify({ from: mailFrom, to: [String(row["recipient"])], subject, text, html }),
-    });
-    if (!response.ok) {
-      await response.text().catch(() => "");
-      await updateOutbox(id, { status: "failed", last_error: "email_provider_http_" + response.status,
-        next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() });
-      return { sent: false, reason: "email_delivery_failed" };
+    let provider: "hostinger_smtp" | "resend_fallback";
+    const replyTo = row["message_type"] === "contact_submission" &&
+      typeof payload["email"] === "string" &&
+      /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload["email"])
+      ? payload["email"].trim()
+      : undefined;
+
+    if (smtp.status === "ready") {
+      await sendViaHostingerSmtp(smtp.config, {
+        to: String(row["recipient"]),
+        subject,
+        text,
+        html,
+        replyTo,
+      });
+      provider = "hostinger_smtp";
+    } else {
+      // Kept only to prevent disruption until the SMTP mailbox secret is configured in Supabase.
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { authorization: "Bearer " + resendKey, "content-type": "application/json" },
+        body: JSON.stringify({ from: mailFrom, to: [String(row["recipient"])], subject, text, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
+      });
+      if (!response.ok) {
+        await response.text().catch(() => "");
+        await updateOutbox(id, { status: "failed", last_error: "email_provider_http_" + response.status,
+          next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() });
+        return { sent: false, reason: "email_delivery_failed" };
+      }
+      provider = "resend_fallback";
     }
 
-    const minimalPayload: Record<string, unknown> = { delivered: true, message_type: row["message_type"] };
+    const minimalPayload: Record<string, unknown> = { delivered: true, message_type: row["message_type"], provider };
     if (typeof payload["submission_id"] === "string") minimalPayload["submission_id"] = payload["submission_id"];
     if (typeof payload["subscriber_id"] === "string") minimalPayload["subscriber_id"] = payload["subscriber_id"];
     await updateOutbox(id, { status: "sent", sent_at: new Date().toISOString(), last_error: null, payload: minimalPayload });

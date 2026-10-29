@@ -337,7 +337,7 @@ flowchart TB
     CMS --> ST["Supabase Storage"]
     F["Edge Function: public-forms"] --> DB
     F --> ST
-    F --> EMAIL["Resend / fila de email"]
+    F --> EMAIL["Hostinger SMTP / fila de email"]
 ```
 
 ### Camadas da aplicação
@@ -366,7 +366,7 @@ flowchart TB
 - Supabase PostgreSQL através de REST e funções RPC.
 - Supabase Storage para assets públicos e anexos privados.
 - Supabase Edge Function `public-forms` para contacto, newsletter e acções de token.
-- Resend para envio de email transaccional, quando configurado.
+- Hostinger Email SMTP para envio transaccional; Resend permanece apenas como fallback temporário enquanto os segredos SMTP não estão configurados.
 
 ### Fluxo de publicação
 
@@ -487,7 +487,7 @@ Os links assinados dos anexos privados são temporários e o servidor verifica a
 | Iconografia | Lucide React |
 | Notificações | Sonner |
 | Backend | Supabase PostgreSQL, REST, RPC, Storage e Edge Functions |
-| Email | Resend, através da fila transaccional |
+| Email | Hostinger SMTP através da fila transaccional; fallback Resend temporário |
 | Testes unitários | Vitest + Testing Library + jsdom |
 | Testes de browser | Playwright |
 | Runtime local | Bun 1.3.10 |
@@ -570,8 +570,13 @@ Copia `.env.example` apenas para desenvolvimento local e configura os valores no
 | `SUPABASE_SERVICE_ROLE_KEY` | **Só servidor** | Acesso privilegiado às operações editoriais, armazenamento e scripts. Nunca expor ao browser. |
 | `PUBLIC_SITE_URL` | Servidor / scripts | Origem canónica para validações do CMS, importação e inventário de assets. |
 | `ADMIN_SESSION_SECRET` | Servidor, recomendado | Material dedicado para assinatura da sessão administrativa, quando configurado. |
-| `RESEND_API_KEY` | Edge Function | Credencial de envio de email transaccional. |
-| `MAIL_FROM` | Edge Function | Remetente usado pelo fornecedor de email. |
+| `SMTP_HOSTNAME` | Edge Function | `smtp.hostinger.com`. |
+| `SMTP_PORT` | Edge Function | `465`, com SSL/TLS. |
+| `SMTP_SECURE` | Edge Function | `true` para SSL/TLS. |
+| `SMTP_USERNAME` | Edge Function | Endereço completo da caixa Hostinger. |
+| `SMTP_PASSWORD` | **Segredo Edge Function** | Palavra-passe da caixa Hostinger, nunca versionada. |
+| `SMTP_FROM` | Edge Function | Nome e endereço do remetente. |
+| `RESEND_API_KEY` / `MAIL_FROM` | Edge Function, temporário | Fallback durante a migração; removível depois de confirmar SMTP. |
 | `ADMIN_EMAIL` | Edge Function, opcional | Endereço de notificação administrativa; sem override, o código pode usar o email público publicado do perfil. |
 
 **Nota sobre o Admin:** as credenciais Supabase são necessárias para as operações CMS com dados reais, mas a criação da sessão por PIN foi separada dessa dependência. Uma entrada bem-sucedida não prova, por si só, que a base de dados, o armazenamento ou o email estejam configurados.
