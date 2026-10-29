@@ -17,6 +17,8 @@ jobs:
     name: Typecheck, lint, tests, build and asset inventory
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      dependency_audit_failed: ${{ steps.dependency_audit.outcome == 'failure' }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -37,51 +39,18 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Dependency audit (high and critical)
+        id: dependency_audit
+        continue-on-error: true
         run: |
           mkdir -p reports
           set -o pipefail
           bun audit --audit-level=high 2>&1 | tee reports/dependency-audit.txt
 
-      - name: Generate isolated dependency-remediation proposal after audit failure
-        if: failure()
-        continue-on-error: true
+      - name: Enforce dependency audit release gate
+        if: steps.dependency_audit.outcome == 'failure'
         run: |
-          set -u
-          proposal="$RUNNER_TEMP/phase5-dependency-remediation"
-          rm -rf "$proposal"
-          mkdir -p "$proposal/source" reports/dependency-remediation
-          git archive "$GITHUB_SHA" | tar -x -C "$proposal/source"
-          cd "$proposal/source"
-          bun install --frozen-lockfile
-          set +e
-                    node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync } from "node:fs";
-          const manifest = JSON.parse(readFileSync("package.json", "utf8"));
-          manifest.dependencies.zod = "^4.6.7";
-          manifest.devDependencies.vite = "8.1.6";
-          manifest.overrides = {
-            ...(manifest.overrides ?? {}),
-            "zod": "4.6.7",
-            "shell-quote@<1.11.0": "1.12.0",
-            "launch-editor@<=2.14.1": "2.14.2",
-            "brace-expansion@<1.1.17": "1.1.18",
-            "js-yaml@<4.3.1": "4.3.2",
-            "nanoid@<3.3.18": "3.3.18",
-            "source-map-js@<1.2.2": "1.2.2",
-            "seroval@<1.6.11": "1.7.2"
-          };
-          writeFileSync("package.json", JSON.stringify(manifest, null, 2) + "\n");
-          NODE
-          rm -f bun.lock
-          bun install 2>&1 | tee "$proposal/audit-fix.txt"
-          fix_status=${PIPESTATUS[0]}
-          bun audit --audit-level=high 2>&1 | tee "$proposal/audit-after.txt"
-          audit_status=${PIPESTATUS[0]}
-          cp package.json bun.lock "$GITHUB_WORKSPACE/reports/dependency-remediation/"
-          cp "$proposal/audit-fix.txt" "$GITHUB_WORKSPACE/reports/dependency-remediation/"
-          cp "$proposal/audit-after.txt" "$GITHUB_WORKSPACE/reports/dependency-remediation/"
-          printf 'dependency_update_exit=%s\naudit_after_exit=%s\n' "$fix_status" "$audit_status" > "$GITHUB_WORKSPACE/reports/dependency-remediation/result.txt"
-          exit 0
+          echo "High or critical dependency advisories block release."
+          exit 1
 
       - name: TypeScript typecheck
         run: bun run typecheck
@@ -112,6 +81,117 @@ jobs:
             reports/assets-inventory.json
             reports/dependency-audit.txt
             reports/dependency-remediation/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  dependency-remediation:
+    name: Validate and promote patched dependencies
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'push' && needs.quality.outputs.dependency_audit_failed == 'true'
+    timeout-minutes: 35
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Checkout current main commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - name: Install Node for Playwright
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.16.0"
+
+      - name: Generate candidate and run every available release gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+        run: |
+          set -euo pipefail
+          proposal="$RUNNER_TEMP/phase5-dependency-candidate"
+          rm -rf "$proposal"
+          mkdir -p "$proposal/source" "$RUNNER_TEMP/phase5-dependency-logs"
+          git archive "$GITHUB_SHA" | tar -x -C "$proposal/source"
+          cd "$proposal/source"
+          bun install --frozen-lockfile
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+          const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+          manifest.dependencies.zod = "^4.6.7";
+          manifest.devDependencies.vite = "8.1.6";
+          manifest.overrides = {
+            ...(manifest.overrides ?? {}),
+            "zod": "4.6.7",
+            "shell-quote@<1.11.0": "1.12.0",
+            "launch-editor@<=2.14.1": "2.14.2",
+            "brace-expansion@<1.1.17": "1.1.18",
+            "js-yaml@<4.3.1": "4.3.2",
+            "nanoid@<3.3.18": "3.3.18",
+            "source-map-js@<1.2.2": "1.2.2",
+            "seroval@<1.6.11": "1.7.2"
+          };
+          writeFileSync("package.json", JSON.stringify(manifest, null, 2) + "\n");
+          NODE
+          rm -f bun.lock
+          bun install 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/install.txt"
+          bun audit --audit-level=high 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/audit.txt"
+          bun run typecheck 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/typecheck.txt"
+          bun run lint 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/lint.txt"
+          bun run test 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/unit-tests.txt"
+          bun run test:contracts 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/contracts.txt"
+          bun run build 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/build.txt"
+          bun run assets:inventory 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/assets-inventory.txt"
+          npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/playwright-install.txt"
+          .e2e/node_modules/.bin/playwright install --with-deps chromium 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/chromium-install.txt"
+          .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/playwright.txt"
+
+          api="https://api.github.com/repos/$GITHUB_REPOSITORY"
+          auth_header="Authorization: Bearer $GITHUB_TOKEN"
+          api_version="X-GitHub-Api-Version: 2022-11-28"
+          current_json=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/ref/heads/main")
+          current_sha=$(printf '%s' "$current_json" | jq -er '.object.sha')
+          if [[ "$current_sha" != "$GITHUB_SHA" ]]; then
+            echo "main advanced during candidate validation; refusing to update it."
+            exit 1
+          fi
+          base_tree=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/commits/$current_sha" | jq -er '.tree.sha')
+          package_content=$(base64 -w0 package.json)
+          lock_content=$(base64 -w0 bun.lock)
+          package_blob=$(jq -n --arg content "$package_content" '{content:$content,encoding:"base64"}' | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/blobs")
+          package_blob_sha=$(printf '%s' "$package_blob" | jq -er '.sha')
+          lock_blob=$(jq -n --arg content "$lock_content" '{content:$content,encoding:"base64"}' | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/blobs")
+          lock_blob_sha=$(printf '%s' "$lock_blob" | jq -er '.sha')
+          tree_payload=$(jq -n --arg base "$base_tree" --arg package_sha "$package_blob_sha" --arg lock_sha "$lock_blob_sha" '{base_tree:$base,tree:[{path:"package.json",mode:"100644",type:"blob",sha:$package_sha},{path:"bun.lock",mode:"100644",type:"blob",sha:$lock_sha}]}')
+          tree_json=$(printf '%s' "$tree_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/trees")
+          tree_sha=$(printf '%s' "$tree_json" | jq -er '.sha')
+          commit_payload=$(jq -n --arg message "fix(deps): patch high and critical dependency advisories" --arg tree "$tree_sha" --arg parent "$current_sha" '{message:$message,tree:$tree,parents:[$parent]}')
+          commit_json=$(printf '%s' "$commit_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/commits")
+          commit_sha=$(printf '%s' "$commit_json" | jq -er '.sha')
+          update_payload=$(jq -n --arg sha "$commit_sha" '{sha:$sha,force:false}')
+          curl -fsS -X PATCH -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "$update_payload" "$api/git/refs/heads/main" >/dev/null
+          verified_sha=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/ref/heads/main" | jq -er '.object.sha')
+          if [[ "$verified_sha" != "$commit_sha" ]]; then
+            echo "The dependency commit was not confirmed at main."
+            exit 1
+          fi
+          echo "Validated dependency commit published to main: $commit_sha"
+          dispatch_payload=$(jq -n '{ref:"main"}')
+          curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "$dispatch_payload" "$api/actions/workflows/ci.yml/dispatches" >/dev/null
+          echo "Dispatched a fresh CI run against the patched main SHA."
+
+      - name: Upload dependency candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-candidate-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/phase5-dependency-logs
           if-no-files-found: warn
           retention-days: 30
 
