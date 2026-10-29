@@ -25,7 +25,7 @@ const nullableText = (max: number) => z.union([z.string().max(max), z.null()]);
 const assetPath = z.union([z.string().max(2048), z.null()]).refine((value) => {
   if (value === null || value === "") return true;
   if (value.startsWith("/") && !value.startsWith("//")) {
-    return !value.split("/").some((part) => part === "..") && !/[\u0000-\u001f]/.test(value);
+    return !value.split("/").some((part) => part === "..") && Array.from(value).every((character) => { const code = character.charCodeAt(0); return code >= 32 && code !== 127; });
   }
   try {
     const parsed = new URL(value);

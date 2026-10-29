@@ -320,7 +320,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const active = MODULES.find((module) => module.id === activeId) ?? MODULES[0]!;
   const fields = active.fields ?? [];
   const tableState = active.table ? workspace?.tables[active.table] : undefined;
-  const tableRows = tableState?.rows ?? [];
+  const tableRows = useMemo(() => tableState?.rows ?? [], [tableState]);
   const sectionsPage = workspace?.tables["pages"]?.rows ?? [];
 
   const records = useMemo(() => {
