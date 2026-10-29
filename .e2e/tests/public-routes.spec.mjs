@@ -34,6 +34,8 @@ test("contact page keeps the real submission action behind its form flow", async
 
 test("newsletter requires consent and does not claim success before a real request", async ({ page }) => {
   await page.goto("/", { waitUntil: "load" });
+  const form = page.locator('form[data-client-ready="true"]');
+  await expect(form).toBeVisible();
   const email = page.getByRole("textbox", { name: /email para newsletter/i });
   await email.scrollIntoViewIfNeeded();
   const validEmail = "phase5-newsletter@example.com";

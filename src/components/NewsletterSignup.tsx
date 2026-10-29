@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { requestNewsletterSubscription } from "@/lib/public-forms";
 
 export function NewsletterSignup() {
@@ -6,6 +6,11 @@ export function NewsletterSignup() {
   const [consent, setConsent] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ tone: "success" | "error" | "info"; text: string } | null>(null);
+  const [clientReady, setClientReady] = useState(false);
+
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,7 +42,7 @@ export function NewsletterSignup() {
       <p className="mb-4 max-w-xl text-sm leading-6 text-muted-foreground">
         Receba novidades de projectos e disponibilidade. O endereço só fica activo depois da confirmação por email.
       </p>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} data-client-ready={clientReady ? "true" : "false"} className="space-y-4">
         <label className="block">
           <span className="sr-only">Email para newsletter</span>
           <input
