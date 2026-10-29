@@ -4,6 +4,7 @@ import nodemailer from "npm:nodemailer@^9";
 const PRODUCTION_ORIGIN = "https://kutuzovportfolio333.lovable.app";
 const ALLOWED_ORIGINS = new Set([
   PRODUCTION_ORIGIN,
+  "https://edmundokutuzov.art",
   "https://www.edmundokutuzov.art",
   "https://kutuzovportfolio333.lovable.app",
   "https://id-preview--866320a4-978d-403b-b184-3e3fd57d0c19.lovable.app",
