@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type ReactNode } from "react";
 import { PageHero } from "@/components/Reveal";
-import { DELIVERABLE_OPTIONS, INDUSTRIES, MAX_TOTAL_FILE_BYTES, PROJECT_STAGES, emptyBrief, validateStep, type Brief } from "@/lib/brief";
+import { CHANNEL_OPTIONS, DELIVERABLE_OPTIONS, INDUSTRIES, MAX_TOTAL_FILE_BYTES, PROJECT_GOALS, PROJECT_STAGES, emptyBrief, validateStep, type Brief } from "@/lib/brief";
 import { loadContactContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
@@ -74,6 +74,12 @@ function Contact() {
     payload.set("projectName", b.projectName);
     payload.set("industry", b.industry);
     payload.set("projectStage", b.projectStage);
+    payload.set("projectGoal", b.projectGoal);
+    payload.set("channels", JSON.stringify(b.channels));
+    payload.set("languages", b.languages);
+    payload.set("existingAssets", b.existingAssets);
+    payload.set("styleDirection", b.styleDirection);
+    payload.set("successCriteria", b.successCriteria);
     payload.set("deliverables", JSON.stringify(b.deliverables));
     payload.set("audience", b.audience);
     payload.set("urgency", b.urgency);
@@ -199,6 +205,12 @@ function Contact() {
                             {INDUSTRIES.map((industry) => <option key={industry} value={industry}>{industry}</option>)}
                           </select>
                         </Field>
+                        <Field label="Primary objective">
+                          <select className={input} value={b.projectGoal} onChange={(e) => set("projectGoal", e.target.value)}>
+                            <option value="">Choose the main objective (optional)</option>
+                            {PROJECT_GOALS.map((goal) => <option key={goal} value={goal}>{goal}</option>)}
+                          </select>
+                        </Field>
                         <div className="md:col-span-2">
                           <Field label="Project stage">
                             <select className={input} value={b.projectStage} onChange={(e) => set("projectStage", e.target.value)}>
@@ -206,6 +218,12 @@ function Contact() {
                               {PROJECT_STAGES.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
                             </select>
                           </Field>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="eyebrow mb-3">Where will the work appear? <span className="normal-case tracking-normal text-muted-foreground">Select all relevant channels.</span></p>
+                        <div className="flex flex-wrap gap-2">
+                          {CHANNEL_OPTIONS.map((channel) => <Chip key={channel} on={b.channels.includes(channel)} onClick={() => set("channels", b.channels.includes(channel) ? b.channels.filter((value) => value !== channel) : [...b.channels, channel])}>{channel}</Chip>)}
                         </div>
                       </div>
                     </div>
@@ -272,6 +290,20 @@ function Contact() {
                       </Field>
                       <Field label="Target audience (optional)">
                         <textarea rows={2} maxLength={800} className={input} value={b.audience} onChange={(e) => set("audience", e.target.value)} placeholder="Who should this work reach or influence?" />
+                      </Field>
+                      <div className="grid gap-8 md:grid-cols-2">
+                        <Field label="Working languages (optional)">
+                          <input className={input} maxLength={160} value={b.languages} onChange={(e) => set("languages", e.target.value)} placeholder="e.g. Portuguese, English, French" />
+                        </Field>
+                        <Field label="How will success be measured? (optional)">
+                          <input className={input} maxLength={800} value={b.successCriteria} onChange={(e) => set("successCriteria", e.target.value)} placeholder="e.g. qualified leads, reach, conversion" />
+                        </Field>
+                      </div>
+                      <Field label="Existing assets (optional)">
+                        <textarea rows={2} maxLength={800} className={input} value={b.existingAssets} onChange={(e) => set("existingAssets", e.target.value)} placeholder="Existing logo, guidelines, copy, photography, source files..." />
+                      </Field>
+                      <Field label="Creative direction / style references (optional)">
+                        <textarea rows={3} maxLength={800} className={input} value={b.styleDirection} onChange={(e) => set("styleDirection", e.target.value)} placeholder="Describe the tone, visual references, things to avoid, or brands you admire." />
                       </Field>
                       <Field label="Reference links">
                         <textarea rows={3} maxLength={2000} className={input} placeholder={"One URL per line, up to 10 links\nhttps://example.com"} value={b.links} onChange={(e) => set("links", e.target.value)} />
