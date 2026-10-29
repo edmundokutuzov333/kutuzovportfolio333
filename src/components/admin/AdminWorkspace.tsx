@@ -57,10 +57,10 @@ const routeOptions = [
   { value: "/clients", label: "Clientes /clients" },
   { value: "/contact", label: "Contacto /contact" },
 ];
-const sectionTypeOptions = [
-  "hero", "manifesto", "featured_work", "services", "metrics", "clients", "principles",
-  "experience", "skills", "process", "contact_cta", "rich_text",
-].map((value) => ({ value, label: value }));
+const homeSectionTypes = ["hero", "manifesto", "featured_work", "services", "metrics", "clients", "principles"];
+const homeSectionTypeOptions = homeSectionTypes.map((value) => ({ value, label: value }));
+const allRendererSectionTypes = ["hero", "rich_text"];
+const aboutRichTextTypeOptions = ["rich_text"].map((value) => ({ value, label: value }));
 const statusOptions = [
   { value: "draft", label: "Rascunho" },
   { value: "published", label: "Publicado" },
@@ -212,10 +212,19 @@ function createDefaults(module: ModuleDef, rows: Row[], pages: Row[]): Row {
     else draft[field.key] = "";
   }
   if (module.id === "sections") {
-    draft["page_id"] = asText(pages[0]?.["id"]);
-    draft["section_type"] = "rich_text";
+    const homePage = pages.find((page) => page["route_path"] === "/") ?? pages[0];
+    draft["page_id"] = asText(homePage?.["id"]);
+    const nextPosition = maxPosition + 1;
+    let sectionKey = `new-section-${nextPosition + 1}`;
+    let suffix = nextPosition + 1;
+    while (rows.some((row) => row["section_key"] === sectionKey)) {
+      suffix += 1;
+      sectionKey = `new-section-${suffix}`;
+    }
+    draft["section_key"] = sectionKey;
+    draft["section_type"] = "manifesto";
     draft["is_visible"] = true;
-    draft["config"] = JSON.stringify({ paragraphs: ["Novo conteúdo."] }, null, 2);
+    draft["config"] = JSON.stringify({ label: "Nova secção" }, null, 2);
   }
   if (module.id === "projects") {
     Object.assign(draft, { featured: false, status: "draft", hue: "215", locale: "pt-MZ", gallery: "[]", gallery_alt: "[]" });
@@ -371,7 +380,32 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setNotice(null);
   }
   function updateDraft(key: string, value: unknown) {
-    setDraft((current) => ({ ...current, [key]: value }));
+    setDraft((current) => {
+      const next = { ...current, [key]: value };
+      if (activeId === "sections" && (key === "section_type" || key === "page_id")) {
+        const pageId = asText(key === "page_id" ? value : next["page_id"]);
+        const page = sectionsPage.find((item) => item["id"] === pageId);
+        const type = asText(key === "section_type" ? value : next["section_type"]);
+        const configs: Record<string, unknown> = {
+          hero: { eyebrow: "", lines: [], intro: "" },
+          manifesto: { label: "Nova secção" },
+          featured_work: { label: "Trabalhos seleccionados", title_lines: ["Trabalhos"], link_label: "Ver trabalhos" },
+          services: { label: "Serviços" },
+          metrics: {},
+          clients: { label: "Clientes", title_lines: ["Clientes"], link_label: "Ver clientes" },
+          principles: {},
+          rich_text: { paragraphs: ["Novo conteúdo."] },
+        };
+        const allowed = page?.["route_path"] === "/" ? homeSectionTypes : allRendererSectionTypes;
+        if (allowed.includes(type)) next["config"] = JSON.stringify(configs[type] ?? {}, null, 2);
+        else {
+          next["section_type"] = page?.["route_path"] === "/" ? "manifesto" : "hero";
+          const fallbackType = asText(next["section_type"]);
+          next["config"] = JSON.stringify(configs[fallbackType] ?? {}, null, 2);
+        }
+      }
+      return next;
+    });
     setNotice(null);
   }
 
@@ -526,18 +560,32 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   function renderField(field: Field) {
     const value = draft[field.key];
     const shared = "mt-1.5 w-full rounded-lg border border-[#d9dce2] bg-white px-3 py-2.5 text-sm text-[#15161a] outline-none transition focus-visible:border-[#3b5ccc] focus-visible:ring-2 focus-visible:ring-[#3b5ccc]/20 disabled:cursor-not-allowed disabled:bg-[#f0f1f4]";
-    const fieldDisabled = saving || (!creating && !!active.reorder && field.key === "position");
+    const fieldDisabled = saving || (!creating && !!active.reorder && field.key === "position") || (!creating && activeId === "sections" && field.key === "page_id");
     const describedBy = field.help ? `field-help-${field.key}` : undefined;
+    const selectedSectionPage = activeId === "sections"
+      ? sectionsPage.find((page) => page["id"] === asText(draft["page_id"]))
+      : undefined;
+    const sectionOptions = selectedSectionPage?.["route_path"] === "/"
+      ? homeSectionTypeOptions
+      : selectedSectionPage?.["route_path"] === "/about" && asText(draft["section_key"]) === "about-copy"
+        ? aboutRichTextTypeOptions
+        : [{ value: "hero", label: "hero" }];
+    const requiredSectionVisibility = activeId === "sections" && !creating &&
+      selectedSectionPage?.["route_path"] !== "/" &&
+      (asText(draft["section_key"]) === "hero" ||
+        (selectedSectionPage?.["route_path"] === "/about" && asText(draft["section_key"]) === "about-copy"));
     if (field.type === "checkbox") {
       return (
         <label key={field.key} className="flex min-h-12 items-center gap-3 rounded-lg border border-[#e5e7eb] px-3 py-3 text-sm text-[#25272c]">
-          <input type="checkbox" checked={asBool(value)} onChange={(event) => updateDraft(field.key, event.target.checked)} disabled={saving || (field.key === "setting_key")} className="size-4 accent-[#243d98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98]" />
-          <span>{field.label}</span>
+          <input type="checkbox" checked={asBool(value)} onChange={(event) => updateDraft(field.key, event.target.checked)} disabled={saving || (field.key === "setting_key") || (field.key === "is_visible" && requiredSectionVisibility)} className="size-4 accent-[#243d98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98]" />
+          <span>{field.label}{field.key === "is_visible" && requiredSectionVisibility ? <small className="mt-1 block text-[11px] font-normal text-[#707582]">Obrigatória para o renderer desta página.</small> : null}</span>
         </label>
       );
     }
-    const options = field.key === "page_id"
-      ? sectionsPage.map((page) => ({ value: asText(page["id"]), label: `${asText(page["title"])} · ${asText(page["route_path"])}` }))
+    const options = field.key === "section_type"
+      ? sectionOptions
+      : field.key === "page_id"
+      ? sectionsPage.filter((page) => !creating || page["route_path"] === "/").map((page) => ({ value: asText(page["id"]), label: `${asText(page["title"])} · ${asText(page["route_path"])}` }))
       : field.key === "client_id"
         ? [{ value: "", label: "Sem associação" }, ...(workspace?.tables["clients"]?.rows ?? []).map((client) => ({ value: asText(client["id"]), label: asText(client["name"]) }))]
         : field.options;
@@ -625,7 +673,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                 <h1 className="text-2xl font-semibold tracking-tight sm:text-[30px]">{active.label}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-[#626774]">{active.description}</p>
               </div>
-              {activeId !== "overview" && active.fields && active.create && !editing ? (
+              {activeId !== "overview" && active.fields && active.create && !editing &&
+        (activeId !== "sections" || sectionsPage.find((page) => page["id"] === sectionPageId)?.["route_path"] === "/") ? (
                 <button type="button" onClick={startCreate} disabled={saving || loading || !!tableState?.error} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#17295f] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#243d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><span aria-hidden="true">+</span> Novo registo</button>
               ) : null}
             </div>
@@ -695,7 +744,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eaf0] p-4">
                   <div className="text-sm font-semibold">{active.table ? `${records.length} registo(s)` : active.label}</div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {activeId === "sections" ? <label className="flex items-center gap-2 text-xs text-[#5d626e]"><span>Página</span><select value={sectionPageId} onChange={(event) => setSectionPageId(event.target.value)} className="h-9 max-w-[220px] rounded-lg border border-[#dfe2e8] bg-white px-2 text-xs focus-visible:outline-2 focus-visible:outline-[#243d98]">{sectionsPage.map((page) => <option key={asText(page["id"])} value={asText(page["id"])}>{asText(page["title"])} · {asText(page["route_path"])}</option>)}</select></label> : null}
+                    {activeId === "sections" ? <label className="flex items-center gap-2 text-xs text-[#5d626e]"><span>Página</span><select value={sectionPageId} onChange={(event) => { setSectionPageId(event.target.value); setNotice(null); }} className="h-9 max-w-[220px] rounded-lg border border-[#dfe2e8] bg-white px-2 text-xs focus-visible:outline-2 focus-visible:outline-[#243d98]">{sectionsPage.map((page) => <option key={asText(page["id"])} value={asText(page["id"])}>{asText(page["title"])} · {asText(page["route_path"])}</option>)}</select></label> : null}
                     <label className="relative block"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8f99]" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Pesquisar..." aria-label={`Pesquisar em ${active.label}`} className="h-9 w-44 rounded-lg border border-[#dfe2e8] pl-8 pr-3 text-xs outline-none focus-visible:border-[#3b5ccc] focus-visible:ring-2 focus-visible:ring-[#3b5ccc]/20 sm:w-56" /></label>
                   </div>
                 </div>

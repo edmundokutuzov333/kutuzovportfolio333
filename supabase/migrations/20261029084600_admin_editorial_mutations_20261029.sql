@@ -30,6 +30,11 @@ declare
   v_revision_action text;
   v_page_id uuid;
   v_section_type text;
+  v_section_key text;
+  v_original_section_key text;
+  v_route_path text;
+  v_section_visible boolean;
+  v_original_section_visible boolean;
   v_positions_before jsonb;
   v_sibling_after jsonb;
   v_row_count bigint;
@@ -146,17 +151,53 @@ begin
   if p_entity_type = 'page_sections' then
     v_page_id := case when v_payload ? 'page_id' then (v_payload ->> 'page_id')::uuid else null end;
     v_section_type := v_payload ->> 'section_type';
+    v_section_key := v_payload ->> 'section_key';
+    v_section_visible := case when v_payload ? 'is_visible' then (v_payload ->> 'is_visible')::boolean else null end;
     if p_entity_id is not null then
-      select coalesce(v_page_id, (s.page_id)) into v_page_id
+      select
+        coalesce(v_page_id, s.page_id),
+        coalesce(v_section_type, s.section_type),
+        coalesce(v_section_key, s.section_key),
+        coalesce(v_section_visible, s.is_visible),
+        s.section_key,
+        s.is_visible
+      into
+        v_page_id, v_section_type, v_section_key, v_section_visible,
+        v_original_section_key, v_original_section_visible
       from public.page_sections s where s.id = p_entity_id;
-      if v_section_type is null then
-        select s.section_type into v_section_type from public.page_sections s where s.id = p_entity_id;
-      end if;
     end if;
-    if v_page_id is not null and v_section_type is not null
-       and exists (select 1 from public.pages p where p.id = v_page_id and p.route_path = '/')
-       and v_section_type not in ('hero','manifesto','featured_work','services','metrics','clients','principles') then
-      raise exception 'unsupported_home_section_type' using errcode = '22023';
+
+    select p.route_path into v_route_path from public.pages p where p.id = v_page_id;
+    if v_route_path is null then
+      raise exception 'section_page_not_found' using errcode = '22023';
+    end if;
+
+    if p_entity_id is null and v_route_path <> '/' then
+      raise exception 'section_creation_requires_home_renderer' using errcode = '22023';
+    end if;
+
+    if v_route_path = '/' then
+      if v_section_type not in ('hero','manifesto','featured_work','services','metrics','clients','principles') then
+        raise exception 'unsupported_home_section_type' using errcode = '22023';
+      end if;
+    else
+      if not (
+        v_section_type = 'hero'
+        or (v_route_path = '/about' and v_section_key = 'about-copy' and v_section_type = 'rich_text')
+      ) then
+        raise exception 'unsupported_page_section_type' using errcode = '22023';
+      end if;
+
+      if p_entity_id is not null and v_section_key is distinct from v_original_section_key then
+        raise exception 'required_page_section_key_is_immutable' using errcode = '22023';
+      end if;
+
+      if v_section_visible = false and (
+        v_section_key = 'hero'
+        or (v_route_path = '/about' and v_section_key = 'about-copy')
+      ) then
+        raise exception 'required_page_section_cannot_be_hidden' using errcode = '22023';
+      end if;
     end if;
   end if;
 
