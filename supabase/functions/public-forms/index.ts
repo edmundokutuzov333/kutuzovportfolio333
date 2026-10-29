@@ -847,7 +847,7 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
         p_email: email,
         p_company: company || null,
         p_request_type: type,
-        p_budget: budget === "Prefer not to say" ? null : (exact ? currency + " " + exact : budget || null),
+        p_budget: exact ? currency + " " + exact : budget === "Prefer not to say" ? null : (budget || null),
         p_message: message,
         p_links: links,
         p_attachment_paths: uploaded,
