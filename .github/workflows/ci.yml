@@ -54,14 +54,21 @@ jobs:
           cd "$proposal/source"
           bun install --frozen-lockfile
           set +e
-          bun audit fix --latest 2>&1 | tee "$proposal/audit-fix.txt"
+                    node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+          const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+          manifest.dependencies.zod = "^4.6.6";
+          manifest.devDependencies.vite = "8.1.6";
+          writeFileSync("package.json", JSON.stringify(manifest, null, 2) + "\n");
+          NODE
+          bun update 2>&1 | tee "$proposal/audit-fix.txt"
           fix_status=${PIPESTATUS[0]}
           bun audit --audit-level=high 2>&1 | tee "$proposal/audit-after.txt"
           audit_status=${PIPESTATUS[0]}
           cp package.json bun.lock "$GITHUB_WORKSPACE/reports/dependency-remediation/"
           cp "$proposal/audit-fix.txt" "$GITHUB_WORKSPACE/reports/dependency-remediation/"
           cp "$proposal/audit-after.txt" "$GITHUB_WORKSPACE/reports/dependency-remediation/"
-          printf 'audit_fix_exit=%s\naudit_after_exit=%s\n' "$fix_status" "$audit_status" > "$GITHUB_WORKSPACE/reports/dependency-remediation/result.txt"
+          printf 'dependency_update_exit=%s\naudit_after_exit=%s\n' "$fix_status" "$audit_status" > "$GITHUB_WORKSPACE/reports/dependency-remediation/result.txt"
           exit 0
 
       - name: TypeScript typecheck
