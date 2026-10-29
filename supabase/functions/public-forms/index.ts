@@ -13,11 +13,11 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
-const MAX_TOTAL_FILE_BYTES = 40 * 1024 * 1024;
+const MAX_TOTAL_FILE_BYTES = 17 * 1024 * 1024;
 const CONSENT_VERSION = "newsletter-consent-v1-2026-10-29";
 const BUCKET_PRIVATE = "contact-private-attachments";
 
-type ContactUpload = { path: string; mime: string; size: number; width: number; height: number; name: string; bytes: Uint8Array };
+type ContactUpload = { path: string; mime: string; size: number; width: number | null; height: number | null; name: string; bytes: Uint8Array };
 
 function json(data: unknown, status = 200, origin?: string) {
   const headers = new Headers({
@@ -125,15 +125,66 @@ function formText(form: FormData, key: string, max: number, required = false): s
 }
 
 function cleanOriginalName(name: string): string {
-  const withoutPath = name.replace(/[/\\]/g, "_");
+  const withoutPath = name.replace(/[/\\\\]/g, "_");
   const safe = Array.from(withoutPath).filter((character) => {
     const code = character.charCodeAt(0);
     return code >= 32 && code !== 127;
   }).join("");
-  return safe.slice(0, 180) || "image";
+  return safe.slice(0, 180) || "reference";
 }
 
-function encodePath(path: string): string {
+function inspectContactFile(file: File, bytes: Uint8Array): { mime: string; width: number | null; height: number | null } | null {
+  const declared = file.type.toLowerCase();
+  const pdfName = /\\.pdf$/i.test(file.name);
+  const pdfMagic = bytes.length >= 8 &&
+    new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-" &&
+    bytes.slice(0, 8).every((byte) => byte >= 0x20 && byte <= 0x7e);
+  if (pdfName && pdfMagic && (declared === "application/pdf" || declared === "" || declared === "application/octet-stream")) {
+    return { mime: "application/pdf", width: null, height: null };
+  }
+  const image = inspectImageBytes(bytes);
+  if (!image || !["image/png", "image/jpeg", "image/webp"].includes(image.mime)) return null;
+  if (declared && declared !== image.mime) return null;
+  return { mime: image.mime, width: image.width, height: image.height };
+}
+
+const ALLOWED_PROJECT_STAGES = new Set([
+  "Idea or early concept",
+  "Strategy and planning",
+  "New brand or product launch",
+  "Existing brand refresh",
+  "Campaign already in progress",
+  "Ready for execution",
+  "Not sure yet",
+]);
+const ALLOWED_INDUSTRIES = new Set([
+  "Technology and SaaS", "Finance and fintech", "Consumer goods and FMCG", "Fashion and lifestyle",
+  "Entertainment and music", "Hospitality and tourism", "Real estate and construction",
+  "Healthcare and wellness", "Education", "NGO and social impact", "Public sector",
+  "Retail and e-commerce", "Food and beverage", "Other",
+]);
+const ALLOWED_DELIVERABLES = new Set([
+  "Brand strategy and positioning", "Naming and verbal identity", "Logo and visual identity",
+  "Brand guidelines", "Campaign concept and key visual", "Social media assets",
+  "Motion graphics and animation", "Video direction and production", "Website or landing page",
+  "UI/UX design", "Presentation or pitch deck", "Packaging and product visuals",
+  "Photography and image retouching", "3D, CGI or AI-generated visuals",
+  "Content strategy and copy", "Launch assets and rollout",
+]);
+
+function formStringArray(form: FormData, key: string, maxItems: number, maxLength: number): string[] {
+  const raw = formText(form, key, 4000);
+  if (!raw) return [];
+  let value: unknown;
+  try { value = JSON.parse(raw); } catch { throw new Error("invalid_" + key); }
+  if (!Array.isArray(value) || value.length > maxItems ||
+      !value.every((item) => typeof item === "string" && item.trim().length > 0 && item.length <= maxLength)) {
+    throw new Error("invalid_" + key);
+  }
+  return [...new Set(value.map((item) => (item as string).trim()))];
+}
+
+function encodePath(path: string): string {function encodePath(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
 }
 
