@@ -1,4 +1,4 @@
-import { PUBLIC_SITE_URL } from "@/lib/cms/public-client";
+import { PUBLIC_SITE_URL, validatePublicOrigin } from "@/lib/cms/public-client";
 import type { CmsPage } from "@/lib/cms/types";
 
 function absoluteUrl(value: string): string | null {
@@ -11,13 +11,39 @@ function absoluteUrl(value: string): string | null {
   }
 }
 
+export function resolveCanonicalUrl(
+  routePath: string,
+  storedCanonical: string | null | undefined,
+  configuredOrigin: string | undefined,
+  override?: string,
+): string | null {
+  const origin = validatePublicOrigin(configuredOrigin);
+  if (!origin) return null;
+  for (const candidate of [override, storedCanonical]) {
+    if (!candidate) continue;
+    try {
+      const url = new URL(candidate, origin);
+      if (url.protocol === "https:" && url.origin === origin && !url.username && !url.password) {
+        return url.toString();
+      }
+    } catch {
+      // Ignore malformed or off-origin canonical values and derive from the configured origin.
+    }
+  }
+  try {
+    return new URL(routePath, origin).toString();
+  } catch {
+    return null;
+  }
+}
+
 export function seoFromPage(
   page: CmsPage,
   overrides: { title?: string; description?: string; canonicalUrl?: string; image?: string | null } = {},
 ) {
   const title = overrides.title ?? page.seo_title ?? page.title;
   const description = overrides.description ?? page.seo_description ?? "";
-  const canonicalUrl = PUBLIC_SITE_URL ? (overrides.canonicalUrl ?? page.canonical_url ?? absoluteUrl(page.route_path)) : null;
+  const canonicalUrl = resolveCanonicalUrl(page.route_path, page.canonical_url, PUBLIC_SITE_URL, overrides.canonicalUrl);
   const imagePath = overrides.image === undefined ? page.og_image_path : overrides.image;
   const imageUrl = imagePath ? absoluteUrl(imagePath) : null;
 

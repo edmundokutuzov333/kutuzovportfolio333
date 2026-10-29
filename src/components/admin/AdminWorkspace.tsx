@@ -82,7 +82,7 @@ const MODULES: ModuleDef[] = [
   { id: "sections", label: "Secções", description: "Visibilidade, configuração tipada e ordem da Home e das páginas existentes.", table: "page_sections", entity: "page_sections", create: true, reorder: true, icon: Layers3, fields: [
     { key: "page_id", label: "Página", type: "select", required: true },
     { key: "section_key", label: "Chave da secção", required: true },
-    { key: "section_type", label: "Tipo suportado", type: "select", required: true, options: sectionTypeOptions },
+    { key: "section_type", label: "Tipo suportado", type: "select", required: true, options: homeSectionTypeOptions },
     { key: "position", label: "Posição", type: "number", required: true, help: "A ordem é gerida com os controlos Mover para cima e Mover para baixo." },
     { key: "is_visible", label: "Visível", type: "checkbox" },
     { key: "config", label: "Configuração tipada (JSON)", type: "json", required: true, help: "JSON estruturado de acordo com o tipo. Não é permitido HTML, CSS ou JavaScript arbitrário." },
