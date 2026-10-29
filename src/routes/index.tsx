@@ -77,7 +77,7 @@ function Home() {
           <Link to="/work" className="eyebrow hidden hover:text-primary md:block">All projects →</Link>
         </div>
         <div className="grid gap-x-8 gap-y-20 md:grid-cols-2">
-          {projects.slice(0, 4).map((p, i) => (
+          {projects.filter((p) => p.featured).map((p, i) => (
             <Reveal key={p.slug} delay={(i % 2) * 0.08} className={i % 2 ? "md:mt-40" : ""}>
               <ProjectCard project={p} index={i} />
             </Reveal>
