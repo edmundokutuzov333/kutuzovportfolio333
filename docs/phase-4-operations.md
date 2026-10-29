@@ -15,8 +15,8 @@ Migrations aplicadas ao projecto Supabase existente `qwjaoheaolpxtciljzvb`:
 
 - `20261029083325_admin_editorial_mutations_20261029`: funções transaccionais editoriais e esquema de galeria.
 - `20261029083334_admin_site_presentation_settings_20261029`: definições de navegação/rodapé.
-- `20261029084727_phase4_public_forms_media_email`: rate limits, submissão persistente de contacto, double opt-in, tokens de uso único e fila de email.
-- `20261029101500_phase4_media_acl_tightening`: revoga escrita directa no inventário de media ao browser, deixando as mutações sob funções de servidor autorizadas e verifica que os dois buckets existem com a visibilidade esperada.
+- `20261029100000_phase4_public_forms_media_email.sql` (versão Supabase `20261029084727`, nome registado `phase4_public_forms_media_email`): rate limits, submissão persistente de contacto, double opt-in, tokens de uso único e fila de email.
+- `20261029101500_phase4_media_acl_tightening.sql` (versão Supabase `20261029091151`, nome registado `phase4_media_acl_tightening`): revoga escrita directa no inventário de media ao browser, deixando as mutações sob funções de servidor autorizadas e verifica que os dois buckets existem com a visibilidade esperada.
 
 A política de custo-zero impediu a criação de staging. As migrations aditivas foram aplicadas ao projecto existente após consultar esquema, migrações, privilégios e políticas. Esta decisão é documentada como desvio do roteiro original. Não foi possível confirmar uma cópia de segurança de fornecedor através das integrações disponíveis.
 
@@ -25,7 +25,7 @@ A política de custo-zero impediu a criação de staging. As migrations aditivas
 - CI em GitHub Actions, para o SHA de origem validado antes desta revisão: secret scanning, instalação reproduzível, TypeScript, ESLint, testes unitários, build e inventário de assets concluídos com sucesso.
 - Teste transaccional de SQL com rollback confirmou a criação de uma submissão, criação de newsletter pendente, confirmação por token único, rejeição de reutilização do token, cancelamento e rate limit. O teste foi executado dentro de uma transacção revertida; não ficaram registos de teste.
 - O teste de validação de imagem usa um PNG de 1x1 válido, valida CRC/chunks, rejeita imagem truncada e SVG, e exercita o mesmo parser usado pela Edge Function.
-- O deployment inicial da Edge Function `public-forms` foi aceite pelo Supabase e ficou `ACTIVE`. A última revisão do código inclui adicionalmente o tratamento correcto de falhas de email após persistência; deve ser publicado novamente após o CI correspondente.
+- O deployment inicial da Edge Function `public-forms` foi aceite pelo Supabase e ficou `ACTIVE`. A última revisão do código inclui o tratamento de falhas de email após persistência e foi enviada para publicação após o CI. A verificação HTTP POST de ponta a ponta continua não executada, porque as integrações disponíveis não disponibilizam um cliente de requisições HTTP arbitrárias.
 
 ## Dependências ainda por confirmar
 
