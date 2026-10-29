@@ -30,7 +30,7 @@ Nova migração: supabase/migrations/20261029084600_admin_editorial_mutations_20
 
 A migração é versionada no repositório, mas **não foi aplicada ao Supabase** durante esta execução: só existe um projecto dedicado identificado e não foi disponibilizado um ambiente staging separado para a validação exigida pelo plano. Não se deve executar a migração na base de produção sem validação em staging, backup verificável e revisão das funções SQL. Até ser aplicada, as funções RPC da Fase 3 não existem na base e as mutações vão falhar de forma explícita; a interface não deve ser considerada funcional em produção.
 
-O acesso de produção também depende da configuração hospedada já documentada na Fase 1: identidade de proprietário em Supabase Auth com app_metadata.site_role=admin, variáveis de runtime ADMIN_ACCESS_CODE, ADMIN_EMAIL, ADMIN_RATE_LIMIT_SALT, SUPABASE_URL, chave pública, SUPABASE_SERVICE_ROLE_KEY no servidor e PUBLIC_SITE_URL validada. Não foram criados segredos, convites ou utilizadores por suposição.
+O acesso de produção também depende da configuração hospedada já documentada na Fase 1: identidade de proprietário em Supabase Auth com app_metadata.site_role=admin, variáveis de runtime ADMIN_ACCESS_CODE, ADMIN_EMAIL, ADMIN_RATE_LIMIT_SALT, SUPABASE_URL, chave pública, SUPABASE_SERVICE_ROLE_KEY no servidor e PUBLIC_SITE_URL validada. A aplicação pública lê VITE_PUBLIC_SITE_URL e só emite canonical absoluto quando esta variável contém uma origem HTTPS sem caminho, credenciais, query ou fragmento; configure ambas com a mesma origem canónica real, não com o domínio de preview. Não foram criados segredos, convites ou utilizadores por suposição.
 
 ## Testes
 

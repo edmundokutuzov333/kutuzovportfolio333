@@ -1,11 +1,13 @@
 import { PUBLIC_SITE_URL } from "@/lib/cms/public-client";
 import type { CmsPage } from "@/lib/cms/types";
 
-function absoluteUrl(value: string): string {
+function absoluteUrl(value: string): string | null {
   try {
-    return new URL(value, PUBLIC_SITE_URL).toString();
+    const url = new URL(value, PUBLIC_SITE_URL || undefined);
+    if (url.protocol !== "https:" || url.username || url.password) return null;
+    return url.toString();
   } catch {
-    return value;
+    return null;
   }
 }
 
@@ -15,7 +17,7 @@ export function seoFromPage(
 ) {
   const title = overrides.title ?? page.seo_title ?? page.title;
   const description = overrides.description ?? page.seo_description ?? "";
-  const canonicalUrl = overrides.canonicalUrl ?? page.canonical_url ?? absoluteUrl(page.route_path);
+  const canonicalUrl = PUBLIC_SITE_URL ? (overrides.canonicalUrl ?? page.canonical_url ?? absoluteUrl(page.route_path)) : null;
   const imagePath = overrides.image === undefined ? page.og_image_path : overrides.image;
   const imageUrl = imagePath ? absoluteUrl(imagePath) : null;
 

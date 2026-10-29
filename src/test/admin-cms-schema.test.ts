@@ -93,4 +93,31 @@ describe("Kutuzov Admin editorial server contracts", () => {
       expectedUpdatedAt: null,
     }).success).toBe(false);
   });
+  it("filters database-managed fields out of historical restore snapshots", () => {
+    const restoredPage = validateAdminPayload("pages", {
+      id: "00000000-0000-4000-8000-000000000001",
+      slug: "about",
+      route_path: "/about",
+      title: "About",
+      locale: "en",
+      status: "published",
+      published_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-01T00:00:00Z",
+      created_by: "00000000-0000-4000-8000-000000000002",
+    }, "restore");
+    expect(restoredPage["published_at"]).toBeUndefined();
+    expect(restoredPage["updated_at"]).toBeUndefined();
+    expect(restoredPage["slug"]).toBe("about");
+
+    const restoredSetting = validateAdminPayload("site_settings", {
+      id: "00000000-0000-4000-8000-000000000001",
+      setting_key: "navigation",
+      setting_value: { items: [] },
+      is_public: true,
+      updated_at: "2026-01-01T00:00:00Z",
+    }, "restore");
+    expect(restoredSetting["setting_key"]).toBeUndefined();
+    expect(restoredSetting["setting_value"]).toEqual({ items: [] });
+  });
+
 });

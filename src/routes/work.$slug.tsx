@@ -24,11 +24,13 @@ export const Route = createFileRoute("/work/$slug")({
   head: ({ loaderData }) => {
     if (!loaderData?.project) return noIndexSeo("Project not found");
     const project = loaderData.project;
-    const canonicalUrl = new URL(`/work/${encodeURIComponent(project.slug)}`, PUBLIC_SITE_URL).toString();
+    const canonicalUrl = PUBLIC_SITE_URL
+      ? new URL(`/work/${encodeURIComponent(project.slug)}`, PUBLIC_SITE_URL).toString()
+      : undefined;
     return seoFromPage(loaderData.page, {
-      title: `${project.title} — Edmundo Kutuzov`,
-      description: `${project.discipline} for ${project.client} — case study by Edmundo Kutuzov.`,
-      canonicalUrl,
+      title: `${project.title} - Edmundo Kutuzov`,
+      description: `${project.discipline} for ${project.client} - case study by Edmundo Kutuzov.`,
+      ...(canonicalUrl ? { canonicalUrl } : {}),
       image: project.cover,
     });
   },

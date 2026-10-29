@@ -1,7 +1,6 @@
 const DEFAULT_SUPABASE_URL = "https://qwjaoheaolpxtciljzvb.supabase.co";
 // This is a browser-safe Supabase publishable key, not a service-role secret. RLS remains the access boundary.
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_D2urR5PRQGDpHqVBLtb_CA_n75HUgmE"; // gitleaks:allow
-const DEFAULT_PUBLIC_SITE_URL = "https://kutuzovportfolio333.lovable.app";
 
 const env = import.meta.env;
 
@@ -12,8 +11,20 @@ const anonKey = env["VITE_SUPABASE_ANON_KEY"]?.trim();
 
 export const SUPABASE_API_KEY = publishableKey || anonKey || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 const AUTHORIZATION_KEY = anonKey || null;
-export const PUBLIC_SITE_URL =
-  env["VITE_PUBLIC_SITE_URL"]?.trim().replace(/\/+$/, "") || DEFAULT_PUBLIC_SITE_URL;
+export function validatePublicOrigin(value: string | undefined): string {
+  if (!value?.trim()) return "";
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) return "";
+    return url.origin;
+  } catch {
+    return "";
+  }
+}
+
+// No preview-domain fallback: canonical URLs are emitted only when the deployment
+// explicitly supplies a valid HTTPS origin.
+export const PUBLIC_SITE_URL = validatePublicOrigin(env["VITE_PUBLIC_SITE_URL"]);
 
 export type PublicCmsTable =
   | "site_settings"
