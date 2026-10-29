@@ -163,6 +163,15 @@ const ALLOWED_INDUSTRIES = new Set([
   "Healthcare and wellness", "Education", "NGO and social impact", "Public sector",
   "Retail and e-commerce", "Food and beverage", "Other",
 ]);
+const ALLOWED_PROJECT_GOALS = new Set([
+  "Brand awareness and positioning", "Product or service launch", "Lead generation and sales",
+  "Audience growth and engagement", "Rebrand or repositioning", "Investor or sales presentation",
+  "Recruitment and employer branding", "Customer retention", "Event or activation", "Other / still defining",
+]);
+const ALLOWED_CHANNELS = new Set([
+  "Social media", "Website / landing page", "Digital advertising", "Email marketing", "Print / outdoor",
+  "Packaging", "Video / motion", "Events / activation", "Retail / point of sale", "Internal communications", "Not decided yet",
+]);
 const ALLOWED_DELIVERABLES = new Set([
   "Brand strategy and positioning", "Naming and verbal identity", "Logo and visual identity",
   "Brand guidelines", "Campaign concept and key visual", "Social media assets",
@@ -559,7 +568,13 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
         ["Additional services", Array.isArray(metadata["additional_services"]) ? (metadata["additional_services"] as unknown[]).join(", ") : ""],
         ["Industry", metadata["industry"]],
         ["Project stage", metadata["project_stage"]],
+        ["Primary objective", metadata["project_goal"]],
+        ["Channels", Array.isArray(metadata["channels"]) ? (metadata["channels"] as unknown[]).join(", ") : ""],
         ["Deliverables", deliverables.join(", ")],
+        ["Working languages", metadata["languages"]],
+        ["Success criteria", metadata["success_criteria"]],
+        ["Existing assets", metadata["existing_assets"]],
+        ["Creative direction", metadata["style_direction"]],
         ["Urgency", metadata["urgency"]],
         ["Budget range", payload["budget"] ?? metadata["budget"]],
         ["Budget negotiable", metadata["negotiable"] === true ? "Yes" : metadata["negotiable"] === false ? "No" : ""],
@@ -567,7 +582,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
         ["Audience", metadata["audience"]],
         ["Received at (UTC)", new Date().toISOString()],
       ];
-      subject = "New enquiry | " + String(payload["request_type"] ?? "Project request").slice(0, 90) + " | " + String(payload["name"] ?? "Client").slice(0, 70);
+      subject = "NEW PROJECT ENQUIRY [" + submissionId.slice(0, 8).toUpperCase() + "] | " + String(payload["request_type"] ?? "Project request").slice(0, 70) + " | " + String(payload["name"] ?? "Client").slice(0, 60);
       text = [
         "NEW PROJECT ENQUIRY",
         "Reference: " + submissionId,
@@ -605,7 +620,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       const firstName = String(payload["name"] ?? "there").trim().split(/\s+/)[0] || "there";
       const reference = String(payload["submission_id"] ?? "");
       const requestType = String(payload["request_type"] ?? "Project enquiry");
-      subject = "We've received your enquiry | Edmundo Kutuzov";
+      subject = "Enquiry received [" + reference.slice(0, 8).toUpperCase() + "] | Edmundo Kutuzov";
       text = [
         "Hello " + firstName + ",",
         "",
@@ -638,9 +653,9 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
         ? payload["site_origin"] : "";
       if (!origin || !origin.startsWith("https://") || origin !== PRODUCTION_ORIGIN) throw new Error("public_site_url_not_configured");
       const unsubscribeUrl = origin + "/newsletter/unsubscribe?token=" + encodeURIComponent(bundle.unsubscribeToken);
-      subject = "You're on the list | Edmundo Kutuzov";
+      subject = "Newsletter subscription confirmed | Edmundo Kutuzov";
       text = [
-        "You're on the list.",
+        "Your newsletter subscription is confirmed.",
         "",
         "Thank you for subscribing to notes from Edmundo Kutuzov. You may receive selected work, ideas on creative direction and design, and occasional availability updates.",
         "",
@@ -653,8 +668,8 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       html = brandedEmail(
         "Your newsletter preferences have been saved.",
         "Newsletter",
-        "You're on the list.",
-        "Thank you for subscribing. You'll receive occasional notes from my work in creative direction, brand design and visual culture.",
+        "Subscription confirmed.",
+        "Your address is now on the list. You'll receive occasional notes on creative direction, brand design and visual culture.",
         emailSection("What to expect", '<p style="margin:0;">Selected projects, useful ideas and occasional availability updates. No daily noise, and no sharing your address with other people.</p>') +
         emailSection("Your preferences", '<p style="margin:0 0 14px;">You can leave the list at any time. The link below will remove this address from future newsletter emails.</p><p style="margin:0;"><a href="' + escapeHtml(unsubscribeUrl) + '" style="display:inline-block;padding:12px 18px;background:#b6ccff;color:#0b1020;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;">UNSUBSCRIBE</a></p>'),
       );
@@ -727,6 +742,12 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const projectName = formText(form, "projectName", 180);
   const industry = formText(form, "industry", 120);
   const projectStage = formText(form, "projectStage", 120);
+  const projectGoal = formText(form, "projectGoal", 120);
+  const channels = formStringArray(form, "channels", 11, 80);
+  const languages = formText(form, "languages", 160);
+  const existingAssets = formText(form, "existingAssets", 800);
+  const styleDirection = formText(form, "styleDirection", 800);
+  const successCriteria = formText(form, "successCriteria", 800);
   const deliverables = formStringArray(form, "deliverables", 16, 120);
   const audience = formText(form, "audience", 800);
   const urgency = formText(form, "urgency", 20, true);
@@ -746,6 +767,8 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return json({ ok: false, error: "invalid_deadline" }, 400, origin);
   if (industry && !ALLOWED_INDUSTRIES.has(industry)) return json({ ok: false, error: "invalid_industry" }, 400, origin);
   if (projectStage && !ALLOWED_PROJECT_STAGES.has(projectStage)) return json({ ok: false, error: "invalid_project_stage" }, 400, origin);
+  if (projectGoal && !ALLOWED_PROJECT_GOALS.has(projectGoal)) return json({ ok: false, error: "invalid_project_goal" }, 400, origin);
+  if (channels.some((item) => !ALLOWED_CHANNELS.has(item))) return json({ ok: false, error: "invalid_channels" }, 400, origin);
   if (deliverables.some((item) => !ALLOWED_DELIVERABLES.has(item))) return json({ ok: false, error: "invalid_deliverables" }, 400, origin);
   if (additionalTypes.includes(type)) return json({ ok: false, error: "duplicate_project_service" }, 400, origin);
 
@@ -811,6 +834,12 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
       project_name: projectName,
       industry,
       project_stage: projectStage,
+      project_goal: projectGoal,
+      channels,
+      languages,
+      existing_assets: existingAssets,
+      style_direction: styleDirection,
+      success_criteria: successCriteria,
       services: [type, ...additionalTypes],
       additional_services: additionalTypes,
       deliverables,
