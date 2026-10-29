@@ -71,7 +71,9 @@ async function rest(
   return text ? JSON.parse(text) : [];
 }
 
-async function upsert(
+let changedCount = 0;
+
+async function insertIfMissing(
   table: string,
   rows: Record<string, unknown>[],
   onConflict: string,
@@ -82,9 +84,10 @@ async function upsert(
     { on_conflict: onConflict, select: "*" },
     "POST",
     rows,
-    "resolution=merge-duplicates,return=representation",
+    "resolution=ignore-duplicates,return=representation",
   );
   if (!Array.isArray(result)) throw new Error(`CMS import returned an invalid response for ${table}.`);
+  changedCount += result.length;
   return result as Record<string, unknown>[];
 }
 
@@ -236,7 +239,13 @@ const pageRows = [
   },
 ];
 
-const pageRecords = await upsert("pages", pageRows, "slug");
+await insertIfMissing("pages", pageRows, "slug");
+const pageRecordsResult = await rest("pages", {
+  select: "id,route_path",
+  slug: "in.(home,work,work-detail,about,services,process,clients,contact)",
+});
+if (!Array.isArray(pageRecordsResult)) throw new Error("Could not read back the imported pages.");
+const pageRecords = pageRecordsResult as Record<string, unknown>[];
 const pageIdByRoute = new Map(
   pageRecords.map((row) => [String(row["route_path"]), String(row["id"])]),
 );
@@ -246,7 +255,7 @@ for (const page of pageRows) {
   }
 }
 
-await upsert("profile_content", [{
+await insertIfMissing("profile_content", [{
   singleton_key: "primary",
   name: profile.name,
   role: profile.title,
@@ -263,7 +272,7 @@ await upsert("profile_content", [{
   updated_at: now,
 }], "singleton_key");
 
-await upsert("metrics", metrics.map((item, position) => ({
+await insertIfMissing("metrics", metrics.map((item, position) => ({
   value: item.value,
   label: item.label,
   note: item.note,
@@ -272,7 +281,7 @@ await upsert("metrics", metrics.map((item, position) => ({
   updated_at: now,
 })), "position");
 
-await upsert("experience_items", experience.map((item, position) => ({
+await insertIfMissing("experience_items", experience.map((item, position) => ({
   organisation: item.company,
   role: item.role,
   period: item.period,
@@ -282,7 +291,7 @@ await upsert("experience_items", experience.map((item, position) => ({
   updated_at: now,
 })), "position");
 
-await upsert("skills", skills.map((item, position) => ({
+await insertIfMissing("skills", skills.map((item, position) => ({
   name: item.name,
   value: item.value,
   tier: item.tier,
@@ -291,7 +300,7 @@ await upsert("skills", skills.map((item, position) => ({
   updated_at: now,
 })), "name");
 
-await upsert("disciplines", disciplines.map((item, position) => ({
+await insertIfMissing("disciplines", disciplines.map((item, position) => ({
   name: item.group,
   description: null,
   items: item.items,
@@ -300,7 +309,7 @@ await upsert("disciplines", disciplines.map((item, position) => ({
   updated_at: now,
 })), "name");
 
-await upsert("services", services.map((item, position) => ({
+await insertIfMissing("services", services.map((item, position) => ({
   slug: item.slug,
   title: item.title,
   description: item.text,
@@ -312,7 +321,7 @@ await upsert("services", services.map((item, position) => ({
   updated_at: now,
 })), "slug");
 
-await upsert("principles", principles.map((item, position) => ({
+await insertIfMissing("principles", principles.map((item, position) => ({
   title: item.title,
   description: item.text,
   position,
@@ -320,7 +329,7 @@ await upsert("principles", principles.map((item, position) => ({
   updated_at: now,
 })), "position");
 
-await upsert("process_steps", processSteps.map((item, position) => ({
+await insertIfMissing("process_steps", processSteps.map((item, position) => ({
   step_key: slugify(item.title),
   title: item.title,
   description: item.text,
@@ -330,7 +339,7 @@ await upsert("process_steps", processSteps.map((item, position) => ({
   updated_at: now,
 })), "step_key");
 
-await upsert("clients", clients.map((item, position) => ({
+await insertIfMissing("clients", clients.map((item, position) => ({
   slug: slugify(item.name),
   name: item.name,
   logo_path: item.logo,
@@ -343,7 +352,7 @@ await upsert("clients", clients.map((item, position) => ({
   updated_at: now,
 })), "slug");
 
-await upsert("projects", projects.map((item, position) => ({
+await insertIfMissing("projects", projects.map((item, position) => ({
   slug: item.slug,
   title: item.title,
   client_label: item.client,
@@ -380,7 +389,7 @@ const settingsRows = [
     ],
   },
 ];
-await upsert("site_settings", settingsRows.map((row) => ({
+await insertIfMissing("site_settings", settingsRows.map((row) => ({
   ...row,
   is_public: true,
   updated_at: now,
@@ -416,7 +425,7 @@ const sections = [
   updated_at: now,
 }));
 if (sections.some((section) => !section.page_id)) throw new Error("Could not resolve page IDs for sections.");
-await upsert("page_sections", sections as Record<string, unknown>[], "page_id,section_key");
+await insertIfMissing("page_sections", sections as Record<string, unknown>[], "page_id,section_key");
 
 const assetRoot = path.join(root, "src", "assets");
 const manifestPaths = await walkManifests(assetRoot);
@@ -450,7 +459,7 @@ for (const fullPath of manifestPaths) {
     updated_at: now,
   });
 }
-await upsert("asset_migration_inventory", assetRecords, "manifest_path");
+await insertIfMissing("asset_migration_inventory", assetRecords, "manifest_path");
 
 const existing = await rest("site_publication_state", {
   select: "published_revision",
@@ -460,10 +469,13 @@ const existing = await rest("site_publication_state", {
 const currentRevision = Array.isArray(existing) && existing.length > 0
   ? Number((existing[0] as Record<string, unknown>)["published_revision"] ?? 0)
   : 0;
-await rest("site_publication_state", { singleton_key: "eq.primary" }, "PATCH", {
-  published_revision: currentRevision + 1,
-  published_at: new Date().toISOString(),
-}, "return=minimal");
+const publishedRevision = changedCount > 0 ? currentRevision + 1 : currentRevision;
+if (changedCount > 0) {
+  await rest("site_publication_state", { singleton_key: "eq.primary" }, "PATCH", {
+    published_revision: publishedRevision,
+    published_at: new Date().toISOString(),
+  }, "return=minimal");
+}
 
 const reconciled = {
   generated_at: new Date().toISOString(),
@@ -494,7 +506,8 @@ const reconciled = {
     pending_source_access: assetRecords.length,
     note: "No legacy binary was deleted or replaced. Confirm source access, MIME, dimensions and SHA-256 before changing any public reference.",
   },
-  published_revision: currentRevision + 1,
+  inserted_records: changedCount,
+  published_revision: publishedRevision,
 };
 if (projects.length !== 4 || clients.length !== 20 || assetRecords.length !== 41) {
   throw new Error("Reconciliation guard failed: expected 4 projects, 20 clients and 41 asset manifests.");
