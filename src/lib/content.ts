@@ -188,17 +188,87 @@ export const principles = [
   { title: "Memory", text: "Aesthetic survival requires a distinct point of view." },
 ];
 
-// Placeholder case studies — replace cover/gallery with official art when delivered.
+import digaYesKv from "@/assets/works/diga-yes-kv.webp.asset.json";
+import digaYesWide from "@/assets/works/diga-yes-kv-wide.webp.asset.json";
+import digaYesP1 from "@/assets/works/diga-yes-p1.webp.asset.json";
+import digaYesP2 from "@/assets/works/diga-yes-p2.webp.asset.json";
+import digaYesP3 from "@/assets/works/diga-yes-p3.webp.asset.json";
+import digaYesP4 from "@/assets/works/diga-yes-p4.webp.asset.json";
+import digaYesP5 from "@/assets/works/diga-yes-p5.webp.asset.json";
+import gaming from "@/assets/works/gaming.webp.asset.json";
+import gaming2 from "@/assets/works/gaming-2.webp.asset.json";
+import fourG from "@/assets/works/4g.webp.asset.json";
+import namorados from "@/assets/works/namorados.webp.asset.json";
+import namorados1 from "@/assets/works/namorados-1.webp.asset.json";
+import namorados2 from "@/assets/works/namorados-2.webp.asset.json";
+import marco8 from "@/assets/works/8marco.webp.asset.json";
+import outubroRosa from "@/assets/works/outubro-rosa.webp.asset.json";
+import natal from "@/assets/works/natal.webp.asset.json";
+import obrigado from "@/assets/works/obrigado.webp.asset.json";
+import obrigado2 from "@/assets/works/obrigado-2.webp.asset.json";
+import somosUma from "@/assets/works/somos-uma.webp.asset.json";
+import velocidade from "@/assets/works/velocidade.webp.asset.json";
+import entidadeRef from "@/assets/works/entidade-ref.webp.asset.json";
+import actualizacoes from "@/assets/works/actualizacoes.webp.asset.json";
+
 export const projects = [
-  { slug: "automotive-launch", title: "Drive the Coast", client: "Automotive", year: "2025", discipline: "Campaign Design", hue: 30 },
-  { slug: "energy-identity", title: "Fuel of Tomorrow", client: "Energy", year: "2025", discipline: "Art Direction", hue: 200 },
-  { slug: "telecom-social", title: "Always On", client: "Telecom", year: "2024", discipline: "Social Media", hue: 350 },
-  { slug: "spirits-rollout", title: "Night Ritual", client: "Beverage", year: "2024", discipline: "Key Visual", hue: 50 },
-  { slug: "hospitality-brand", title: "Ocean Rooms", client: "Hospitality", year: "2024", discipline: "Brand Identity", hue: 170 },
-  { slug: "insurance-ooh", title: "Covered", client: "Insurance", year: "2023", discipline: "OOH & Print", hue: 260 },
-  { slug: "music-rollout", title: "Single Season", client: "Music", year: "2023", discipline: "Video Direction", hue: 10 },
-  { slug: "ai-series", title: "Synthetic Maputo", client: "Personal", year: "2025", discipline: "AI Creative Direction", hue: 120 },
-].map((p) => ({ ...p, cover: null as string | null }));
+  {
+    slug: "diga-yes",
+    title: "Diga YES & Viva o Mundo Online",
+    client: "Webmasters / YES",
+    year: "2026",
+    discipline: "Campaign Design",
+    hue: 215,
+    featured: true,
+    cover: digaYesKv.url,
+    gallery: [digaYesWide.url, digaYesP1.url, digaYesP2.url, digaYesP3.url, digaYesP4.url, digaYesP5.url],
+    challenge: "A YES precisava de transformar planos de fibra — um produto técnico e invisível — numa promessa emocional que qualquer pessoa em Maputo entendesse num relance.",
+    idea: "Um key visual tipográfico em 3D, «Diga YES & Viva o Mundo Online», sobre um universo azul-eléctrico de cortinas de luz e velocidade. Cada post traduz um benefício — estudar, jogar, trabalhar, ver — numa cena doméstica suspensa nesse mesmo mundo.",
+    outcome: "Um sistema de campanha modular: um master KV e uma família de posts sociais prontos a escalar, mantendo preços, planos e assinatura de marca sempre legíveis.",
+  },
+  {
+    slug: "jogue-venca-repita",
+    title: "Jogue, Vença, Repita.",
+    client: "Webmasters",
+    year: "2026",
+    discipline: "Social Media",
+    hue: 195,
+    featured: true,
+    cover: gaming.url,
+    gallery: [gaming2.url, fourG.url],
+    challenge: "Falar com gamers e heavy users sem cair no cliché do neon roxo — e provar que a velocidade da Webmasters aguenta o que mais exige da rede.",
+    idea: "Retratos cinematográficos em azul profundo, energia de arena de e-sports e planos apresentados como chips de interface de jogo. O produto entra como power-up, não como tabela de preços.",
+    outcome: "Uma linha social de alta performance que estendeu a linguagem para o 4G — «para quem não para de fazer acontecer» — com o mesmo ritmo visual.",
+  },
+  {
+    slug: "datas-que-ligam",
+    title: "Datas que Ligam",
+    client: "Webmasters / YES",
+    year: "2025 — 2026",
+    discipline: "Content Creation",
+    hue: 330,
+    featured: true,
+    cover: namorados.url,
+    gallery: [namorados1.url, namorados2.url, marco8.url, outubroRosa.url, natal.url, obrigado.url, obrigado2.url],
+    challenge: "Manter a marca presente todo o ano sem repetir fórmulas: Dia dos Namorados, 8 de Março, Outubro Rosa, Natal e Dia Internacional do Obrigado.",
+    idea: "Cada data ganha o seu próprio universo — do coração-wireframe dos Namorados ao wifi feito de laços cor-de-rosa — sempre com o azul Webmasters como fio condutor e a assinatura «Diga YES».",
+    outcome: "Um calendário comemorativo completo, com peças distintas entre si mas inconfundivelmente da mesma marca.",
+  },
+  {
+    slug: "somos-uma",
+    title: "Somos Uma",
+    client: "Webmasters",
+    year: "2026",
+    discipline: "Art Direction",
+    hue: 230,
+    featured: true,
+    cover: somosUma.url,
+    gallery: [velocidade.url, entidadeRef.url, actualizacoes.url],
+    challenge: "Humanizar um ISP: passar de «vendemos internet» para «somos uma equipa que resolve» — e explicar serviços como Entidade & Referência ou actualizações fora do pico sem adormecer ninguém.",
+    idea: "Fotografia de retrato com luz de estúdio azul, ícones desenhados à mão sobre a imagem e titulares directos em peso máximo. Cada peça responde a uma pergunta real do cliente.",
+    outcome: "Uma série institucional que deu rosto, tom e confiança à marca — do atendimento à velocidade, do pagamento à manutenção.",
+  },
+];
 
 export type Project = (typeof projects)[number];
 
