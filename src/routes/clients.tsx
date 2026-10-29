@@ -18,7 +18,7 @@ function Clients() {
 
   return (
     <>
-      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro} />
+      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro ?? ""} />
       <div className="pb-24"><ClientsMarquee clients={data.clients} /></div>
       <section className="px-6 pb-32 md:px-12"><ClientsGrid clients={data.clients} /></section>
     </>

@@ -10,7 +10,7 @@ import {
   experience,
   metrics,
   principles,
-  process,
+  process as processSteps,
   profile,
   projectTypes,
   projects,
@@ -55,12 +55,13 @@ async function rest(
   };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (prefer) headers["Prefer"] = prefer;
-  const response = await fetch(url, {
+  const requestInit: RequestInit = {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
-  });
+  };
+  if (body !== undefined) requestInit.body = JSON.stringify(body);
+  const response = await fetch(url, requestInit);
   if (!response.ok) {
     const safeText = (await response.text()).slice(0, 500);
     throw new Error(`CMS import failed for ${table} (HTTP ${response.status}): ${safeText}`);
@@ -319,7 +320,7 @@ await upsert("principles", principles.map((item, position) => ({
   updated_at: now,
 })), "position");
 
-await upsert("process_steps", process.map((item, position) => ({
+await upsert("process_steps", processSteps.map((item, position) => ({
   step_key: slugify(item.title),
   title: item.title,
   description: item.text,
@@ -481,7 +482,7 @@ const reconciled = {
     discipline_items: disciplines.reduce((sum, group) => sum + group.items.length, 0),
     services: services.length,
     principles: principles.length,
-    process_steps: process.length,
+    process_steps: processSteps.length,
     capabilities: capabilities.length,
     project_types: projectTypes.length,
     budget_currencies: Object.keys(budgets).length,

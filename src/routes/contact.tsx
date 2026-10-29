@@ -41,7 +41,7 @@ function Contact() {
 
   return (
     <>
-      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro} />
+      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro ?? ""} />
 
       <section className="grid gap-px bg-border md:grid-cols-3">
         {[

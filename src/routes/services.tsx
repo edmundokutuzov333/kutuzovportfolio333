@@ -20,7 +20,7 @@ function Services() {
 
   return (
     <>
-      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro} />
+      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro ?? ""} />
       <section className="border-t border-border px-6 pb-32 md:px-12">
         {data.services.map((service) => {
           const isOpen = open === service.slug;

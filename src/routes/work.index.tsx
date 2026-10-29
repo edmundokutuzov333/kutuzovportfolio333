@@ -24,7 +24,7 @@ function Work() {
 
   return (
     <>
-      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro} />
+      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro ?? ""} />
       <div className="flex flex-wrap gap-2 px-6 pb-12 md:px-12">
         {filters.map((value) => (
           <button
