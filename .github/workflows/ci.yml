@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
-      dependency_audit_failed: ${{ steps.dependency_audit.outcome == 'failure' }}
+      dependency_audit_failed: ${{ steps.dependency_audit.outputs.failed }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -44,7 +44,12 @@ jobs:
         run: |
           mkdir -p reports
           set -o pipefail
-          bun audit --audit-level=high 2>&1 | tee reports/dependency-audit.txt
+          if bun audit --audit-level=high 2>&1 | tee reports/dependency-audit.txt; then
+            echo "failed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
 
       - name: Enforce dependency audit release gate
         if: steps.dependency_audit.outcome == 'failure'
