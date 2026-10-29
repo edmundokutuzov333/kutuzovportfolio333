@@ -10,6 +10,12 @@ export type Brief = {
   projectName: string;
   industry: string;
   projectStage: string;
+  projectGoal: string;
+  channels: string[];
+  languages: string;
+  existingAssets: string;
+  styleDirection: string;
+  successCriteria: string;
   deliverables: string[];
   audience: string;
   urgency: "low" | "normal" | "high" | "urgent";
@@ -36,6 +42,12 @@ export const emptyBrief: Brief = {
   projectName: "",
   industry: "",
   projectStage: "",
+  projectGoal: "",
+  channels: [],
+  languages: "",
+  existingAssets: "",
+  styleDirection: "",
+  successCriteria: "",
   deliverables: [],
   audience: "",
   urgency: "normal",
@@ -91,6 +103,17 @@ export const INDUSTRIES = [
   "Other",
 ] as const;
 
+export const PROJECT_GOALS = [
+  "Brand awareness and positioning", "Product or service launch", "Lead generation and sales",
+  "Audience growth and engagement", "Rebrand or repositioning", "Investor or sales presentation",
+  "Recruitment and employer branding", "Customer retention", "Event or activation", "Other / still defining",
+] as const;
+
+export const CHANNEL_OPTIONS = [
+  "Social media", "Website / landing page", "Digital advertising", "Email marketing", "Print / outdoor",
+  "Packaging", "Video / motion", "Events / activation", "Retail / point of sale", "Internal communications", "Not decided yet",
+] as const;
+
 export const PROJECT_STAGES = [
   "Idea or early concept",
   "Strategy and planning",
@@ -112,6 +135,8 @@ export function validateStep(step: number, b: Brief): string | null {
     if (b.additionalTypes.includes(b.type)) return "The main service cannot also be listed as an additional service.";
     if (b.additionalTypes.some((value) => !value.trim())) return "Remove empty additional services.";
     if (b.projectStage && !(PROJECT_STAGES as readonly string[]).includes(b.projectStage)) return "Choose a valid project stage.";
+    if (b.projectGoal && !(PROJECT_GOALS as readonly string[]).includes(b.projectGoal)) return "Choose a valid project goal.";
+    if (b.channels.some((value) => !(CHANNEL_OPTIONS as readonly string[]).includes(value))) return "Remove an invalid channel.";
     if (b.industry && !(INDUSTRIES as readonly string[]).includes(b.industry)) return "Choose a valid industry.";
   }
 
