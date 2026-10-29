@@ -1,0 +1,107 @@
+{
+  "report_date": "2026-10-29",
+  "project": "Portfolio-Kutuzov",
+  "supabase_project_ref": "qwjaoheaolpxtciljzvb",
+  "approach": "Production migrations on existing project; no paid development branch created",
+  "migrations": {
+    "applied": [
+      {
+        "version": "20261029083325",
+        "name": "admin_editorial_mutations_20261029",
+        "source_path": "supabase/migrations/20261029083325_admin_editorial_mutations_20261029.sql",
+        "result": "success"
+      },
+      {
+        "version": "20261029083334",
+        "name": "admin_site_presentation_settings_20261029",
+        "source_path": "supabase/migrations/20261029083334_admin_site_presentation_settings_20261029.sql",
+        "result": "success"
+      }
+    ],
+    "first_apply_attempt": "Rejected before applying due to invalid anonymous DO delimiter; corrected in main and reapplied successfully. No partial migration was recorded by the failed attempt.",
+    "staging": "not created, to avoid potential cost; direct-to-production deviation documented",
+    "backup": "not verified with available integrations"
+  },
+  "database_checks": {
+    "content_counts": {
+      "projects": 4,
+      "clients": 20,
+      "pages": 8,
+      "page_sections": 15,
+      "services": 5,
+      "process_steps": 4,
+      "content_revisions": 0,
+      "contact_submissions": 0
+    },
+    "project_galleries": [
+      {
+        "slug": "diga-yes",
+        "images": 6,
+        "alt_entries": 6
+      },
+      {
+        "slug": "jogue-venca-repita",
+        "images": 2,
+        "alt_entries": 2
+      },
+      {
+        "slug": "datas-que-ligam",
+        "images": 7,
+        "alt_entries": 7
+      },
+      {
+        "slug": "somos-uma",
+        "images": 3,
+        "alt_entries": 3
+      }
+    ],
+    "presentation_settings": {
+      "navigation": true,
+      "footer": true,
+      "presentation": true
+    },
+    "rls": {
+      "tables_enabled": 24,
+      "tables_disabled": 0
+    },
+    "rpc_privileges": {
+      "anon_can_execute": false,
+      "authenticated_can_execute": false,
+      "service_role_can_execute": true
+    },
+    "unauthorized_actor_smoke_test": "passed: rejected fake actor",
+    "security_advisor": "no findings",
+    "performance_advisor": "22 informational unused-index findings; no index removed"
+  },
+  "ci": {
+    "commit_sha": "b3bb201d2cdf7edd0f70b8c8c9600ad20f89d6d4",
+    "run_url": "https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/40842968441",
+    "conclusion": "success",
+    "checks": {
+      "secret_scan": "passed",
+      "frozen_lockfile_install": "passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "unit_tests": "passed",
+      "production_build": "passed",
+      "asset_inventory": "passed"
+    },
+    "added_tests": [
+      "admin revision restoration: selected after_snapshot",
+      "invalid/missing snapshot rejection"
+    ]
+  },
+  "admin_identity": {
+    "auth_users_total": 0,
+    "authorized_admins": 0,
+    "operational_login": "blocked until owner identity is invited/created and app_metadata.site_role=admin",
+    "runtime_secrets": "cannot be inspected or configured through the available connectors"
+  },
+  "production_smoke_test": "not completed; published Lovable domain was inaccessible through the available web fetch tool",
+  "phase4_dependencies": [
+    "real contact persistence and email notification",
+    "newsletter confirmation/cancellation",
+    "media upload and binary validation",
+    "private attachment links"
+  ]
+}

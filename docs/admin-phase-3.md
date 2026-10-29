@@ -32,12 +32,32 @@ Os erros de rede/permissão são apresentados como erros e não como tabelas vaz
 
 ## Migração e activação
 
-Nova migração: supabase/migrations/20261029084600_admin_editorial_mutations_20261029.sql.
+As migrations foram aplicadas ao projecto Supabase dedicado `Portfolio-Kutuzov` (`qwjaoheaolpxtciljzvb`) em produção, usando o projecto já existente e sem criar branches ou recursos pagos. O ambiente de staging não foi criado por decisão explícita de não incorrer em custos; esta é uma divergência documentada ao roteiro original.
 
-A migração é versionada no repositório, mas **não foi aplicada ao Supabase** durante esta execução: só existe um projecto dedicado identificado e não foi disponibilizado um ambiente staging separado para a validação exigida pelo plano. Não se deve executar a migração na base de produção sem validação em staging, backup verificável e revisão das funções SQL. Até ser aplicada, as funções RPC da Fase 3 não existem na base e as mutações vão falhar de forma explícita; a interface não deve ser considerada funcional em produção.
+Para manter o historial local alinhado com o historial remoto real, os nomes dos ficheiros correspondem agora às versões registadas pelo Supabase:
 
-O acesso de produção também depende da configuração hospedada já documentada na Fase 1: identidade de proprietário em Supabase Auth com app_metadata.site_role=admin, variáveis de runtime ADMIN_ACCESS_CODE, ADMIN_EMAIL, ADMIN_RATE_LIMIT_SALT, SUPABASE_URL, chave pública, SUPABASE_SERVICE_ROLE_KEY no servidor e PUBLIC_SITE_URL validada. A aplicação pública lê VITE_PUBLIC_SITE_URL e só emite canonical absoluto quando esta variável contém uma origem HTTPS sem caminho, credenciais, query ou fragmento; configure ambas com a mesma origem canónica real, não com o domínio de preview. Não foram criados segredos, convites ou utilizadores por suposição.
+- `supabase/migrations/20261029083325_admin_editorial_mutations_20261029.sql`
+- `supabase/migrations/20261029083334_admin_site_presentation_settings_20261029.sql`
 
+O Supabase confirmou sucesso para ambas. A primeira alteração é aditiva: acrescenta `projects.gallery_alt`, preenche um texto alternativo vazio por imagem legada e impõe correspondência entre o número de imagens e de textos alternativos. Não removeu projectos, galerias, clientes nem páginas. A segunda cria as três definições de apresentação em falta apenas quando a chave ainda não existe.
+
+Verificações directas à base de dados após a aplicação:
+
+- As quatro galerias mantêm os respectivos números de imagens: 6, 2, 7 e 3; os textos alternativos têm a mesma cardinalidade.
+- Existem 4 projectos, 20 clientes, 8 páginas, 15 secções, 5 serviços e 4 etapas de processo, sem alterações inesperadas de contagem.
+- As três funções RPC editoriais existem. `anon` e `authenticated` não têm permissão de execução; `service_role` tem. O teste de segurança com um actor inexistente foi rejeitado.
+- RLS está activo nas 24 tabelas públicas verificadas, sem tabelas com RLS desactivado. O advisor de segurança não devolveu alertas.
+- O advisor de desempenho reporta índices ainda não usados, classificados como informativos, esperados num CMS acabado de provisionar; não foram removidos índices.
+
+## Acesso administrativo e limitações de produção
+
+A base de dados contém actualmente zero utilizadores em `auth.users` e zero identidades administrativas autorizadas. Consequentemente, a interface não pode concluir um login real nem executar um CRUD positivo de ponta a ponta até existir uma conta de proprietário criada através do fluxo oficial de Supabase Auth e autorizada com `app_metadata.site_role=admin`. Não criei contas, passwords ou convites fictícios, e não enfraqueci a autenticação para aceitar apenas o PIN.
+
+Também não foi possível verificar as variáveis secretas do runtime através das integrações disponíveis. A publicação operacional requer a configuração real de `ADMIN_ACCESS_CODE=333`, `ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` apenas no servidor e `PUBLIC_SITE_URL`; a configuração pública deve manter `VITE_PUBLIC_SITE_URL` alinhada com a origem canónica. Não colocar segredos em commits.
+
+Não foi criada nem verificada uma cópia de segurança de fornecedor, porque as ferramentas disponíveis não expõem a confirmação de backup e foi decidido evitar qualquer recurso pago. As migrations aplicadas são aditivas e as verificações de contagem foram feitas antes/depois, mas isto não substitui um backup de produção.
+
+A newsletter pública continua a indicar que a confirmação segura por email não está activada e o formulário de contacto não simula sucesso; a persistência completa de contactos, a newsletter e upload/validação de media pertencem à Fase 4. Esses módulos aparecem em modo de leitura ou com estado operacional explícito nesta fase.
 ## Testes
 
-src/test/admin-cms-schema.test.ts cobre contratos de payload, slugs, canonical, paths de assets, configurações de secções, campos inesperados e cliente sem logótipo. A execução efectiva do workflow GitHub Actions após o commit, a validação SQL em staging, os testes de permissão/RLS contra a migração nova, E2E com uma identidade autorizada e smoke tests da aplicação publicada são gates de aceitação, não resultados presumidos.
+Os testes incluem contratos de payload, slugs, canonical, paths de assets, configurações de secções, campos inesperados, cliente sem logótipo e restauro do snapshot seleccionado. O workflow GitHub Actions do commit de código b3bb201d2cdf7edd0f70b8c8c9600ad20f89d6d4 terminou com sucesso: secret scanning, lockfile, typecheck, lint, testes unitários, build e inventário de assets. A verificação SQL/RLS após as migrations também foi executada directamente na base existente. Os testes positivos de CRUD com uma identidade autorizada e os smoke tests HTTP no domínio público continuam não executados, porque ainda não há qualquer utilizador Auth e a ferramenta de navegação não consegue obter o site Lovable publicado.
