@@ -74,7 +74,7 @@ export function MediaLibraryView({ rows, inventory, storage, onRefresh, onNotice
   const publicUrl = (r:Row) => {
     const path=txt(r["object_path"]);
     return txt(r["bucket_id"])==="portfolio-public-assets"&&path
-      ? SUPABASE_URL.replace(/\\/+$/,"")+"/storage/v1/object/public/portfolio-public-assets/"+path.split("/").map(encodeURIComponent).join("/")
+       ? SUPABASE_URL.replace(/\/+$/,"")+"/storage/v1/object/public/portfolio-public-assets/"+path.split("/").map(encodeURIComponent).join("/")
       : null;
   };
 
