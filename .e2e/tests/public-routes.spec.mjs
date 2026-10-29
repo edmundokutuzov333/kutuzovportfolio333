@@ -54,18 +54,23 @@ test("newsletter requires consent and does not claim success before a real reque
   await expect(page.getByRole("status")).toHaveCount(0);
 });
 
+test("Admin route is discoverable and serves the access gate", async ({ page }) => {
+  const response = await page.goto("/about", { waitUntil: "domcontentloaded" });
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('a[href="/admin"][data-lovable-route="/admin"]')).toHaveCount(1);
+  const adminResponse = await page.request.get("/admin");
+  expect(adminResponse.status()).toBe(200);
+});
+
 test("fresh and invalid Admin access never renders the protected workspace", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const response = await page.goto("/admin", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Acesso administrativo." })).toBeVisible();
   await expect(page.getByLabel("Código de acesso")).toBeVisible();
-  await expect(page.getByLabel("Email autorizado")).toBeVisible();
-  await expect(page.getByLabel("Palavra-passe Supabase Auth")).toBeVisible();
-
+  await expect(page.getByLabel("Email autorizado")).toHaveCount(0);
+  await expect(page.getByLabel("Palavra-passe Supabase Auth")).toHaveCount(0);
   await page.getByLabel("Código de acesso").fill("111");
-  await page.getByLabel("Email autorizado").fill("unauthorised-phase5@example.invalid");
-  await page.getByLabel("Palavra-passe Supabase Auth").fill("not-a-real-password");
   await page.getByRole("button", { name: "Entrar no Admin" }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Acesso administrativo." })).toBeVisible();
