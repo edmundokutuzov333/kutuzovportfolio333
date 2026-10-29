@@ -1,7 +1,7 @@
 import { inspectImageBytes } from "./image-validation.ts";
 import nodemailer from "npm:nodemailer@^9";
 
-const PRODUCTION_ORIGIN = "https://kutuzovportfolio333.lovable.app";
+const PRODUCTION_ORIGIN = "https://edmundokutuzov.art";
 const ALLOWED_ORIGINS = new Set([
   PRODUCTION_ORIGIN,
   "https://edmundokutuzov.art",
@@ -261,7 +261,7 @@ function unbase64(value: string): Uint8Array {
   return bytes;
 }
 
-async function encryptTokenBundle(bundle: { confirmToken: string; unsubscribeToken: string }, secret: string): Promise<{ token_ciphertext: string; token_iv: string }> {
+async function encryptTokenBundle(bundle: { unsubscribeToken: string }, secret: string): Promise<{ token_ciphertext: string; token_iv: string }> {
   const material = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
   const key = await crypto.subtle.importKey("raw", material, { name: "AES-GCM" }, false, ["encrypt"]);
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -270,7 +270,7 @@ async function encryptTokenBundle(bundle: { confirmToken: string; unsubscribeTok
   return { token_ciphertext: base64(new Uint8Array(ciphertext)), token_iv: base64(iv) };
 }
 
-async function decryptTokenBundle(payload: Record<string, unknown>, secret: string): Promise<{ confirmToken: string; unsubscribeToken: string }> {
+async function decryptTokenBundle(payload: Record<string, unknown>, secret: string): Promise<{ confirmToken?: string; unsubscribeToken: string }> {
   if (typeof payload["token_ciphertext"] !== "string" || typeof payload["token_iv"] !== "string") {
     throw new Error("newsletter_token_payload_unavailable");
   }
@@ -278,7 +278,7 @@ async function decryptTokenBundle(payload: Record<string, unknown>, secret: stri
   const key = await crypto.subtle.importKey("raw", material, { name: "AES-GCM" }, false, ["decrypt"]);
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unbase64(payload["token_iv"]) }, key, unbase64(payload["token_ciphertext"]));
   const bundle = JSON.parse(new TextDecoder().decode(plain));
-  if (typeof bundle.confirmToken !== "string" || typeof bundle.unsubscribeToken !== "string") {
+  if ((bundle.confirmToken !== undefined && typeof bundle.confirmToken !== "string") || typeof bundle.unsubscribeToken !== "string") {
     throw new Error("newsletter_token_payload_unavailable");
   }
   return bundle;
@@ -667,7 +667,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       const bundle = await decryptTokenBundle(payload, serviceKey());
       const origin = typeof payload["site_origin"] === "string" && ALLOWED_ORIGINS.has(payload["site_origin"])
         ? payload["site_origin"] : "";
-      if (!origin || !origin.startsWith("https://") || origin !== PRODUCTION_ORIGIN) throw new Error("public_site_url_not_configured");
+      if (!origin || !origin.startsWith("https://") || origin !== PRODUCTION_ORIGIN || !bundle.confirmToken) throw new Error("public_site_url_not_configured");
       const confirmUrl = origin + "/newsletter/confirm?token=" + encodeURIComponent(bundle.confirmToken);
       const unsubscribeUrl = origin + "/newsletter/unsubscribe?token=" + encodeURIComponent(bundle.unsubscribeToken);
       subject = "Confirm your Kutuzov newsletter subscription";
@@ -926,9 +926,8 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
   // Confirmation links always use the canonical portfolio domain, not the request's Origin.
   const validOrigin = PRODUCTION_ORIGIN;
 
-  const confirmToken = randomHexToken();
   const unsubscribeToken = randomHexToken();
-  const encrypted = await encryptTokenBundle({ confirmToken, unsubscribeToken }, serviceKey());
+  const encrypted = await encryptTokenBundle({ unsubscribeToken }, serviceKey());
   const outboxId = crypto.randomUUID();
   const now = new Date();
   const output = await db("/rest/v1/rpc/request_newsletter_subscription", {
@@ -936,7 +935,8 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
     body: JSON.stringify({
       p_email: email,
       p_consent_text_version: CONSENT_VERSION,
-      p_confirm_token_hash: await sha256Hex(confirmToken),
+      // The RPC contract retains this legacy argument; active subscriptions no longer use confirmation tokens.
+      p_confirm_token_hash: await sha256Hex(randomHexToken()),
       p_unsubscribe_token_hash: await sha256Hex(unsubscribeToken),
       p_confirm_expires_at: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       p_unsubscribe_expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString(),
