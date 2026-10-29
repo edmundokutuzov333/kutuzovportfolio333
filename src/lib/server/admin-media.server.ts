@@ -327,8 +327,8 @@ export async function retryEmailOutbox(input: { id: string }) {
   const result = await response.json().catch(() => null) as Record<string, unknown> | null;
   if (!response.ok || result?.["ok"] !== true) {
     const status = typeof result?.["status"] === "string" ? result["status"] : "email_delivery_failed";
-    const message = status === "email_provider_not_configured"
-      ? "RESEND_API_KEY ou MAIL_FROM não está configurado no servidor. O email não foi enviado e o registo continua na fila."
+    const message = status.startsWith("hostinger_smtp_")
+      ? "A configuração SMTP da Hostinger está incompleta ou inválida. O email não foi enviado e o registo continua na fila."
       : "Não foi possível enviar o email. O estado de falha foi registado na fila; poderá tentar novamente.";
     throw new AdminMediaError(message, "unavailable");
   }
