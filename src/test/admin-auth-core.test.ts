@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ADMIN_ACCESS_CODE, isAdminAttemptLocked, isAdminPinValid } from "@/lib/server/admin-auth-core";
+import { isAdminAttemptLocked, isAdminPinValid } from "@/lib/server/admin-auth-core";
 describe("admin authentication controls", () => {
   it("accepts only the fixed access code 333", () => {
-    expect(ADMIN_ACCESS_CODE).toBe("333");
-    expect(isAdminPinValid("333", ADMIN_ACCESS_CODE)).toBe(true);
-    expect(isAdminPinValid("111", ADMIN_ACCESS_CODE)).toBe(false);
-    expect(isAdminPinValid("33", ADMIN_ACCESS_CODE)).toBe(false);
-    expect(isAdminPinValid("3333", ADMIN_ACCESS_CODE)).toBe(false);
-    expect(isAdminPinValid(null, ADMIN_ACCESS_CODE)).toBe(false);
+    expect(isAdminPinValid("824", "824")).toBe(true);
+    expect(isAdminPinValid("111", "824")).toBe(false);
+    expect(isAdminPinValid("82", "824")).toBe(false);
+    expect(isAdminPinValid("8244", "824")).toBe(false);
+    expect(isAdminPinValid(null, "824")).toBe(false);
   });
   it("locks a caller after the configured attempt limit and until the lock expires", () => {
     const now = Date.parse("2026-10-29T12:00:00.000Z");
