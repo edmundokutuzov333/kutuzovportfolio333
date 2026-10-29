@@ -112,12 +112,12 @@ describe("Kutuzov Admin editorial server contracts", () => {
     const restoredSetting = validateAdminPayload("site_settings", {
       id: "00000000-0000-4000-8000-000000000001",
       setting_key: "navigation",
-      setting_value: { items: [] },
+      setting_value: [{ to: "/", label: "Home" }],
       is_public: true,
       updated_at: "2026-01-01T00:00:00Z",
-    }, "restore");
+    }, "restore", { settingKey: "navigation" });
     expect(restoredSetting["setting_key"]).toBeUndefined();
-    expect(restoredSetting["setting_value"]).toEqual({ items: [] });
+    expect(restoredSetting["setting_value"]).toEqual([{ to: "/", label: "Home" }]);
   });
 
 });

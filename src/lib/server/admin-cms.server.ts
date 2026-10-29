@@ -167,8 +167,7 @@ export async function mutateAdminContent(input: {
   if (
     input.entity === "site_settings" &&
     input.id &&
-    input.action !== "archive" &&
-    input.action !== "restore"
+    input.action !== "archive"
   ) {
     const existing = await restRequest<Row[]>(
       context,
@@ -216,7 +215,9 @@ export async function mutateAdminContent(input: {
       ...(settingKey ? { settingKey } : {}),
     });
     payload = Object.fromEntries(
-      Object.keys(input.payload).map((key) => [key, validated[key]]),
+      Object.keys(input.payload)
+        .filter((key) => key in validated)
+        .map((key) => [key, validated[key]]),
     ) as Row;
   } catch (error) {
     if (error instanceof Error) {

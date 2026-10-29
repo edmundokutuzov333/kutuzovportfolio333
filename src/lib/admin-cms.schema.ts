@@ -208,7 +208,7 @@ export function validateAdminPayload(
   options: { creating?: boolean; publicSiteUrl?: string; settingKey?: string } = {},
 ): Record<string, unknown> {
   if (action === "archive") return {};
-  const reserved = ["id", "created_at", "updated_at", "created_by", "updated_by", "singleton_key"];
+  const reserved = ["id", "created_at", "updated_at", "created_by", "updated_by", "singleton_key", "setting_key"];
   const snapshotKeys = new Set<string>(schemas[entity].keyof().options as string[]);
   const clean = action === "restore"
     ? Object.fromEntries(Object.entries(incoming).filter(([key]) => !reserved.includes(key) && snapshotKeys.has(key)))
