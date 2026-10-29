@@ -125,8 +125,8 @@ begin
     from jsonb_array_elements_text(p_attachment_paths) item(path)
     where item.path not like p_submission_id::text || '/%'
        or exists (
-         select 1 from regexp_split_to_table(item.path, '/') part
-         where part in ('.','..')
+         select 1 from regexp_split_to_table(item.path, '/') as segment(part)
+         where segment.part in ('.','..')
        )
   ) then
     raise exception 'invalid_contact_attachment_path' using errcode = '22023';
