@@ -110,7 +110,8 @@ async function restRequest<T>(
 }
 
 async function readRows(context: AdminContext, table: (typeof TABLES)[number]): Promise<TableState> {
-  const params = new URLSearchParams({ select: "*" });
+  const publicSafeOutboxSelect = "id,message_type,recipient,status,attempts,next_attempt_at,last_error,sent_at,created_at,updated_at";
+  const params = new URLSearchParams({ select: table === "email_outbox" ? publicSafeOutboxSelect : "*" });
   const order = ORDER_BY[table];
   if (order) params.set("order", order);
   if (table === "content_revisions" || table === "contact_submissions" || table === "newsletter_subscribers" || table === "email_outbox") {
