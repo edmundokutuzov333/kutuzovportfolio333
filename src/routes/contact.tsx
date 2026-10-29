@@ -32,6 +32,7 @@ function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [notificationStatus, setNotificationStatus] = useState<string>("");
+  const [receiptStatus, setReceiptStatus] = useState<string>("");
   const set = <K extends keyof Brief>(k: K, v: Brief[K]) => setB((p) => ({ ...p, [k]: v }));
   const toggleService = (service: string) => {
     if (b.type === service) {
@@ -93,6 +94,7 @@ function Contact() {
       }
       setSubmittedId(result.submissionId);
       setNotificationStatus(result.notification ?? "recipient_unconfigured");
+      setReceiptStatus(result.receipt ?? "email_delivery_failed");
       setErr(null);
     } catch (error) {
       setErr(error instanceof Error ? error.message : "The enquiry could not be confirmed. Your details have not been marked as sent; retry or use the email/WhatsApp links above.");
@@ -140,8 +142,11 @@ function Contact() {
               <h2 className="font-display text-2xl font-semibold">Enquiry received.</h2>
               <p className="mt-3">The database confirmed your request. Reference: <span className="font-mono text-xs">{submittedId}</span></p>
               {notificationStatus === "sent"
-                ? <p className="mt-3 text-muted-foreground">The notification email was accepted by the configured email provider.</p>
-                : <p className="mt-3 text-muted-foreground">Your enquiry is safely stored, but the notification email was not confirmed as sent ({notificationStatus}). No data was lost. You do not need to submit this enquiry again.</p>}
+                ? <p className="mt-3 text-muted-foreground">The studio notification was accepted by the email provider.</p>
+                : <p className="mt-3 text-muted-foreground">The enquiry is safely stored, but the studio notification was not confirmed as sent ({notificationStatus}). No data was lost and you do not need to submit the enquiry again.</p>}
+              {receiptStatus === "sent"
+                ? <p className="mt-3 text-muted-foreground">A receipt has also been sent to the email address you provided.</p>
+                : <p className="mt-3 text-muted-foreground">The automatic receipt email could not be confirmed as sent ({receiptStatus}). Your enquiry is still recorded under the reference above.</p>}
             </div>
           ) : (
           <form onSubmit={(e) => { e.preventDefault(); void next(); }}>
