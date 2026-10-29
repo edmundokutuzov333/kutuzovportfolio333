@@ -36,10 +36,18 @@ test("newsletter requires consent and does not claim success before a real reque
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const email = page.getByRole("textbox", { name: /email para newsletter/i });
   await email.scrollIntoViewIfNeeded();
-  await email.fill("phase5-invalid@example.invalid");
+  const validEmail = "phase5-newsletter@example.com";
+  await email.fill(validEmail);
+  await expect(email).toHaveValue(validEmail);
+
   const submit = page.getByRole("button", { name: /pedir subscrição/i });
   await expect(submit).toBeDisabled();
-  await page.getByRole("checkbox").check();
+
+  const consent = page.getByRole("checkbox", {
+    name: /Consinto receber comunicações por email/i,
+  });
+  await consent.check();
+  await expect(consent).toBeChecked();
   await expect(submit).toBeEnabled();
   await expect(page.getByRole("status")).toHaveCount(0);
 });
