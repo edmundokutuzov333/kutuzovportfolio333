@@ -16,7 +16,7 @@ const TABLES = [
   "pages", "page_sections", "projects", "clients", "profile_content",
   "experience_items", "metrics", "skills", "disciplines", "principles",
   "services", "process_steps", "site_settings", "content_revisions",
-  "contact_submissions", "newsletter_subscribers", "media_assets",
+  "contact_submissions", "newsletter_subscribers", "email_outbox", "media_assets",
   "asset_migration_inventory", "site_publication_state",
 ] as const;
 
@@ -36,6 +36,7 @@ const ORDER_BY: Partial<Record<(typeof TABLES)[number], string>> = {
   content_revisions: "created_at.desc",
   contact_submissions: "created_at.desc",
   newsletter_subscribers: "created_at.desc",
+  email_outbox: "created_at.desc",
   media_assets: "created_at.desc",
   asset_migration_inventory: "manifest_path.asc",
 };
@@ -112,7 +113,7 @@ async function readRows(context: AdminContext, table: (typeof TABLES)[number]): 
   const params = new URLSearchParams({ select: "*" });
   const order = ORDER_BY[table];
   if (order) params.set("order", order);
-  if (table === "content_revisions" || table === "contact_submissions" || table === "newsletter_subscribers") {
+  if (table === "content_revisions" || table === "contact_submissions" || table === "newsletter_subscribers" || table === "email_outbox") {
     params.set("limit", "100");
   } else if (table === "asset_migration_inventory") {
     params.set("limit", "200");

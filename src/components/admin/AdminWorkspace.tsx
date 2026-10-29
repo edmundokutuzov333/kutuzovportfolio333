@@ -14,6 +14,7 @@ import {
 } from "@/lib/admin-cms.functions";
 import type { AdminEntity } from "@/lib/admin-cms.schema";
 import { getRestorableSnapshot } from "@/lib/admin-revisions";
+import { ContactInboxView as InboxView, EmailOutboxView, MediaLibraryView as MediaView, NewsletterManagementView as NewsletterView } from "@/components/admin/Phase4Modules";
 
 type Row = Record<string, unknown>;
 type TableState = { rows: Row[]; error: string | null };
@@ -35,7 +36,7 @@ type Field = {
 type ModuleId =
   | "overview" | "pages" | "sections" | "projects" | "clients" | "profile"
   | "experience" | "metrics" | "skills" | "disciplines" | "principles"
-  | "services" | "process" | "settings" | "history" | "inbox" | "media" | "newsletter";
+  | "services" | "process" | "settings" | "history" | "inbox" | "media" | "newsletter" | "mail";
 type ModuleDef = {
   id: ModuleId;
   label: string;
@@ -172,9 +173,10 @@ const MODULES: ModuleDef[] = [
     { key: "is_public", label: "Disponível nas páginas públicas", type: "checkbox" },
   ] },
   { id: "history", label: "Histórico", description: "Revisões reais, snapshots e restauro auditado.", table: "content_revisions", icon: History },
-  { id: "inbox", label: "Caixa de entrada", description: "Pedidos de contacto reais e estados operacionais.", table: "contact_submissions", icon: Mail },
-  { id: "media", label: "Biblioteca multimédia", description: "Assets registados, migração de origens e estado do armazenamento.", table: "media_assets", icon: FileImage },
-  { id: "newsletter", label: "Newsletter", description: "Subscritores reais e estado actual. Confirmação por email depende da Fase 4.", table: "newsletter_subscribers", icon: Mail },
+  { id: "inbox", label: "Caixa de entrada", description: "Pedidos reais, estados e anexos privados temporários.", table: "contact_submissions", icon: Mail },
+  { id: "newsletter", label: "Newsletter", description: "Subscritores reais, consentimento, confirmação e cancelamento.", table: "newsletter_subscribers", icon: Mail },
+  { id: "mail", label: "Fila de email", description: "Notificações persistentes, falhas e tentativas de reenvio.", table: "email_outbox", icon: Mail },
+  { id: "media", label: "Biblioteca multimédia", description: "Upload validado, pesquisa, metadados, referências e remoção segura de assets.", table: "media_assets", icon: FileImage },
 ];
 
 const TABLE_TO_ENTITY: Record<string, AdminEntity> = {
@@ -614,7 +616,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     { label: "Painel", ids: ["overview"] },
     { label: "Conteúdo", ids: ["pages", "sections", "projects", "clients"] },
     { label: "Identidade", ids: ["profile", "experience", "metrics", "skills", "disciplines", "principles"] },
-    { label: "Sistema", ids: ["services", "process", "settings", "history", "inbox", "media", "newsletter"] },
+    { label: "Sistema", ids: ["services", "process", "settings", "history", "inbox", "mail", "media", "newsletter"] },
   ];
 
   const stateBadge = (value: unknown) => <span className="inline-flex rounded-full border border-[#d8dbe2] bg-[#f6f7f9] px-2.5 py-1 text-[11px] font-medium text-[#555a65]">{statusLabel(value)}</span>;
@@ -694,9 +696,11 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
             ) : activeId === "inbox" ? (
               <InboxView rows={tableRows} error={tableState?.error ?? null} busy={saving} onStatus={(row, status) => void setContactStatus(row, status)} stateBadge={stateBadge} />
             ) : activeId === "media" ? (
-              <MediaView rows={tableRows} inventory={workspace?.tables["asset_migration_inventory"]} storage={workspace?.storage} />
+              <MediaView rows={tableRows} inventory={workspace?.tables["asset_migration_inventory"]} storage={workspace?.storage} onRefresh={refresh} onNotice={(tone, text) => setNotice({ tone, text })} />
             ) : activeId === "newsletter" ? (
               <NewsletterView rows={tableRows} error={tableState?.error ?? null} stateBadge={stateBadge} />
+            ) : activeId === "mail" ? (
+              <EmailOutboxView rows={tableRows} error={tableState?.error ?? null} busy={saving} onRefresh={refresh} stateBadge={stateBadge} />
             ) : editing ? (
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <form onSubmit={(event) => void saveContent(event)} className="min-w-0 rounded-xl border border-[#e1e4ea] bg-white p-4 shadow-sm sm:p-6">
@@ -849,19 +853,3 @@ function HistoryView({ rows, error, onRestore, busy, stateBadge }: { rows: Row[]
   return <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm"><div className="border-b border-[#e8eaf0] p-4"><h2 className="text-sm font-semibold">Revisões registadas</h2><p className="mt-1 text-xs text-[#777c87]">Snapshots reais com autor, data e número de publicação. Restaurar escreve uma nova revisão.</p></div>{rows.length === 0 ? <p className="p-10 text-center text-sm text-[#727784]">Não existem revisões disponíveis.</p> : <div className="divide-y divide-[#eff0f4]">{rows.map((row) => <div key={asText(row["id"])} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{asText(row["entity_type"])} · {asText(row["action"])}</p><p className="mt-1 text-xs text-[#707582]">{asText(row["note"]) || "Sem nota"} · revisão {asText(row["publish_revision"])}</p><p className="mt-1 text-[10px] text-[#8b9099]">{asText(row["created_at"])} · actor {asText(row["actor_id"]) || "indisponível"}</p></div>{stateBadge(row["action"])}{getRestorableSnapshot(row) ? <button type="button" onClick={() => onRestore(row)} disabled={busy} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold hover:bg-[#f7f8fa] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-50">Restaurar</button> : null}</div>)}</div>}</div>;
 }
 
-function InboxView({ rows, error, busy, onStatus, stateBadge }: { rows: Row[]; error: string | null; busy: boolean; onStatus: (row: Row, status: "new" | "in_review" | "replied" | "archived") => void; stateBadge: (value: unknown) => ReactNode }) {
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  if (error) return <div role="alert" className="rounded-xl border border-[#e8b4ae] bg-white p-5 text-sm text-[#922f25]">{error}</div>;
-  if (rows.length === 0) return <div className="rounded-xl border border-[#e1e4ea] bg-white p-10 text-center"><Mail size={22} className="mx-auto text-[#7e8490]" /><h2 className="mt-3 text-sm font-semibold">Caixa de entrada vazia</h2><p className="mt-1 text-xs text-[#777c87]">Ainda não existem pedidos persistidos em contact_submissions. A ausência de registos não é substituída por exemplos.</p></div>;
-  return <div className="space-y-3">{rows.map((row) => { const id = asText(row["id"]); const open = expanded === id; return <article key={id} className="rounded-xl border border-[#e1e4ea] bg-white p-4 shadow-sm"><div className="flex flex-wrap items-start gap-3"><div className="min-w-0 flex-1"><h2 className="text-sm font-semibold">{asText(row["name"])}</h2><p className="mt-1 break-all text-xs text-[#636977]">{asText(row["email"])}{row["company"] ? ` · ${asText(row["company"])}` : ""}</p><p className="mt-1 text-[11px] text-[#858a95]">{asText(row["request_type"])} · {asText(row["created_at"])}</p></div>{stateBadge(row["status"])}<button type="button" onClick={() => {setExpanded(open ? null : id); setNotes((current) => ({...current,[id]: current[id] ?? asText(row["internal_notes"])}));}} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-[#243d98]">{open ? "Fechar detalhes" : "Ver detalhes"}</button><select aria-label={`Alterar estado de ${asText(row["name"])}`} value={asText(row["status"])} onChange={(event) => onStatus({ ...row, internal_notes: notes[id] ?? row["internal_notes"] }, event.target.value as "new" | "in_review" | "replied" | "archived")} disabled={busy} className="h-8 rounded-lg border border-[#dfe2e8] bg-white px-2 text-xs focus-visible:outline-2 focus-visible:outline-[#243d98]"><option value="new">Novo</option><option value="in_review">Em análise</option><option value="replied">Respondido</option><option value="archived">Arquivado</option></select></div>{open ? <div className="mt-4 border-t border-[#eff0f4] pt-4"><h3 className="text-xs font-semibold">Mensagem</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#4b505b]">{asText(row["message"])}</p>{row["links"] ? <div className="mt-3"><p className="text-xs font-semibold">Links enviados</p><pre className="mt-1 whitespace-pre-wrap break-all rounded-lg bg-[#f7f8fa] p-3 text-xs">{prettyValue(row["links"])}</pre></div> : null}<label className="mt-4 block text-xs font-semibold" htmlFor={`contact-notes-${id}`}>Notas internas<textarea id={`contact-notes-${id}`} value={notes[id] ?? ""} onChange={(event) => setNotes((current) => ({...current,[id]:event.target.value}))} maxLength={4000} rows={3} className="mt-2 w-full rounded-lg border border-[#dfe2e8] px-3 py-2 text-sm outline-none focus-visible:border-[#3b5ccc] focus-visible:ring-2 focus-visible:ring-[#3b5ccc]/20" /></label><p className="mt-1 text-[10px] text-[#888d97]">A alteração das notas é persistida quando o estado é guardado.</p><button type="button" onClick={() => onStatus({ ...row, internal_notes: notes[id] ?? asText(row["internal_notes"]) }, asText(row["status"]) as "new" | "in_review" | "replied" | "archived")} disabled={busy} className="mt-3 inline-flex h-9 items-center gap-2 rounded-lg bg-[#17295f] px-3 text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-50"><Save size={14} /> Guardar estado e notas</button></div> : null}</article>; })}</div>;
-}
-
-function MediaView({ rows, inventory, storage }: { rows: Row[]; inventory: TableState | undefined; storage: Workspace["storage"] }) {
-  return <div className="space-y-4"><div className="rounded-xl border border-[#e1d8bd] bg-[#fffaf0] p-4"><h2 className="text-sm font-semibold text-[#735316]">Upload ainda não activado</h2><p className="mt-1 text-xs leading-5 text-[#785f2b]">A Fase 3 permite consultar assets e inventário. Upload, validação binária, URL assinada para anexos e substituição segura pertencem à Fase 4; não existem botões de upload simulados neste módulo.</p><p className="mt-2 text-xs text-[#785f2b]">Armazenamento: {storage?.status === "ready" ? `${storage.buckets?.length ?? 0} bucket(s) detectados` : storage?.error ?? "Estado não confirmado"}.</p></div><div className="rounded-xl border border-[#e1e4ea] bg-white shadow-sm"><div className="border-b border-[#e8eaf0] p-4"><h2 className="text-sm font-semibold">Assets registados</h2><p className="mt-1 text-xs text-[#777c87]">Registos na tabela media_assets, sem ficheiros fictícios.</p></div>{rows.length === 0 ? <p className="p-8 text-center text-sm text-[#727784]">Não existem assets migrados em media_assets.</p> : <div className="divide-y divide-[#eff0f4]">{rows.map((row) => <div key={asText(row["id"])} className="p-4"><p className="text-sm font-semibold">{asText(row["original_name"]) || asText(row["object_path"])}</p><p className="mt-1 break-all font-mono text-[10px] text-[#777c87]">{asText(row["bucket_id"])} / {asText(row["object_path"])}</p><p className="mt-1 text-xs text-[#5d626e]">{asText(row["content_type"])} · {asText(row["byte_size"])} bytes · {asText(row["alt_text"]) || "Sem texto alternativo"}</p></div>)}</div>}</div><div className="rounded-xl border border-[#e1e4ea] bg-white p-4"><h2 className="text-sm font-semibold">Inventário de origens</h2>{inventory?.error ? <p role="alert" className="mt-2 text-xs text-[#922f25]">{inventory.error}</p> : <p className="mt-2 text-xs text-[#666b76]">{inventory?.rows.length ?? 0} manifestos visíveis. {inventory?.rows.filter((row) => row["migration_status"] !== "uploaded").length ?? 0} continuam por migrar. Os caminhos originais são mantidos enquanto os binários não forem verificados.</p>}</div></div>;
-}
-
-function NewsletterView({ rows, error, stateBadge }: { rows: Row[]; error: string | null; stateBadge: (value: unknown) => ReactNode }) {
-  if (error) return <div role="alert" className="rounded-xl border border-[#e8b4ae] bg-white p-5 text-sm text-[#922f25]">{error}</div>;
-  return <div className="rounded-xl border border-[#e1e4ea] bg-white shadow-sm"><div className="border-b border-[#e8eaf0] p-4"><h2 className="text-sm font-semibold">Subscritores da newsletter</h2><p className="mt-1 text-xs text-[#777c87]">Consulta em modo de leitura nesta fase. Confirmação, cancelamento e exportação só serão activados com os fluxos seguros de email da Fase 4.</p></div>{rows.length === 0 ? <p className="p-10 text-center text-sm text-[#727784]">Não existem subscritores registados. Nenhum endereço foi inventado.</p> : <div className="divide-y divide-[#eff0f4]">{rows.map((row) => <div key={asText(row["id"])} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="break-all text-sm font-medium">{asText(row["email"])}</p><p className="mt-1 text-[10px] text-[#7a7f8b]">Pedido em {asText(row["requested_at"])}</p></div>{stateBadge(row["status"])}</div>)}</div>}</div>;
-}
