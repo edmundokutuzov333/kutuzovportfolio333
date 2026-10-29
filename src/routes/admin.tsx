@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AdminWorkspace } from "@/components/admin/AdminWorkspace";
 import { useEffect, useState, type FormEvent } from "react";
 
 import {
@@ -126,25 +127,7 @@ function AdminEntryPage() {
             {checkingSession ? (
               <p className="text-sm text-white/65" role="status">A verificar sessão segura...</p>
             ) : session ? (
-              <div>
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#d7ff64]">
-                  Identidade validada
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold">Sessão autorizada</h2>
-                <p className="mt-3 break-all text-sm text-white/65">{session.email}</p>
-                <div className="mt-6 border border-white/10 p-4 text-sm leading-6 text-white/65">
-                  A fundação de segurança está activa. Os módulos de edição de conteúdo serão
-                  disponibilizados nas fases seguintes.
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void logout()}
-                  disabled={submitting}
-                  className="mt-6 w-full border border-white/25 px-4 py-3 text-sm transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {submitting ? "A terminar..." : "Terminar sessão"}
-                </button>
-              </div>
+              <AdminWorkspace email={session.email} onLogout={() => void logout()} />
             ) : (
               <form onSubmit={submitLogin} className="space-y-5">
                 <div>

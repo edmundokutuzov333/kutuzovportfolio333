@@ -171,7 +171,7 @@ export async function getProcessSteps(): Promise<ProcessStep[]> {
 
 export async function getClients(context: "home" | "clients" | "all" = "all"): Promise<Client[]> {
   const filters: Record<string, string> = {
-    select: "id,slug,name,logo_path,logo_alt,position,is_visible,show_on_home,show_on_clients_page",
+    select: "id,slug,name,logo_path,logo_alt,display_as_text,position,is_visible,show_on_home,show_on_clients_page",
     is_visible: "eq.true",
     order: "position.asc",
   };
@@ -183,22 +183,36 @@ export async function getClients(context: "home" | "clients" | "all" = "all"): P
 
 export async function getProjects(featuredOnly = false): Promise<Project[]> {
   const filters: Record<string, string> = {
-    select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,featured,position,status,hue,locale",
+    select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,gallery_alt,featured,position,status,hue,locale",
     status: "eq.published",
     order: "position.asc",
   };
   if (featuredOnly) filters["featured"] = "eq.true";
-  const rows = await selectPublicRows("projects", filters);
+  let rows: unknown[];
+  try {
+    rows = await selectPublicRows("projects", filters);
+  } catch {
+    // Rolling deploy compatibility: an un-applied additive gallery_alt migration must not break public pages.
+    const legacyFilters = { ...filters, select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,featured,position,status,hue,locale" };
+    rows = await selectPublicRows("projects", legacyFilters);
+  }
   return rows.map((row) => toProject(ProjectRowSchema.parse(row)));
 }
 
 export async function getPublishedProject(slug: string): Promise<Project | null> {
-  const rows = await selectPublicRows("projects", {
-    select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,featured,position,status,hue,locale",
+  const filters: Record<string, string> = {
+    select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,gallery_alt,featured,position,status,hue,locale",
     slug: `eq.${slug}`,
     status: "eq.published",
     limit: "1",
-  });
+  };
+  let rows: unknown[];
+  try {
+    rows = await selectPublicRows("projects", filters);
+  } catch {
+    // Keep the route online until the additive gallery_alt column is applied.
+    rows = await selectPublicRows("projects", { ...filters, select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,featured,position,status,hue,locale" });
+  }
   if (rows.length === 0) return null;
   return toProject(ProjectRowSchema.parse(rows[0]));
 }

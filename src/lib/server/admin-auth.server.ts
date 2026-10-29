@@ -363,3 +363,23 @@ export async function logoutAdmin(): Promise<{ ok: true }> {
   clearSessionCookie();
   return { ok: true };
 }
+
+
+/** Server-only dependency injection for authenticated CMS operations. Never expose this result to browser code. */
+export async function getAdminServerContext(): Promise<{
+  actor: { id: string; email: string };
+  supabase: { url: string; publishableKey: string; serviceRoleKey: string };
+}> {
+  const actor = await requireAdmin();
+  const config = readConfig();
+  const session = parseSessionCookie(getCookie(SESSION_COOKIE));
+  if (!config || !session) throw new AdminAuthorizationError();
+  return {
+    actor,
+    supabase: {
+      url: config.url,
+      publishableKey: config.publishableKey,
+      serviceRoleKey: config.serviceRoleKey,
+    },
+  };
+}

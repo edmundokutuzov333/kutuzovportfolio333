@@ -73,7 +73,7 @@ function CaseStudy() {
             <div className={`overflow-hidden rounded-sm ${imageIndex % 3 === 2 ? "aspect-[21/9]" : "aspect-square"}`}>
               <SafeAssetImage
                 src={source}
-                alt={`${project.title}, image ${imageIndex + 1}`}
+                alt={project.galleryAlt[imageIndex] || `${project.title}, image ${imageIndex + 1}`}
                 className="h-full w-full object-cover"
                 fallbackClassName="flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center"
                 fallbackLabel="Image unavailable"

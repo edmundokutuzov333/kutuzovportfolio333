@@ -150,6 +150,7 @@ export const ProjectRowSchema = z.object({
   cover_path: z.string().nullable(),
   cover_alt: z.string().nullable(),
   gallery: z.array(z.string()),
+  gallery_alt: z.array(z.string()).default([]),
   featured: z.boolean(),
   position: z.number().int().nonnegative(),
   status: z.enum(["draft", "published", "archived"]),
@@ -172,6 +173,7 @@ export type Project = {
   cover: string | null;
   coverAlt: string;
   gallery: string[];
+  galleryAlt: string[];
   featured: boolean;
   position: number;
   hue: number;
@@ -193,6 +195,7 @@ export function toProject(row: ProjectRow): Project {
     cover: row.cover_path,
     coverAlt: row.cover_alt ?? row.title,
     gallery: row.gallery,
+    galleryAlt: row.gallery_alt ?? [],
     featured: row.featured,
     position: row.position,
     hue: row.hue,
@@ -206,6 +209,7 @@ export const ClientRowSchema = z.object({
   name: z.string().min(1).max(180),
   logo_path: z.string().nullable(),
   logo_alt: z.string().nullable(),
+  display_as_text: z.boolean().default(false),
   position: z.number().int().nonnegative(),
   is_visible: z.boolean(),
   show_on_home: z.boolean(),
@@ -226,7 +230,7 @@ export function toClient(row: z.infer<typeof ClientRowSchema>): Client {
     id: row.position + 1,
     slug: row.slug,
     name: row.name,
-    logo: row.logo_path,
+    logo: row.display_as_text ? null : row.logo_path,
     logoAlt: row.logo_alt ?? row.name,
     position: row.position,
     showOnHome: row.show_on_home,
