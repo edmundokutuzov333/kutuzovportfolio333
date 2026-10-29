@@ -1,3 +1,5 @@
+import { inspectImageBytes } from "./image-validation.ts";
+
 const PRODUCTION_ORIGIN = "https://kutuzovportfolio333.lovable.app";
 const ALLOWED_ORIGINS = new Set([
   PRODUCTION_ORIGIN,
@@ -8,7 +10,6 @@ const ALLOWED_ORIGINS = new Set([
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_TOTAL_FILE_BYTES = 40 * 1024 * 1024;
-const MAX_PIXELS = 40_000_000;
 const CONSENT_VERSION = "newsletter-consent-v1-2026-10-29";
 const BUCKET_PRIVATE = "contact-private-attachments";
 
@@ -117,59 +118,6 @@ function formText(form: FormData, key: string, max: number, required = false): s
   if (required && !value) throw new Error("missing_" + key);
   if (value.length > max) throw new Error("invalid_" + key);
   return value;
-}
-
-function detectImage(bytes: Uint8Array): { mime: string; ext: string; width: number; height: number } | null {
-  const u8 = (n: number) => bytes[n] ?? 0;
-  const u16be = (n: number) => (u8(n) << 8) | u8(n + 1);
-  const u16le = (n: number) => u8(n) | (u8(n + 1) << 8);
-  const u24le = (n: number) => u8(n) | (u8(n + 1) << 8) | (u8(n + 2) << 16);
-  const u32be = (n: number) => (u8(n) * 0x1000000) + (u8(n + 1) << 16) + (u8(n + 2) << 8) + u8(n + 3);
-
-  if (bytes.length >= 24 && u8(0) === 0x89 && u8(1) === 0x50 && u8(2) === 0x4e &&
-      u8(3) === 0x47 && u8(4) === 0x0d && u8(5) === 0x0a && u8(6) === 0x1a && u8(7) === 0x0a) {
-    return { mime: "image/png", ext: "png", width: u32be(16), height: u32be(20) };
-  }
-  if (bytes.length >= 4 && u8(0) === 0xff && u8(1) === 0xd8 && u8(2) === 0xff) {
-    let offset = 2;
-    while (offset + 4 < bytes.length) {
-      while (offset < bytes.length && u8(offset) !== 0xff) offset += 1;
-      while (offset < bytes.length && u8(offset) === 0xff) offset += 1;
-      const marker = u8(offset++);
-      if (marker === 0xd8 || marker === 0xd9 || (marker >= 0xd0 && marker <= 0xd7)) continue;
-      if (offset + 2 > bytes.length) break;
-      const length = u16be(offset);
-      if (length < 2 || offset + length > bytes.length) break;
-      if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
-        if (length < 7) break;
-        return { mime: "image/jpeg", ext: "jpg", width: u16be(offset + 5), height: u16be(offset + 3) };
-      }
-      offset += length;
-    }
-    return null;
-  }
-  if (bytes.length >= 30 && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
-      String.fromCharCode(...bytes.slice(8, 12)) === "WEBP") {
-    const chunk = String.fromCharCode(...bytes.slice(12, 16));
-    if (chunk === "VP8X") return { mime: "image/webp", ext: "webp", width: 1 + u24le(24), height: 1 + u24le(27) };
-    if (chunk === "VP8 " && u8(23) === 0x9d && u8(24) === 0x01 && u8(25) === 0x2a) {
-      return { mime: "image/webp", ext: "webp", width: u16le(26) & 0x3fff, height: u16le(28) & 0x3fff };
-    }
-    if (chunk === "VP8L" && u8(20) === 0x2f && bytes.length >= 25) {
-      return {
-        mime: "image/webp", ext: "webp",
-        width: 1 + u8(21) + ((u8(22) & 0x3f) << 8),
-        height: 1 + ((u8(22) & 0xc0) >> 6) + (u8(23) << 2) + ((u8(24) & 0x0f) << 10),
-      };
-    }
-  }
-  return null;
-}
-
-function validDimensions(image: { width: number; height: number } | null): image is { width: number; height: number; mime: string; ext: string } {
-  return !!image && Number.isInteger(image.width) && Number.isInteger(image.height) &&
-    image.width > 0 && image.height > 0 && image.width <= 14000 && image.height <= 14000 &&
-    image.width * image.height <= MAX_PIXELS;
 }
 
 function cleanOriginalName(name: string): string {
@@ -417,8 +365,8 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const preparedFiles: ContactUpload[] = [];
   for (const file of fileEntries) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const image = detectImage(bytes);
-    if (!validDimensions(image)) return json({ ok: false, error: "invalid_image_content_or_dimensions" }, 400, origin);
+    const image = inspectImageBytes(bytes);
+    if (!image) return json({ ok: false, error: "invalid_image_content_or_dimensions" }, 400, origin);
     if (!["image/png","image/jpeg","image/webp"].includes(image.mime) || (file.type && file.type !== image.mime)) {
       return json({ ok: false, error: "unsupported_image_type" }, 400, origin);
     }
@@ -463,7 +411,19 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
     if (!result || typeof result["submission_id"] !== "string") throw new Error("contact_persistence_not_confirmed");
 
     let notification = notificationRecipient ? "queued" : "recipient_unconfigured";
-    if (outboxId) notification = (await attemptEmailOutbox(outboxId)).reason;
+    if (outboxId) {
+      try {
+        notification = (await attemptEmailOutbox(outboxId)).reason;
+      } catch {
+        notification = "email_delivery_failed";
+        await updateOutbox(outboxId, {
+          status: "failed",
+          last_error: "email_delivery_failed",
+          next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        }).catch(() => undefined);
+      }
+    }
+    // Once Postgres confirmed the row, an email failure must not report the enquiry itself as failed.
     return json({ ok: true, submissionId: result["submission_id"], notification, attachmentCount: uploaded.length }, 201, origin);
   } catch {
     await Promise.all(uploaded.map(deletePrivate));
@@ -522,8 +482,19 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
   if (status === "unsubscribed") return json({ ok: false, error: "already_unsubscribed" }, 409, origin);
   const id = typeof result?.["outbox_id"] === "string" ? result["outbox_id"] : null;
   if (!id) throw new Error("newsletter_persistence_not_confirmed");
-  const delivery = await attemptEmailOutbox(id);
-  return json({ ok: true, status: delivery.sent ? "pending_confirmation" : delivery.reason }, 202, origin);
+  let deliveryStatus = "email_delivery_failed";
+  try {
+    const delivery = await attemptEmailOutbox(id);
+    deliveryStatus = delivery.sent ? "pending_confirmation" : delivery.reason;
+  } catch {
+    await updateOutbox(id, {
+      status: "failed",
+      last_error: "email_delivery_failed",
+      next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    }).catch(() => undefined);
+  }
+  // Persisted subscriptions remain pending; only the one-use token can activate them.
+  return json({ ok: true, status: deliveryStatus }, 202, origin);
 }
 
 async function newsletterToken(request: Request, origin?: string): Promise<Response> {

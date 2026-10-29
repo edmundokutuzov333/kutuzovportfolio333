@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { inspectImageBytes, normalizeObjectPath, referencesAsset } from "@/lib/media-validation";
+import { inspectImageBytes as inspectEdgeImageBytes } from "../../supabase/functions/public-forms/image-validation";
 
 const fromHex = (hex: string) => new Uint8Array(hex.match(/.{2}/g)!.map((byte) => Number.parseInt(byte, 16)));
-const ONE_PIXEL_PNG = fromHex("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000b49444154789c636000020000050001a5f645400000000049454e44ae426082");
+const ONE_PIXEL_PNG = fromHex("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000b49444154789c6360000200000500017a5eab3f0000000049454e44ae426082");
 
 describe("server-side media validation", () => {
   it("inspects actual PNG signatures, dimensions, chunk bounds and checksums", () => {
@@ -13,6 +14,11 @@ describe("server-side media validation", () => {
     const corrupted = ONE_PIXEL_PNG.slice();
     corrupted[16] = 0xff;
     expect(inspectImageBytes(corrupted)).toBeNull();
+  });
+
+  it("uses the same strict parser in the public Edge Function", () => {
+    expect(inspectEdgeImageBytes(ONE_PIXEL_PNG)).toEqual(inspectImageBytes(ONE_PIXEL_PNG));
+    expect(inspectEdgeImageBytes(ONE_PIXEL_PNG.slice(0, 30))).toBeNull();
   });
 
   it("rejects unknown and truncated file contents", () => {
