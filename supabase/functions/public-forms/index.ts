@@ -348,7 +348,7 @@ function readHostingerSmtpConfig(): HostingerSmtpConfigResult {
     return { status: "invalid", reason: "hostinger_smtp_from_must_match_mailbox" };
   }
 
-  const displayFrom = from.includes("<") ? from : `Edmundo Kutuzov | Creative Direction <${fromAddress}>`;
+  const displayFrom = `Edmundo Kutuzov | Creative Direction <${fromAddress}>`;
   return { status: "ready", config: { host, port: 465, user, password, from: displayFrom } };
 }
 
