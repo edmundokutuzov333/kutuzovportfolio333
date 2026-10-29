@@ -1,61 +1,17 @@
-export interface AdminAuthMetadata {
-  site_role?: unknown;
-  [key: string]: unknown;
-}
-
-export interface AdminAuthUser {
-  id?: unknown;
-  email?: unknown;
-  app_metadata?: AdminAuthMetadata | null;
-}
-
-export interface AdminAttemptState {
-  attempt_count: number;
-  blocked_until: string | null;
-}
-
+export const ADMIN_ACCESS_CODE = "333" as const;
+export interface AdminAttemptState { attempt_count: number; blocked_until: string | null; }
 export const ADMIN_MAX_ATTEMPTS = 5;
-
 function constantTimeEqual(left: string, right: string): boolean {
   const length = Math.max(left.length, right.length);
   let difference = left.length ^ right.length;
-  for (let index = 0; index < length; index += 1) {
-    difference |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
-  }
+  for (let index = 0; index < length; index += 1) difference |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
   return difference === 0;
 }
-
 export function isAdminPinValid(candidate: unknown, configuredPin: unknown): boolean {
-  if (
-    typeof candidate !== "string" ||
-    typeof configuredPin !== "string" ||
-    !/^\d{3}$/.test(candidate) ||
-    !/^\d{3}$/.test(configuredPin)
-  ) {
-    return false;
-  }
+  if (typeof candidate !== "string" || typeof configuredPin !== "string" || !/^\d{3}$/.test(candidate) || !/^\d{3}$/.test(configuredPin)) return false;
   return constantTimeEqual(candidate, configuredPin);
 }
-
-export function isAuthorizedAdminIdentity(
-  user: AdminAuthUser | null | undefined,
-  configuredEmail: string | undefined,
-): boolean {
-  if (!user || typeof user.email !== "string" || !configuredEmail) return false;
-  const normalizedEmail = user.email.trim().toLowerCase();
-  const allowedEmail = configuredEmail.trim().toLowerCase();
-  return (
-    normalizedEmail.length > 0 &&
-    normalizedEmail === allowedEmail &&
-    user.app_metadata?.site_role === "admin"
-  );
-}
-
-export function isAdminAttemptLocked(
-  attemptCount: number,
-  blockedUntil: string | null | undefined,
-  nowMs: number,
-): boolean {
+export function isAdminAttemptLocked(attemptCount: number, blockedUntil: string | null | undefined, nowMs: number): boolean {
   if (attemptCount >= ADMIN_MAX_ATTEMPTS) return true;
   if (!blockedUntil) return false;
   const blockedUntilMs = Date.parse(blockedUntil);
