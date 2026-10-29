@@ -552,7 +552,16 @@ async function retryOutbox(request: Request): Promise<Response> {
 
 Deno.serve(async (request: Request) => {
   const origin = request.headers.get("origin") ?? undefined;
-  if (request.method === "OPTIONS") return json({}, 204, origin);
+  if (request.method === "OPTIONS") {
+    const headers = new Headers({
+      "access-control-allow-methods": "POST, OPTIONS",
+      "access-control-allow-headers": "authorization, apikey, content-type, x-client-info, x-outbox-id, x-outbox-timestamp, x-outbox-signature",
+      "cache-control": "no-store",
+      "vary": "Origin",
+    });
+    if (origin && ALLOWED_ORIGINS.has(origin)) headers.set("access-control-allow-origin", origin);
+    return new Response(null, { status: 204, headers });
+  }
   if (request.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, origin);
   if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ ok: false, error: "origin_not_allowed" }, 403);
 

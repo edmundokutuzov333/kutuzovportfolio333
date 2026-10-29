@@ -6,6 +6,7 @@ import { emptyBrief, validateStep, type Brief } from "@/lib/brief";
 import { loadContactContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
+import { submitContactForm } from "@/lib/public-forms";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loadContactContent(),
@@ -28,14 +29,53 @@ function Contact() {
   const [step, setStep] = useState(0);
   const [b, setB] = useState<Brief>(emptyBrief);
   const [err, setErr] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState<string>("");
   const set = <K extends keyof Brief>(k: K, v: Brief[K]) => setB((p) => ({ ...p, [k]: v }));
 
-  const next = () => {
-    const e = validateStep(step, b);
-    setErr(e);
-    if (e) return;
-    if (step < 4) setStep(step + 1);
-    else setErr("Not sent: this form is not connected to secure submission storage yet. Use the email or WhatsApp links above; your entered details have not been sent or saved.");
+  const next = async () => {
+    const validationError = validateStep(step, b);
+    setErr(validationError);
+    if (validationError || submitting) return;
+    if (step < 4) {
+      setStep((current) => Math.min(current + 1, 4));
+      return;
+    }
+
+    setSubmitting(true);
+    const payload = new FormData();
+    payload.set("name", b.name.trim());
+    payload.set("email", b.email.trim().toLowerCase());
+    payload.set("company", b.company);
+    payload.set("role", b.role);
+    payload.set("location", b.location);
+    payload.set("phone", b.phone);
+    payload.set("type", b.type);
+    payload.set("urgency", b.urgency);
+    payload.set("currency", b.currency);
+    payload.set("budget", b.budget);
+    payload.set("exact", b.exact);
+    payload.set("negotiable", b.negotiable ? "true" : "false");
+    payload.set("deadline", b.deadline);
+    payload.set("channel", b.channel);
+    payload.set("message", b.message.trim());
+    payload.set("links", b.links);
+    for (const file of b.files) payload.append("files", file, file.name);
+
+    try {
+      const result = await submitContactForm(payload);
+      if (!result.ok || !result.submissionId) {
+        throw new Error("The database did not confirm the enquiry.");
+      }
+      setSubmittedId(result.submissionId);
+      setNotificationStatus(result.notification ?? "recipient_unconfigured");
+      setErr(null);
+    } catch (error) {
+      setErr(error instanceof Error ? error.message : "The enquiry could not be confirmed. Your details have not been marked as sent; retry or use the email/WhatsApp links above.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -67,10 +107,21 @@ function Contact() {
         </aside>
 
         <div>
-          <div role="status" className="mb-6 border border-border bg-secondary/40 p-4 text-sm leading-6 text-muted-foreground">
-            This brief form is not connected to secure submission storage yet. Nothing entered here is sent or saved. For a real enquiry, use the email or WhatsApp links above.
-          </div>
-          <form onSubmit={(e) => { e.preventDefault(); next(); }}>
+          {!submittedId && (
+            <div role="status" className="mb-6 border border-border bg-secondary/40 p-4 text-sm leading-6 text-muted-foreground">
+              Your enquiry is submitted to secure storage only after you press Send enquiry and the server confirms the database write.
+            </div>
+          )}
+          {submittedId ? (
+            <div role="status" className="border border-primary/40 bg-secondary/40 p-6 text-sm leading-7">
+              <h2 className="font-display text-2xl font-semibold">Enquiry received.</h2>
+              <p className="mt-3">The database confirmed your request. Reference: <span className="font-mono text-xs">{submittedId}</span></p>
+              {notificationStatus === "sent"
+                ? <p className="mt-3 text-muted-foreground">The notification email was accepted by the configured email provider.</p>
+                : <p className="mt-3 text-muted-foreground">Your enquiry is safely stored, but the notification email was not confirmed as sent ({notificationStatus}). No data was lost. You do not need to submit this enquiry again.</p>}
+            </div>
+          ) : (
+          <form onSubmit={(e) => { e.preventDefault(); void next(); }}>
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="space-y-8">
                   <div>
@@ -149,11 +200,12 @@ function Contact() {
               {err && <p className="mt-6 text-sm text-destructive">{err}</p>}
               <div className="mt-12 flex items-center justify-between">
                 <button type="button" disabled={step === 0} onClick={() => { setErr(null); setStep(step - 1); }} className="font-mono text-xs uppercase tracking-widest disabled:opacity-30">← Back</button>
-                <button type="submit" disabled={step === 4} aria-disabled={step === 4} className="rounded-full bg-primary px-8 py-4 font-mono text-xs uppercase tracking-widest text-primary-foreground transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
-                  {step < 4 ? "Continue →" : "Submission unavailable"}
+                <button type="submit" disabled={submitting} className="rounded-full bg-primary px-8 py-4 font-mono text-xs uppercase tracking-widest text-primary-foreground transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
+                  {submitting ? "Sending..." : step < 4 ? "Continue →" : "Send enquiry"}
                 </button>
               </div>
           </form>
+          )}
         </div>
       </section>
     </>

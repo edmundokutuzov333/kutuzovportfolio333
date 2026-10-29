@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { getPublicPresentation, getPublishedRevision } from "@/lib/cms/queries";
 import { DEFAULT_PUBLIC_PRESENTATION, type Profile, type PublicPresentation } from "@/lib/cms/types";
 import { LogoMark } from "./LogoMark";
+import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
 
 function Cursor() {
@@ -115,9 +116,9 @@ export function Footer({ profile, presentation }: { profile: Profile | null; pre
               <a key={social.label} className="block hover:text-primary" href={social.href} target="_blank" rel="noreferrer">{social.label} ↗</a>
             ))}
           </div>
-          <div className="col-span-2" aria-label="Newsletter status">
+          <div className="col-span-2" aria-label="Newsletter subscription">
             <p className="eyebrow mb-4">{copy.newsletter_label}</p>
-            <p className="max-w-xl text-sm leading-6 text-muted-foreground">{copy.newsletter_status}</p>
+            <NewsletterSignup />
           </div>
         </div>
       </div>

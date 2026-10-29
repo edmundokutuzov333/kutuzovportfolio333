@@ -26,7 +26,7 @@ async function requestPublicForm(action: string, body: FormData | Record<string,
     throw new Error("O serviço não devolveu uma confirmação válida. Os dados não são apresentados como enviados.");
   }
   if (!response.ok || result.ok !== true) {
-    const code = typeof result.error === "string" ? result.error : result.status;
+    const code = "error" in result && typeof result.error === "string" ? result.error : result.status;
     const messages: Record<string, string> = {
       rate_limited: "Foram recebidos demasiados pedidos desta ligação. Aguarde antes de tentar novamente.",
       invalid_email: "Introduza um endereço de email válido.",
