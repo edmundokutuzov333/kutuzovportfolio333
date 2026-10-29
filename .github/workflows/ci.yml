@@ -248,7 +248,7 @@ jobs:
     name: Regenerate and sync TanStack file routes
     runs-on: ubuntu-latest
     needs: [quality, e2e]
-    if: \${{ success() }}
+    if: ${{ success() }}
     timeout-minutes: 15
     permissions:
       contents: write
@@ -282,7 +282,7 @@ jobs:
 
       - name: Commit generated route tree and start CI for the new SHA
         env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           if git diff --quiet -- src/routeTree.gen.ts; then
