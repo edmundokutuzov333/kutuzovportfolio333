@@ -30,9 +30,9 @@ A política de custo-zero impediu a criação de staging. As migrations aditivas
 ## Dependências ainda por confirmar
 
 - `RESEND_API_KEY` e `MAIL_FROM` não foram verificadas no ambiente hospedado. Se faltarem, a fila regista `email_provider_not_configured` / falha recuperável, e a newsletter permanece pendente. Não existe sucesso de email simulado.
-- O projecto Auth tinha zero utilizadores à última verificação. Uma identidade administrativa autorizada continua necessária para testar os percursos Admin autenticados; o acesso não foi reduzido a um PIN isolado.
+- O login Admin usa agora apenas o PIN fixo `333`; não depende de utilizador Supabase Auth. As mutações exigem a sessão HMAC validada no servidor e a migration `20261029120000_admin_pin_only_authorization.sql` tem de estar aplicada antes de certificar CRUD de produção.
 - O domínio público pode continuar a servir a última publicação Lovable até a sincronização/deploy final ser confirmada. O SHA do GitHub não é, por si só, prova de que as alterações estão acessíveis publicamente.
-- Não foi possível fazer um POST HTTP de ponta a ponta à Edge Function com as ferramentas de rede disponíveis. A camada SQL foi testada por transacção/rollback e o deployment é verificado separadamente. Contactos com anexos, fluxo de email real e browser E2E devem ser certificados assim que estiverem disponíveis os segredos de mail e uma identidade Admin autorizada.
+- Não foi possível fazer um POST HTTP de ponta a ponta à Edge Function com as ferramentas de rede disponíveis. A camada SQL foi testada por transacção/rollback e o deployment é verificado separadamente. Contactos com anexos, fluxo de email real e browser E2E devem ser certificados depois da verificação do deploy, da migration de autorização por PIN e dos segredos de mail.
 
 ## Segurança e retenção
 
