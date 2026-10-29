@@ -78,3 +78,14 @@ test("fresh and invalid Admin access never renders the protected workspace", asy
   const width = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(width).toBeLessThanOrEqual(391);
 });
+
+test("the valid PIN opens the Admin workspace without database credentials for sign-in", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/admin", { waitUntil: "domcontentloaded" });
+  await expect(page.getByLabel("Código de acesso")).toBeVisible();
+  await page.getByLabel("Código de acesso").fill("333");
+  await page.getByRole("button", { name: "Entrar no Admin" }).click();
+  await expect(page.getByText("Kutuzov Admin", { exact: true })).toBeVisible();
+  await expect(page.getByText("Sessão autenticada", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Código de acesso")).toHaveCount(0);
+});

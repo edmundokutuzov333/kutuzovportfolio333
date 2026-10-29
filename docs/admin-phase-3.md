@@ -51,13 +51,13 @@ Verificações directas à base de dados após a aplicação:
 
 ## Acesso administrativo e limitações de produção
 
-O login de `/admin` usa exclusivamente o código de três dígitos definido em `ADMIN_ACCESS_CODE` no gestor de segredos do alojamento. Não depende de utilizador em `auth.users`, email, palavra-passe ou `app_metadata.site_role`. O cookie de sessão é HttpOnly, SameSite=Strict, tem validade limitada e uma assinatura HMAC calculada no servidor com `SUPABASE_SERVICE_ROLE_KEY`. As tentativas continuam limitadas no PostgreSQL e os eventos são registados sem guardar o PIN.
+O login de `/admin` usa exclusivamente o código fixo `333`, validado no servidor, sem depender das credenciais do Supabase para abrir a sessão. Não depende de utilizador em `auth.users`, email, palavra-passe ou `app_metadata.site_role`. O cookie de sessão é HttpOnly, SameSite=Strict, tem validade limitada e uma assinatura HMAC calculada no servidor com `SUPABASE_SERVICE_ROLE_KEY`. As tentativas continuam limitadas no PostgreSQL e os eventos são registados sem guardar o PIN.
 
 A ausência de utilizadores em `auth.users` deixou de bloquear o login. A migration `20261029121015_admin_pin_only_authorization.sql` adapta as três funções editoriais para aceitar `p_actor_id = null` apenas quando a chamada chega com role `service_role`; a chamada nunca fica acessível a anon ou authenticated. A migration tem de estar aplicada no ambiente Supabase que serve o site.
 
-O runtime precisa de `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` para ler e alterar dados reais. São dependências de infraestrutura, não campos adicionais de login, e a chave deve permanecer exclusivamente no servidor. `ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos da autenticação PIN-only. `ADMIN_ACCESS_CODE` deve existir apenas como segredo server-side e não pode ser exposto no bundle público. Mantêm-se rate limit, validação server-side e cookie assinado.
+O runtime precisa de `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` para ler e alterar dados reais. São dependências de infraestrutura, não campos adicionais de login, e a chave deve permanecer exclusivamente no servidor. `ADMIN_ACCESS_CODE`, `ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos da autenticação PIN-only. Mantêm-se validação server-side, cookie assinado e rate limit local, com limite persistente quando a base está acessível. O código fixo `333` é fraco e não deve ser confundido com autenticação forte.
 
-O CRUD positivo de produção e o smoke test HTTP no domínio público só devem ser declarados certificados depois de aplicar/verificar a migration, confirmar os segredos server-side e confirmar o deploy Lovable mais recente.
+O CRUD positivo de produção e o smoke test HTTP no domínio público só devem ser declarados certificados depois de confirmar `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` no servidor e o deploy Lovable mais recente. A indisponibilidade destas variáveis não bloqueia a entrada por PIN, mas bloqueia as operações editoriais com dados reais.
 
 ## Testes
 

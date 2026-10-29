@@ -37,13 +37,13 @@
 
 ## Acesso administrativo e configuração de runtime
 
-A rota `/admin` tem um gate próprio e não monta o Shell público, cursor, Lenis, intro ou cena WebGL. O login exige apenas o código de três dígitos, validado no servidor a partir de `ADMIN_ACCESS_CODE` na gestão de segredos do alojamento. Depois de validado, é criada uma sessão HMAC assinada com a chave server-only do Supabase, guardada num cookie HttpOnly, SameSite=Strict e com expiração. O servidor mantém limitação persistente de tentativas e registo de auditoria sem guardar PINs ou tokens. Não é necessária conta Supabase Auth, email autorizado ou palavra-passe.
+A rota `/admin` tem um gate próprio e não monta o Shell público, cursor, Lenis, intro ou cena WebGL. O login exige apenas o código fixo `333`, validado no módulo server-side. A abertura da sessão não depende das credenciais da base de dados. Depois de validado, é criada uma sessão HMAC assinada com a chave server-only do Supabase, guardada num cookie HttpOnly, SameSite=Strict e com expiração. O servidor mantém limitação persistente de tentativas e registo de auditoria sem guardar PINs ou tokens. Não é necessária conta Supabase Auth, email autorizado ou palavra-passe.
 
 O backend administrativo continua a precisar dos segredos de infraestrutura para consultar e alterar dados reais: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` apenas no servidor, `PUBLIC_SITE_URL` para validar o canonical, e `RESEND_API_KEY` / `MAIL_FROM` quando estiver activado o envio real de email.
 
-`ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos de login. O código real fica apenas em `ADMIN_ACCESS_CODE` no servidor, nunca no repositório nem em variáveis `VITE_*`. Não é necessária conta Supabase Auth, email ou palavra-passe. Mantêm-se a limitação de tentativas, a validação server-side e a sessão assinada.
+`ADMIN_ACCESS_CODE`, `ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos de login. Não é necessária conta Supabase Auth, email ou palavra-passe. A autenticação mantém validação server-side, cookie HttpOnly assinado e limitação de tentativas local, usando também a tabela persistente quando o Supabase está disponível. O código `333` é fraco e, por ser fixo, não equivale a autenticação forte.
 
-A base Supabase Auth pode continuar sem utilizadores. As funções SQL editoriais só aceitam actor nulo quando a chamada vem com o role `service_role`; a migration `20261029121015_admin_pin_only_authorization.sql` tem de estar aplicada no Supabase antes de certificar as mutações editoriais.
+A base Supabase Auth pode continuar sem utilizadores. Para carregar e editar dados reais do CMS continuam a ser necessários `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no runtime do servidor. Se estiverem ausentes, o PIN continua a abrir o espaço Admin e o painel apresenta um erro de configuração de dados, sem confundir esse erro com autenticação.
 
 ## CI e deploy
 
