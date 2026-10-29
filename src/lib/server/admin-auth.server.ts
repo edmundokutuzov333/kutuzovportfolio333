@@ -49,13 +49,13 @@ export class AdminAuthorizationError extends Error {
 }
 
 function readConfig(): SupabaseConfig | null {
-  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const url = process.env["SUPABASE_URL"]?.trim().replace(/\/+$/, "");
   const publishableKey =
-    process.env.SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.SUPABASE_ANON_KEY?.trim();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  const adminPin = process.env.ADMIN_ACCESS_CODE;
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const rateLimitSalt = process.env.ADMIN_RATE_LIMIT_SALT;
+    process.env["SUPABASE_PUBLISHABLE_KEY"]?.trim() || process.env["SUPABASE_ANON_KEY"]?.trim();
+  const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
+  const adminPin = process.env["ADMIN_ACCESS_CODE"];
+  const adminEmail = process.env["ADMIN_EMAIL"]?.trim().toLowerCase();
+  const rateLimitSalt = process.env["ADMIN_RATE_LIMIT_SALT"];
 
   if (!url || !publishableKey || !serviceRoleKey || !adminPin || !adminEmail || !rateLimitSalt) {
     return null;
@@ -78,7 +78,7 @@ function readConfig(): SupabaseConfig | null {
 function cookieOptions() {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env["NODE_ENV"] === "production",
     sameSite: "strict" as const,
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS,
@@ -113,7 +113,7 @@ function writeSessionCookie(session: AdminSessionCookie) {
 function clearSessionCookie() {
   deleteCookie(SESSION_COOKIE, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env["NODE_ENV"] === "production",
     sameSite: "strict",
     path: "/",
   });
@@ -138,7 +138,7 @@ function serviceHeaders(config: SupabaseConfig, prefer?: string): HeadersInit {
     Authorization: `Bearer ${config.serviceRoleKey}`,
     "Content-Type": "application/json",
   };
-  if (prefer) headers.Prefer = prefer;
+  if (prefer) headers["Prefer"] = prefer;
   return headers;
 }
 
