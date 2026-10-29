@@ -286,6 +286,10 @@ export function validateAdminPayload(
     const value = parsed[key];
     if (value !== undefined) assetPath.parse(value);
   }
+  if (entity === "projects" && Array.isArray(parsed["gallery"]) && Array.isArray(parsed["gallery_alt"]) &&
+      parsed["gallery"].length !== parsed["gallery_alt"].length) {
+    throw new Error("Cada imagem da galeria deve ter exactamente um texto alternativo correspondente.");
+  }
   if (Array.isArray(parsed["gallery"])) {
     parsed["gallery"].forEach((value) => assetPath.parse(value));
   }

@@ -70,6 +70,17 @@ describe("Kutuzov Admin editorial server contracts", () => {
     }, "update")).toThrow();
   });
 
+  it("requires one alternative text entry per project gallery image", () => {
+    expect(() => validateAdminPayload("projects", {
+      gallery: ["/work/one.webp", "/work/two.webp"],
+      gallery_alt: ["A first image"],
+    }, "update")).toThrow(/Cada imagem da galeria/);
+    expect(validateAdminPayload("projects", {
+      gallery: ["/work/one.webp"],
+      gallery_alt: [""],
+    }, "update")["gallery_alt"]).toEqual([""]);
+  });
+
   it("requires key fields for creation and permits a client with no logo", () => {
     expect(() => validateAdminPayload("projects", { slug: "missing-title" }, "publish", { creating: true })).toThrow(/Campos obrigatórios/);
     const client = validateAdminPayload("clients", {

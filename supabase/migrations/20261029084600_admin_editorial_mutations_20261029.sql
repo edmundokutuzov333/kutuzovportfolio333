@@ -1,5 +1,28 @@
 -- Phase 3: server-only, optimistic and auditable editorial mutations.
 alter table public.projects add column if not exists gallery_alt jsonb not null default '[]'::jsonb check (jsonb_typeof(gallery_alt) = 'array');
+
+-- Existing projects already contain gallery paths. Backfill an empty alt per image so
+-- the count constraint is valid while editors progressively replace generic fallbacks.
+update public.projects p
+set gallery_alt = coalesce((
+  select jsonb_agg('""'::jsonb order by item.ordinality)
+  from jsonb_array_elements(coalesce(p.gallery, '[]'::jsonb)) with ordinality as item(value, ordinality)
+), '[]'::jsonb)
+where jsonb_array_length(coalesce(p.gallery, '[]'::jsonb)) <> jsonb_array_length(coalesce(p.gallery_alt, '[]'::jsonb));
+
+do $
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'projects_gallery_alt_count_matches'
+      and conrelid = 'public.projects'::regclass
+  ) then
+    alter table public.projects
+      add constraint projects_gallery_alt_count_matches
+      check (jsonb_array_length(coalesce(gallery, '[]'::jsonb)) = jsonb_array_length(gallery_alt));
+  end if;
+end;
+$;
 -- Functions are callable only with the server service role; every server handler must first call requireAdmin().
 -- The actor UUID is additionally checked against the trusted app_metadata role before any write.
 

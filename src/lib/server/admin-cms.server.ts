@@ -61,6 +61,9 @@ function headers(context: AdminContext, prefer?: string): HeadersInit {
 }
 
 function publicError(status: number, message: string): never {
+  if (/gallery_alt/.test(message) && /does not exist|schema cache|42703|PGRST/i.test(message)) {
+    throw new AdminCmsError("O campo de texto alternativo da galeria ainda não foi instalado pela migração da Fase 3. A gravação está bloqueada até a migração ser validada e aplicada.", "unavailable");
+  }
   if (status === 404 && /PGRST202|admin_mutate_content|admin_reorder_content|admin_update_contact_submission|schema cache/i.test(message)) {
     throw new AdminCmsError("As funções de escrita da Fase 3 ainda não estão instaladas na base de dados. A gravação permanece bloqueada até a migração ser validada e aplicada.", "unavailable");
   }
@@ -205,6 +208,30 @@ export async function mutateAdminContent(input: {
       section_type: input.payload["section_type"] ?? current["section_type"],
       config: input.payload["config"] ?? current["config"],
       is_visible: input.payload["is_visible"] ?? current["is_visible"],
+      ...input.payload,
+    };
+  }
+
+  if (
+    input.entity === "projects" &&
+    input.id &&
+    input.action !== "archive" &&
+    input.action !== "restore" &&
+    ("gallery" in input.payload || "gallery_alt" in input.payload)
+  ) {
+    const existing = await restRequest<Row[]>(
+      context,
+      `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}&select=id,gallery,gallery_alt,updated_at`,
+    );
+    const current = existing[0];
+    if (!current) throw new AdminCmsError("O projecto já não existe. Actualize a lista.", "not_found");
+    if (current["updated_at"] !== input.expectedUpdatedAt) {
+      throw new AdminCmsError("Conflito: o projecto foi alterado depois de abrir o formulário. Os valores locais foram preservados.", "conflict");
+    }
+    validationInput = {
+      gallery: current["gallery"] ?? [],
+      gallery_alt: current["gallery_alt"] ?? [],
+      ...validationInput,
       ...input.payload,
     };
   }
