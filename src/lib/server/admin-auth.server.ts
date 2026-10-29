@@ -1,385 +1,125 @@
-import {
-  deleteCookie,
-  getCookie,
-  getRequestHeader,
-  setCookie,
-} from "@tanstack/react-start/server";
-
-import {
-  isAdminAttemptLocked,
-  isAdminPinValid,
-  isAuthorizedAdminIdentity,
-  type AdminAuthUser,
-  type AdminAttemptState,
-} from "./admin-auth-core";
-
+import { deleteCookie, getCookie, getRequestHeader, setCookie } from "@tanstack/react-start/server";
+import { ADMIN_ACCESS_CODE, isAdminAttemptLocked, isAdminPinValid, type AdminAttemptState } from "./admin-auth-core";
 const SESSION_COOKIE = "kutuzov-admin-session";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
-
-type SupabaseConfig = {
-  url: string;
-  publishableKey: string;
-  serviceRoleKey: string;
-  adminPin: string;
-  adminEmail: string;
-  rateLimitSalt: string;
-};
-
-type AdminSessionCookie = {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
-};
-
-type SupabaseAuthResponse = {
-  access_token?: string;
-  refresh_token?: string;
-  expires_in?: number;
-};
-
-export type AdminLoginResult =
-  | { ok: true; email: string }
-  | { ok: false; error: "invalid_credentials" | "rate_limited" | "unavailable" };
-
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
+type AdminServerConfig = { url: string; serviceRoleKey: string };
+type AdminSessionCookie = { sessionId: string; issuedAt: number; expiresAt: number; signature: string };
+export type AdminLoginResult = { ok: true; email: string } | { ok: false; error: "invalid_credentials" | "rate_limited" | "unavailable" };
 export class AdminAuthorizationError extends Error {
-  constructor() {
-    super("Administrator authorization required");
-    this.name = "AdminAuthorizationError";
-  }
+  constructor() { super("Administrator authorization required"); this.name = "AdminAuthorizationError"; }
 }
-
-function readConfig(): SupabaseConfig | null {
+function readConfig(): AdminServerConfig | null {
   const url = process.env["SUPABASE_URL"]?.trim().replace(/\/+$/, "");
-  const publishableKey =
-    process.env["SUPABASE_PUBLISHABLE_KEY"]?.trim() || process.env["SUPABASE_ANON_KEY"]?.trim();
   const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
-  const adminPin = process.env["ADMIN_ACCESS_CODE"];
-  const adminEmail = process.env["ADMIN_EMAIL"]?.trim().toLowerCase();
-  const rateLimitSalt = process.env["ADMIN_RATE_LIMIT_SALT"];
-
-  if (!url || !publishableKey || !serviceRoleKey || !adminPin || !adminEmail || !rateLimitSalt) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:" && parsed.hostname !== "localhost") return null;
-  } catch {
-    return null;
-  }
-
-  if (!/^\d{3}$/.test(adminPin) || !adminEmail.includes("@") || rateLimitSalt.length < 32) {
-    return null;
-  }
-
-  return { url, publishableKey, serviceRoleKey, adminPin, adminEmail, rateLimitSalt };
+  if (!url || !serviceRoleKey) return null;
+  try { const parsed = new URL(url); if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1") return null; }
+  catch { return null; }
+  return { url, serviceRoleKey };
 }
-
-function cookieOptions() {
-  return {
-    httpOnly: true,
-    secure: process.env["NODE_ENV"] === "production",
-    sameSite: "strict" as const,
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  };
-}
-
+function cookieOptions() { return { httpOnly: true, secure: process.env["NODE_ENV"] === "production", sameSite: "strict" as const, path: "/", maxAge: SESSION_MAX_AGE_SECONDS }; }
 function parseSessionCookie(value: string | undefined): AdminSessionCookie | null {
-  if (!value || value.length > 6000) return null;
+  if (!value || value.length > 2048) return null;
   try {
     const data = JSON.parse(decodeURIComponent(value)) as Partial<AdminSessionCookie>;
-    if (
-      typeof data.access_token !== "string" ||
-      typeof data.refresh_token !== "string" ||
-      typeof data.expires_at !== "number"
-    ) {
-      return null;
-    }
-    return {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: data.expires_at,
-    };
-  } catch {
-    return null;
-  }
+    if (typeof data.sessionId !== "string" || !/^[0-9a-f-]{36}$/i.test(data.sessionId) ||
+      typeof data.issuedAt !== "number" || !Number.isFinite(data.issuedAt) ||
+      typeof data.expiresAt !== "number" || !Number.isFinite(data.expiresAt) ||
+      typeof data.signature !== "string" || !/^[0-9a-f]{64}$/i.test(data.signature)) return null;
+    return { sessionId: data.sessionId, issuedAt: data.issuedAt, expiresAt: data.expiresAt, signature: data.signature };
+  } catch { return null; }
 }
-
-function writeSessionCookie(session: AdminSessionCookie) {
-  setCookie(SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOptions());
+function sessionPayload(session: Pick<AdminSessionCookie, "sessionId" | "issuedAt" | "expiresAt">): string { return "v1|" + session.sessionId + "|" + session.issuedAt + "|" + session.expiresAt; }
+async function signSession(config: AdminServerConfig, session: AdminSessionCookie): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(config.serviceRoleKey), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(sessionPayload(session)));
+  return Array.from(new Uint8Array(signature), b => b.toString(16).padStart(2, "0")).join("");
 }
-
-function clearSessionCookie() {
-  deleteCookie(SESSION_COOKIE, {
-    httpOnly: true,
-    secure: process.env["NODE_ENV"] === "production",
-    sameSite: "strict",
-    path: "/",
-  });
+function constantTimeEqual(left: string, right: string): boolean {
+  if (left.length !== right.length) return false;
+  let difference = 0;
+  for (let i = 0; i < left.length; i += 1) difference |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  return difference === 0;
 }
-
-async function hashIpKey(config: SupabaseConfig): Promise<string> {
-  const address =
-    getRequestHeader("cf-connecting-ip") ??
-    getRequestHeader("x-vercel-forwarded-for") ??
-    getRequestHeader("x-real-ip") ??
-    "unknown";
-  const bytes = new TextEncoder().encode(
-    `${config.rateLimitSalt}:${address.trim().slice(0, 100)}`,
-  );
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+async function isSessionValid(config: AdminServerConfig, session: AdminSessionCookie): Promise<boolean> {
+  const now = Date.now();
+  if (session.issuedAt > now + 60_000 || session.issuedAt < now - SESSION_MAX_AGE_SECONDS * 1000 ||
+    session.expiresAt <= now || session.expiresAt <= session.issuedAt ||
+    session.expiresAt - session.issuedAt > SESSION_MAX_AGE_SECONDS * 1000) return false;
+  return constantTimeEqual(session.signature, await signSession(config, session));
 }
-
-function serviceHeaders(config: SupabaseConfig, prefer?: string): HeadersInit {
-  const headers: Record<string, string> = {
-    apikey: config.serviceRoleKey,
-    Authorization: `Bearer ${config.serviceRoleKey}`,
-    "Content-Type": "application/json",
-  };
+function writeSessionCookie(session: AdminSessionCookie) { setCookie(SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOptions()); }
+function clearSessionCookie() { deleteCookie(SESSION_COOKIE, { httpOnly: true, secure: process.env["NODE_ENV"] === "production", sameSite: "strict", path: "/" }); }
+async function hashIpKey(config: AdminServerConfig): Promise<string> {
+  const address = getRequestHeader("x-vercel-forwarded-for") ?? getRequestHeader("x-real-ip") ?? getRequestHeader("cf-connecting-ip") ?? "unknown";
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("admin-auth|" + config.serviceRoleKey + "|" + address.trim().slice(0, 100)));
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+}
+function serviceHeaders(config: AdminServerConfig, prefer?: string): HeadersInit {
+  const headers: Record<string, string> = { apikey: config.serviceRoleKey, Authorization: "Bearer " + config.serviceRoleKey, "Content-Type": "application/json" };
   if (prefer) headers["Prefer"] = prefer;
   return headers;
 }
-
-async function registerAttempt(config: SupabaseConfig, ipHash: string): Promise<AdminAttemptState> {
-  const response = await fetch(`${config.url}/rest/v1/rpc/register_admin_auth_attempt`, {
-    method: "POST",
-    headers: serviceHeaders(config),
-    body: JSON.stringify({ p_ip_hash: ipHash, p_now: new Date().toISOString() }),
-  });
+async function registerAttempt(config: AdminServerConfig, ipHash: string): Promise<AdminAttemptState> {
+  const response = await fetch(config.url + "/rest/v1/rpc/register_admin_auth_attempt", { method: "POST", headers: serviceHeaders(config), body: JSON.stringify({ p_ip_hash: ipHash, p_now: new Date().toISOString() }), cache: "no-store" });
   if (!response.ok) throw new Error("rate_limit_store_unavailable");
-  const payload = (await response.json()) as AdminAttemptState[] | AdminAttemptState;
+  const payload = await response.json() as AdminAttemptState[] | AdminAttemptState;
   const state = Array.isArray(payload) ? payload[0] : payload;
-  if (
-    !state ||
-    typeof state.attempt_count !== "number" ||
-    (state.blocked_until !== null && typeof state.blocked_until !== "string")
-  ) {
-    throw new Error("invalid_rate_limit_response");
-  }
+  if (!state || typeof state.attempt_count !== "number" || (state.blocked_until !== null && typeof state.blocked_until !== "string")) throw new Error("invalid_rate_limit_response");
   return state;
 }
-
-async function deleteAttempt(config: SupabaseConfig, ipHash: string): Promise<void> {
-  const url = new URL("/rest/v1/admin_auth_attempts", config.url);
-  url.searchParams.set("ip_hash", `eq.${ipHash}`);
-  const response = await fetch(url, { method: "DELETE", headers: serviceHeaders(config) });
+async function deleteAttempt(config: AdminServerConfig, ipHash: string): Promise<void> {
+  const url = new URL("/rest/v1/admin_auth_attempts", config.url); url.searchParams.set("ip_hash", "eq." + ipHash);
+  const response = await fetch(url, { method: "DELETE", headers: serviceHeaders(config), cache: "no-store" });
   if (!response.ok) throw new Error("rate_limit_store_unavailable");
 }
-
-async function recordAuthAudit(
-  config: SupabaseConfig,
-  eventType: string,
-  success: boolean,
-  subject?: string,
-): Promise<void> {
-  const response = await fetch(`${config.url}/rest/v1/admin_audit_log`, {
-    method: "POST",
-    headers: serviceHeaders(config, "return=minimal"),
-    body: JSON.stringify({
-      event_type: eventType,
-      success,
-      subject: subject ?? null,
-      metadata: { channel: "admin_login" },
-    }),
+async function recordAuthAudit(config: AdminServerConfig, eventType: string, success: boolean, subject?: string): Promise<void> {
+  const response = await fetch(config.url + "/rest/v1/admin_audit_log", {
+    method: "POST", headers: serviceHeaders(config, "return=minimal"),
+    body: JSON.stringify({ event_type: eventType, success, subject: subject ?? null, metadata: { channel: "admin_login", authentication: "code_only" } }), cache: "no-store",
   });
   if (!response.ok) throw new Error("audit_log_unavailable");
 }
-
-async function supabasePasswordSignIn(
-  config: SupabaseConfig,
-  email: string,
-  password: string,
-): Promise<AdminSessionCookie | null> {
-  const response = await fetch(`${config.url}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: { apikey: config.publishableKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!response.ok) return null;
-  const data = (await response.json()) as SupabaseAuthResponse;
-  if (
-    typeof data.access_token !== "string" ||
-    typeof data.refresh_token !== "string" ||
-    typeof data.expires_in !== "number"
-  ) {
-    return null;
-  }
-  return {
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-    expires_at: Date.now() + data.expires_in * 1000,
-  };
-}
-
-async function refreshSession(
-  config: SupabaseConfig,
-  current: AdminSessionCookie,
-): Promise<AdminSessionCookie | null> {
-  const response = await fetch(`${config.url}/auth/v1/token?grant_type=refresh_token`, {
-    method: "POST",
-    headers: { apikey: config.publishableKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: current.refresh_token }),
-  });
-  if (!response.ok) return null;
-  const data = (await response.json()) as SupabaseAuthResponse;
-  if (
-    typeof data.access_token !== "string" ||
-    typeof data.refresh_token !== "string" ||
-    typeof data.expires_in !== "number"
-  ) {
-    return null;
-  }
-  return {
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-    expires_at: Date.now() + data.expires_in * 1000,
-  };
-}
-
-async function getAuthUser(
-  config: SupabaseConfig,
-  accessToken: string,
-): Promise<AdminAuthUser | null> {
-  const response = await fetch(`${config.url}/auth/v1/user`, {
-    headers: { apikey: config.publishableKey, Authorization: `Bearer ${accessToken}` },
-  });
-  if (!response.ok) return null;
-  return (await response.json()) as AdminAuthUser;
-}
-
-export async function loginAdmin(input: {
-  pin: string;
-  email: string;
-  password: string;
-}): Promise<AdminLoginResult> {
+export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResult> {
   const config = readConfig();
   if (!config) return { ok: false, error: "unavailable" };
-
   try {
-    const ipHash = await hashIpKey(config);
-    const attempt = await registerAttempt(config, ipHash);
-    if (
-      isAdminAttemptLocked(
-        attempt.attempt_count,
-        attempt.blocked_until,
-        Date.now(),
-      )
-    ) {
-      await recordAuthAudit(config, "admin_login_rate_limited", false).catch(() => undefined);
+    const ipHash = await hashIpKey(config), attempt = await registerAttempt(config, ipHash);
+    if (isAdminAttemptLocked(attempt.attempt_count, attempt.blocked_until, Date.now())) {
+      await recordAuthAudit(config, "admin_login_rate_limited", false, "code-only").catch(() => undefined);
       return { ok: false, error: "rate_limited" };
     }
-
-    if (!isAdminPinValid(input.pin, config.adminPin)) {
-      await recordAuthAudit(config, "admin_login_rejected", false, config.adminEmail).catch(() => undefined);
+    if (!isAdminPinValid(input.pin, ADMIN_ACCESS_CODE)) {
+      await recordAuthAudit(config, "admin_login_rejected", false, "code-only").catch(() => undefined);
       return { ok: false, error: "invalid_credentials" };
     }
-
-    const normalizedEmail = input.email.trim().toLowerCase();
-    if (!normalizedEmail || !input.password) {
-      await recordAuthAudit(config, "admin_login_rejected", false, config.adminEmail).catch(() => undefined);
-      return { ok: false, error: "invalid_credentials" };
-    }
-
-    const session = await supabasePasswordSignIn(config, normalizedEmail, input.password);
-    if (!session) {
-      await recordAuthAudit(config, "admin_login_rejected", false, config.adminEmail).catch(() => undefined);
-      return { ok: false, error: "invalid_credentials" };
-    }
-
-    const user = await getAuthUser(config, session.access_token);
-    if (!isAuthorizedAdminIdentity(user, config.adminEmail)) {
-      clearSessionCookie();
-      await recordAuthAudit(config, "admin_login_rejected", false, config.adminEmail).catch(() => undefined);
-      return { ok: false, error: "invalid_credentials" };
-    }
-
+    const now = Date.now();
+    const session: AdminSessionCookie = { sessionId: crypto.randomUUID(), issuedAt: now, expiresAt: now + SESSION_MAX_AGE_SECONDS * 1000, signature: "" };
+    session.signature = await signSession(config, session);
     await deleteAttempt(config, ipHash);
-    await recordAuthAudit(config, "admin_login_succeeded", true, config.adminEmail).catch(() => undefined);
+    await recordAuthAudit(config, "admin_login_succeeded", true, "code-only").catch(() => undefined);
     writeSessionCookie(session);
-    return { ok: true, email: normalizedEmail };
-  } catch {
-    // Provider responses and secrets are deliberately not logged or returned.
-    clearSessionCookie();
-    return { ok: false, error: "unavailable" };
-  }
+    return { ok: true, email: "Admin (código)" };
+  } catch { clearSessionCookie(); return { ok: false, error: "unavailable" }; }
 }
-
-export async function requireAdmin(): Promise<{ id: string; email: string }> {
+export type AdminActor = { id: string | null; email: string; sessionId: string };
+export async function requireAdmin(): Promise<AdminActor> {
   const config = readConfig();
   if (!config) throw new AdminAuthorizationError();
-
-  let session = parseSessionCookie(getCookie(SESSION_COOKIE));
-  if (!session) throw new AdminAuthorizationError();
-
-  if (session.expires_at < Date.now() + 60_000) {
-    const refreshed = await refreshSession(config, session).catch(() => null);
-    if (!refreshed) {
-      clearSessionCookie();
-      throw new AdminAuthorizationError();
-    }
-    session = refreshed;
-    writeSessionCookie(session);
-  }
-
-  const user = await getAuthUser(config, session.access_token).catch(() => null);
-  if (
-    !user ||
-    typeof user.id !== "string" ||
-    !isAuthorizedAdminIdentity(user, config.adminEmail)
-  ) {
-    clearSessionCookie();
-    throw new AdminAuthorizationError();
-  }
-
-  return { id: user.id, email: user.email as string };
+  const session = parseSessionCookie(getCookie(SESSION_COOKIE));
+  if (!session || !(await isSessionValid(config, session).catch(() => false))) { clearSessionCookie(); throw new AdminAuthorizationError(); }
+  return { id: null, email: "Admin (código)", sessionId: session.sessionId };
 }
-
 export async function getAdminSession(): Promise<{ id: string; email: string } | null> {
-  try {
-    return await requireAdmin();
-  } catch {
-    return null;
-  }
+  try { const actor = await requireAdmin(); return { id: actor.sessionId, email: actor.email }; } catch { return null; }
 }
-
 export async function logoutAdmin(): Promise<{ ok: true }> {
-  const config = readConfig();
-  const session = parseSessionCookie(getCookie(SESSION_COOKIE));
-  if (config && session) {
-    const user = await getAuthUser(config, session.access_token).catch(() => null);
-    if (isAuthorizedAdminIdentity(user, config.adminEmail)) {
-      await fetch(`${config.url}/auth/v1/logout`, {
-        method: "POST",
-        headers: {
-          apikey: config.publishableKey,
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      }).catch(() => undefined);
-      await recordAuthAudit(config, "admin_logout", true, config.adminEmail).catch(() => undefined);
-    }
-  }
-  clearSessionCookie();
-  return { ok: true };
+  const config = readConfig(), session = parseSessionCookie(getCookie(SESSION_COOKIE));
+  if (config && session && await isSessionValid(config, session).catch(() => false)) await recordAuthAudit(config, "admin_logout", true, "code-only").catch(() => undefined);
+  clearSessionCookie(); return { ok: true };
 }
-
-
-/** Server-only dependency injection for authenticated CMS operations. Never expose this result to browser code. */
-export async function getAdminServerContext(): Promise<{
-  actor: { id: string; email: string };
-  supabase: { url: string; publishableKey: string; serviceRoleKey: string };
-}> {
-  const actor = await requireAdmin();
-  const config = readConfig();
-  const session = parseSessionCookie(getCookie(SESSION_COOKIE));
-  if (!config || !session) throw new AdminAuthorizationError();
-  return {
-    actor,
-    supabase: {
-      url: config.url,
-      publishableKey: config.publishableKey,
-      serviceRoleKey: config.serviceRoleKey,
-    },
-  };
+/** Server-only context. The service-role key never leaves this module's server runtime. */
+export async function getAdminServerContext(): Promise<{ actor: AdminActor; supabase: { url: string; serviceRoleKey: string } }> {
+  const actor = await requireAdmin(), config = readConfig();
+  if (!config) throw new AdminAuthorizationError();
+  return { actor, supabase: { url: config.url, serviceRoleKey: config.serviceRoleKey } };
 }
