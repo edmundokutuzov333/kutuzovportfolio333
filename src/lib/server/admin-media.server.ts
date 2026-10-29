@@ -314,7 +314,7 @@ export async function retryEmailOutbox(input: { id: string }) {
     response = await fetch(new URL("/functions/v1/public-forms?action=retry-email", context.supabase.url), {
       method: "POST",
       headers: {
-        apikey: context.supabase.publishableKey,
+        apikey: context.supabase.serviceRoleKey,
         Authorization: "Bearer " + context.supabase.serviceRoleKey,
         "x-outbox-id": input.id,
         "x-outbox-timestamp": timestamp,
