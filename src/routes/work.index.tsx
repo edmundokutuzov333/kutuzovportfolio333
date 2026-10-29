@@ -16,7 +16,7 @@ function Work() {
   const list = projects.filter((p) => f === "All" || p.discipline === f);
   return (
     <>
-      <PageHero eyebrow="Index of work" lines={["Selected", "work."]} intro="Campaigns, identities and content systems. Official artwork arrives soon — each slot below is ready to receive it." />
+      <PageHero eyebrow="Index of work" lines={["Selected", "work."]} intro="Campaigns, key visuals and content systems directed for brands in Mozambique and beyond." />
       <div className="flex flex-wrap gap-2 px-6 pb-12 md:px-12">
         {filters.map((x) => (
           <button key={x} onClick={() => setF(x)} className={`rounded-full border px-4 py-2 font-mono text-xs uppercase tracking-widest transition ${f === x ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-foreground"}`}>
