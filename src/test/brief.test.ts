@@ -31,9 +31,9 @@ describe("briefing form rules", () => {
 
   it("rejects files over 8 MB and unsupported types", () => {
     const big = new File([new Uint8Array(8 * 1024 * 1024 + 1)], "b.png", { type: "image/png" });
-    const pdf = new File(["x"], "a.pdf", { type: "application/pdf" });
+    const unsupported = new File(["x"], "a.exe", { type: "application/octet-stream" });
     expect(validateStep(4, { ...ok, files: [big] })).not.toBeNull();
-    expect(validateStep(4, { ...ok, files: [pdf] })).not.toBeNull();
+    expect(validateStep(4, { ...ok, files: [unsupported] })).not.toBeNull();
   });
 
   it("validates the expanded project objective and delivery channels", () => {
