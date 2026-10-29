@@ -72,7 +72,7 @@ jobs:
           };
           writeFileSync("package.json", JSON.stringify(manifest, null, 2) + "\n");
           NODE
-          bun update 2>&1 | tee "$proposal/audit-fix.txt"
+          bun install 2>&1 | tee "$proposal/audit-fix.txt"
           fix_status=${PIPESTATUS[0]}
           bun audit --audit-level=high 2>&1 | tee "$proposal/audit-after.txt"
           audit_status=${PIPESTATUS[0]}
