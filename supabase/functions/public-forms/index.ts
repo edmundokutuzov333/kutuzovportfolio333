@@ -135,7 +135,7 @@ function cleanOriginalName(name: string): string {
 
 function inspectContactFile(file: File, bytes: Uint8Array): { mime: string; width: number | null; height: number | null } | null {
   const declared = file.type.toLowerCase();
-  const pdfName = /\\.pdf$/i.test(file.name);
+  const pdfName = /\.pdf$/i.test(file.name);
   const pdfMagic = bytes.length >= 8 &&
     new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-" &&
     bytes.slice(0, 8).every((byte) => byte >= 0x20 && byte <= 0x7e);
@@ -428,7 +428,7 @@ function formatFileSize(value: unknown): string {
 async function downloadPrivateAttachment(path: string, submissionId: string, expectedSize?: number): Promise<Uint8Array> {
   if (!/^[0-9a-f-]{36}$/i.test(submissionId) ||
       !path.startsWith(submissionId + "/") ||
-      !/^[0-9a-f-]{36}\\.[a-z0-9]+$/i.test(path.slice(submissionId.length + 1))) {
+      !/^[0-9a-f-]{36}\.[a-z0-9]+$/i.test(path.slice(submissionId.length + 1))) {
     throw new Error("invalid_private_attachment_path");
   }
   const key = serviceKey();
@@ -602,7 +602,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
         servicesBody + contactBody + projectBody + briefBody + linksBody + attachmentsBody,
       );
     } else if (row["message_type"] === "contact_receipt") {
-      const firstName = String(payload["name"] ?? "there").trim().split(/\\s+/)[0] || "there";
+      const firstName = String(payload["name"] ?? "there").trim().split(/\s+/)[0] || "there";
       const reference = String(payload["submission_id"] ?? "");
       const requestType = String(payload["request_type"] ?? "Project enquiry");
       subject = "We've received your enquiry | Edmundo Kutuzov";
@@ -667,7 +667,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       const confirmUrl = origin + "/newsletter/confirm?token=" + encodeURIComponent(bundle.confirmToken);
       const unsubscribeUrl = origin + "/newsletter/unsubscribe?token=" + encodeURIComponent(bundle.unsubscribeToken);
       subject = "Confirm your Kutuzov newsletter subscription";
-      text = "Please confirm your subscription by opening:\\n" + confirmUrl + "\\n\\nTo unsubscribe, open:\\n" + unsubscribeUrl;
+      text = "Please confirm your subscription by opening:\n" + confirmUrl + "\n\nTo unsubscribe, open:\n" + unsubscribeUrl;
       html = brandedEmail(
         "Legacy newsletter confirmation email.",
         "Newsletter",
@@ -682,7 +682,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
 
     const replyTo = row["message_type"] === "contact_submission" &&
       typeof payload["email"] === "string" &&
-      /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(payload["email"])
+      /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload["email"])
       ? payload["email"].trim()
       : undefined;
 
@@ -743,7 +743,7 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   if (![ "low", "normal", "high", "urgent" ].includes(urgency)) return json({ ok: false, error: "invalid_urgency" }, 400, origin);
   if (![ "email", "phone", "whatsapp", "linkedin" ].includes(channel)) return json({ ok: false, error: "invalid_channel" }, 400, origin);
   if (![ "EUR", "USD", "GBP", "BRL", "MZN" ].includes(currency)) return json({ ok: false, error: "invalid_currency" }, 400, origin);
-  if (deadline && !/^\\d{4}-\\d{2}-\\d{2}$/.test(deadline)) return json({ ok: false, error: "invalid_deadline" }, 400, origin);
+  if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return json({ ok: false, error: "invalid_deadline" }, 400, origin);
   if (industry && !ALLOWED_INDUSTRIES.has(industry)) return json({ ok: false, error: "invalid_industry" }, 400, origin);
   if (projectStage && !ALLOWED_PROJECT_STAGES.has(projectStage)) return json({ ok: false, error: "invalid_project_stage" }, 400, origin);
   if (deliverables.some((item) => !ALLOWED_DELIVERABLES.has(item))) return json({ ok: false, error: "invalid_deliverables" }, 400, origin);
