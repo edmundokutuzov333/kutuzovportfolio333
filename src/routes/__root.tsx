@@ -119,6 +119,15 @@ function RootShell({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        {/* Route-discovery link for the Lovable preview picker. Hidden until keyboard focus. */}
+        <Link
+          to="/admin"
+          aria-label="Acesso administrativo"
+          data-lovable-route="/admin"
+          className="sr-only focus:not-sr-only focus:fixed focus:bottom-4 focus:right-4 focus:z-[100] focus:bg-[#0b0b0d] focus:px-4 focus:py-3 focus:text-white"
+        >
+          Admin
+        </Link>
         <Scripts />
       </body>
     </html>
