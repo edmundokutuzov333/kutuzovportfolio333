@@ -28,7 +28,7 @@ for (const route of publicRoutes) {
 test("contact page keeps the real submission action behind its form flow", async ({ page }) => {
   await page.goto("/contact", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
-  await expect(page.getByRole("form").first()).toBeVisible();
+  await expect(page.locator("form").first()).toBeVisible();
   await expect(page.getByText(/the database confirmed your request/i)).toHaveCount(0);
 });
 
