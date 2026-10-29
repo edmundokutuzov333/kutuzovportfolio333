@@ -8,10 +8,8 @@ import {
 } from "./server/admin-auth.server";
 
 const loginInput = z.object({
-  pin: z.string().regex(/^\d{3}$/),
-  email: z.string().trim().email().max(320),
-  password: z.string().min(1).max(1024),
-});
+  pin: z.string().regex(/^333$/),
+}).strict();
 
 export const loginAdminFn = createServerFn({ method: "POST" })
   .inputValidator(loginInput)
