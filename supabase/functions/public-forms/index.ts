@@ -1,9 +1,11 @@
 import { inspectImageBytes } from "./image-validation.ts";
 import nodemailer from "npm:nodemailer@^9";
 
-const PRODUCTION_ORIGIN = "https://kutuzovportfolio333.lovable.app";
+const PRODUCTION_ORIGIN = "https://edmundokutuzov.art";
 const ALLOWED_ORIGINS = new Set([
   PRODUCTION_ORIGIN,
+  "https://www.edmundokutuzov.art",
+  "https://kutuzovportfolio333.lovable.app",
   "https://id-preview--866320a4-978d-403b-b184-3e3fd57d0c19.lovable.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -541,16 +543,20 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
   if (email.length > 320 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return json({ ok: false, error: "invalid_email" }, 400, origin);
   }
-  const configuredOrigin = Deno.env.get("PUBLIC_SITE_URL")?.trim() || origin || "";
-  let validOrigin = "";
-  try {
-    const parsed = new URL(configuredOrigin);
-    if (parsed.protocol === "https:" && parsed.pathname === "/" && !parsed.search && !parsed.hash &&
-        ALLOWED_ORIGINS.has(parsed.origin) && parsed.origin === PRODUCTION_ORIGIN) validOrigin = parsed.origin;
-  } catch {
-    // Never build confirmation URLs from an unvalidated or preview origin.
+  const configuredOrigin = Deno.env.get("PUBLIC_SITE_URL")?.trim();
+  if (configuredOrigin) {
+    try {
+      const parsed = new URL(configuredOrigin);
+      if (parsed.protocol !== "https:" || parsed.pathname !== "/" || parsed.search || parsed.hash ||
+          !ALLOWED_ORIGINS.has(parsed.origin)) {
+        return json({ ok: false, error: "public_site_url_not_configured" }, 503, origin);
+      }
+    } catch {
+      return json({ ok: false, error: "public_site_url_not_configured" }, 503, origin);
+    }
   }
-  if (!validOrigin) return json({ ok: false, error: "public_site_url_not_configured" }, 503, origin);
+  // Confirmation links always use the canonical portfolio domain, not the request's Origin.
+  const validOrigin = PRODUCTION_ORIGIN;
 
   const confirmToken = randomHexToken();
   const unsubscribeToken = randomHexToken();
