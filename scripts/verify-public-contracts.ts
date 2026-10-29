@@ -123,8 +123,26 @@ async function verifyPrivateBucketDenied(): Promise<void> {
     cache: "no-store",
     signal: AbortSignal.timeout(15_000),
   });
-  assert(response.status >= 400 && response.status < 500, `Anonymous private-bucket listing was not denied with a client error (HTTP ${response.status})`);
-  pass("anonymous cannot list private contact attachments");
+
+  if (response.status === 401 || response.status === 403) {
+    pass(`anonymous cannot list private contact attachments (HTTP ${response.status})`);
+    return;
+  }
+
+  assert(
+    response.ok,
+    `Anonymous private-bucket listing must be denied or return zero visible objects, received HTTP ${response.status}`,
+  );
+  const payload: unknown = await response.json();
+  assert(
+    Array.isArray(payload),
+    "Anonymous private-bucket listing returned an unexpected non-array response",
+  );
+  assert(
+    payload.length === 0,
+    `Anonymous private-bucket listing exposed ${payload.length} object(s)`,
+  );
+  pass("anonymous private-bucket listing returned zero visible objects");
 }
 
 async function main(): Promise<void> {
