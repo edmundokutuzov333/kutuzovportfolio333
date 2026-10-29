@@ -150,7 +150,9 @@ export async function completeMediaUpload(input: {
     throw new AdminMediaError("O conteúdo real não corresponde a uma imagem PNG, JPG ou WEBP válida.", "invalid");
   }
 
-  const sha = await crypto.subtle.digest("SHA-256", bytes);
+  const digestInput = new Uint8Array(bytes.byteLength);
+  digestInput.set(bytes);
+  const sha = await crypto.subtle.digest("SHA-256", digestInput.buffer);
   const sha256 = Array.from(new Uint8Array(sha), (value) => value.toString(16).padStart(2, "0")).join("");
   const mediaRecord = {
     bucket_id: PUBLIC_BUCKET,
@@ -197,8 +199,24 @@ export async function completeMediaUpload(input: {
   } catch {
     auditRecorded = false;
   }
+  const asset = {
+    id: String(record["id"]),
+    bucket_id: String(record["bucket_id"] ?? PUBLIC_BUCKET),
+    object_path: String(record["object_path"] ?? path),
+    original_name: record["original_name"] == null ? null : String(record["original_name"]),
+    content_type: String(record["content_type"] ?? inspected.mime),
+    byte_size: Number(record["byte_size"] ?? bytes.byteLength),
+    width: Number(record["width"] ?? inspected.width),
+    height: Number(record["height"] ?? inspected.height),
+    sha256: String(record["sha256"] ?? sha256),
+    alt_text: record["alt_text"] == null ? null : String(record["alt_text"]),
+    caption: record["caption"] == null ? null : String(record["caption"]),
+    is_public: record["is_public"] === true,
+    uploaded_by: record["uploaded_by"] == null ? null : String(record["uploaded_by"]),
+    created_at: typeof record["created_at"] === "string" ? record["created_at"] : new Date().toISOString(),
+  };
   return {
-    asset: record,
+    asset,
     publicUrl: publicAssetUrl(context.supabase.url, path),
     auditRecorded,
   };

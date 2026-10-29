@@ -8,7 +8,7 @@ import { SUPABASE_URL } from "@/lib/cms/public-client";
 
 type Row = Record<string, unknown>;
 type TableState = { rows: Row[]; error: string | null };
-type StorageState = { status: "ready" | "unavailable"; buckets?: Array<{ id: string; name: string; public: boolean }>; error?: string };
+type StorageState = { status: string; buckets?: Array<{ id: string; name: string; public: boolean }>; error?: string };
 type Badge = (value: unknown) => ReactNode;
 const txt = (v: unknown) => typeof v === "string" ? v : v == null ? "" : String(v);
 
