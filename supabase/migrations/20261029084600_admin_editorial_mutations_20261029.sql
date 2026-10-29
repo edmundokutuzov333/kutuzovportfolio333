@@ -10,7 +10,7 @@ set gallery_alt = coalesce((
 ), '[]'::jsonb)
 where jsonb_array_length(coalesce(p.gallery, '[]'::jsonb)) <> jsonb_array_length(coalesce(p.gallery_alt, '[]'::jsonb));
 
-do $
+do $$
 begin
   if not exists (
     select 1 from pg_constraint
@@ -22,7 +22,7 @@ begin
       check (jsonb_array_length(coalesce(gallery, '[]'::jsonb)) = jsonb_array_length(gallery_alt));
   end if;
 end;
-$;
+$$;
 -- Functions are callable only with the server service role; every server handler must first call requireAdmin().
 -- The actor UUID is additionally checked against the trusted app_metadata role before any write.
 

@@ -13,6 +13,7 @@ import {
   updateContactSubmissionFn,
 } from "@/lib/admin-cms.functions";
 import type { AdminEntity } from "@/lib/admin-cms.schema";
+import { getRestorableSnapshot } from "@/lib/admin-revisions";
 
 type Row = Record<string, unknown>;
 type TableState = { rows: Row[]; error: string | null };
@@ -526,7 +527,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   async function restoreRevision(row: Row) {
     const entityType = asText(row["entity_type"]);
     const entity = TABLE_TO_ENTITY[entityType];
-    const before = row["before_snapshot"];
+    const before = getRestorableSnapshot(row);
     const entityId = asText(row["entity_id"]);
     if (!entity || !before || typeof before !== "object" || Array.isArray(before)) {
       setNotice({ tone: "info", text: "Esta revisão não contém um snapshot restaurável para uma entidade editorial suportada." });
@@ -602,7 +603,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
         ) : field.type === "textarea" || field.type === "json" ? (
           <textarea id={`admin-field-${field.key}`} value={asText(value)} onChange={(event) => updateDraft(field.key, event.target.value)} disabled={fieldDisabled} required={field.required} aria-describedby={describedBy} rows={field.type === "json" ? 7 : 4} spellCheck={field.type !== "json"} className={`${shared} resize-y font-mono text-xs leading-5`} />
         ) : (
-          <input id={`admin-field-${field.key}`} type={field.type === "number" ? "number" : field.type === "email" ? "email" : "text"} min={field.type === "number" ? 0 : undefined} value={asText(value)} onChange={(event) => updateDraft(field.key, event.target.value)} disabled={fieldDisabled} required={field.required} aria-describedby={describedBy} className={shared} />
+          <input id={`admin-field-${field.key}`} type={field.type === "number" ? "number" : field.type === "email" ? "email" : field.type === "url" ? "url" : "text"} min={field.type === "number" ? 0 : undefined} value={asText(value)} onChange={(event) => updateDraft(field.key, event.target.value)} disabled={fieldDisabled} required={field.required} aria-describedby={describedBy} className={shared} />
         )}
         {field.help ? <p id={describedBy} className="mt-1.5 text-xs leading-5 text-[#666b76]">{field.help}</p> : null}
       </div>
@@ -845,7 +846,7 @@ function Overview({ workspace, stateBadge }: { workspace: Workspace | null; stat
 
 function HistoryView({ rows, error, onRestore, busy, stateBadge }: { rows: Row[]; error: string | null; onRestore: (row: Row) => void; busy: boolean; stateBadge: (value: unknown) => ReactNode }) {
   if (error) return <div role="alert" className="rounded-xl border border-[#e8b4ae] bg-white p-5 text-sm text-[#922f25]">{error}</div>;
-  return <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm"><div className="border-b border-[#e8eaf0] p-4"><h2 className="text-sm font-semibold">Revisões registadas</h2><p className="mt-1 text-xs text-[#777c87]">Snapshots reais com autor, data e número de publicação. Restaurar escreve uma nova revisão.</p></div>{rows.length === 0 ? <p className="p-10 text-center text-sm text-[#727784]">Não existem revisões disponíveis.</p> : <div className="divide-y divide-[#eff0f4]">{rows.map((row) => <div key={asText(row["id"])} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{asText(row["entity_type"])} · {asText(row["action"])}</p><p className="mt-1 text-xs text-[#707582]">{asText(row["note"]) || "Sem nota"} · revisão {asText(row["publish_revision"])}</p><p className="mt-1 text-[10px] text-[#8b9099]">{asText(row["created_at"])} · actor {asText(row["actor_id"]) || "indisponível"}</p></div>{stateBadge(row["action"])}{row["before_snapshot"] ? <button type="button" onClick={() => onRestore(row)} disabled={busy} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold hover:bg-[#f7f8fa] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-50">Restaurar</button> : null}</div>)}</div>}</div>;
+  return <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm"><div className="border-b border-[#e8eaf0] p-4"><h2 className="text-sm font-semibold">Revisões registadas</h2><p className="mt-1 text-xs text-[#777c87]">Snapshots reais com autor, data e número de publicação. Restaurar escreve uma nova revisão.</p></div>{rows.length === 0 ? <p className="p-10 text-center text-sm text-[#727784]">Não existem revisões disponíveis.</p> : <div className="divide-y divide-[#eff0f4]">{rows.map((row) => <div key={asText(row["id"])} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{asText(row["entity_type"])} · {asText(row["action"])}</p><p className="mt-1 text-xs text-[#707582]">{asText(row["note"]) || "Sem nota"} · revisão {asText(row["publish_revision"])}</p><p className="mt-1 text-[10px] text-[#8b9099]">{asText(row["created_at"])} · actor {asText(row["actor_id"]) || "indisponível"}</p></div>{stateBadge(row["action"])}{getRestorableSnapshot(row) ? <button type="button" onClick={() => onRestore(row)} disabled={busy} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold hover:bg-[#f7f8fa] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-50">Restaurar</button> : null}</div>)}</div>}</div>;
 }
 
 function InboxView({ rows, error, busy, onStatus, stateBadge }: { rows: Row[]; error: string | null; busy: boolean; onStatus: (row: Row, status: "new" | "in_review" | "replied" | "archived") => void; stateBadge: (value: unknown) => ReactNode }) {
