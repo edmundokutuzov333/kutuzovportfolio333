@@ -26,7 +26,7 @@ describe("Kutuzov Admin editorial server contracts", () => {
       note: "Teste de contrato",
     });
     expect(input.entity).toBe("projects");
-    expect(validateAdminPayload("projects", input.payload, "publish", { creating: true }).slug).toBe("case-study-808");
+    expect(validateAdminPayload("projects", input.payload, "publish", { creating: true })["slug"]).toBe("case-study-808");
   });
 
   it("rejects slugs with spaces, uppercase characters and path injection", () => {
@@ -50,7 +50,7 @@ describe("Kutuzov Admin editorial server contracts", () => {
     }, "update", { publicSiteUrl: "https://kutuzovportfolio333.lovable.app" })).toThrow(/origem definida/);
     expect(validateAdminPayload("pages", {
       canonical_url: "https://kutuzovportfolio333.lovable.app/about",
-    }, "update", { publicSiteUrl: "https://kutuzovportfolio333.lovable.app" }).canonical_url).toBe("https://kutuzovportfolio333.lovable.app/about");
+    }, "update", { publicSiteUrl: "https://kutuzovportfolio333.lovable.app" })["canonical_url"]).toBe("https://kutuzovportfolio333.lovable.app/about");
   });
 
   it("rejects arbitrary HTML configurations for a supported Home section", () => {
@@ -80,7 +80,7 @@ describe("Kutuzov Admin editorial server contracts", () => {
       position: 20,
       is_visible: true,
     }, "publish", { creating: true });
-    expect(client.logo_path).toBeNull();
+    expect(client["logo_path"]).toBeNull();
   });
 
   it("validates the mutation envelope against unexpected outer fields", () => {

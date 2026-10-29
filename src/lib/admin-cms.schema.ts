@@ -171,17 +171,17 @@ export function validateAdminPayload(
     if (missing.length) throw new Error("Campos obrigatórios em falta: " + missing.join(", ") + ".");
   }
 
-  if (entity === "pages" && parsed.route_path !== undefined) {
+  if (entity === "pages" && parsed["route_path"] !== undefined) {
     const supportedRoutes = new Set(["/", "/work", "/work/:slug", "/about", "/services", "/process", "/clients", "/contact"]);
-    if (!supportedRoutes.has(String(parsed.route_path))) throw new Error("A rota não tem um renderer público suportado.");
+    if (!supportedRoutes.has(String(parsed["route_path"]))) throw new Error("A rota não tem um renderer público suportado.");
   }
 
   if (entity === "page_sections") {
-    const type = parsed.section_type;
+    const type = parsed["section_type"];
     if (type !== undefined && !sectionTypes.includes(type as typeof sectionTypes[number])) {
       throw new Error("Tipo de secção não suportado.");
     }
-    const config = parsed.config;
+    const config = parsed["config"];
     if (type !== undefined && config !== undefined) {
       const value = config as Record<string, unknown>;
       const configSchemas: Partial<Record<typeof sectionTypes[number], z.ZodTypeAny>> = {
@@ -204,14 +204,15 @@ export function validateAdminPayload(
     }
   }
 
-  if (entity === "pages" && parsed.canonical_url) {
+  if (entity === "pages" && parsed["canonical_url"]) {
     const configuredOrigin = options.publicSiteUrl?.trim();
     if (!configuredOrigin) throw new Error("PUBLIC_SITE_URL não está configurada no servidor; não é seguro definir o canonical.");
     let expectedOrigin: string;
     let actualOrigin: string;
     try {
       const expected = new URL(configuredOrigin);
-      const actual = new URL(String(parsed.canonical_url));
+      const actual = new URL(String(parsed["canonical_url"]));
+      if (expected.pathname !== "/" || expected.search || expected.hash) throw new Error("canonical_origin_must_be_origin_only");
       if (expected.protocol !== "https:" || actual.protocol !== "https:") throw new Error("https_required");
       expectedOrigin = expected.origin;
       actualOrigin = actual.origin;
@@ -225,15 +226,15 @@ export function validateAdminPayload(
     const value = parsed[key];
     if (value !== undefined) assetPath.parse(value);
   }
-  if (Array.isArray(parsed.gallery)) {
-    parsed.gallery.forEach((value) => assetPath.parse(value));
+  if (Array.isArray(parsed["gallery"])) {
+    parsed["gallery"].forEach((value) => assetPath.parse(value));
   }
   for (const key of ["socials"]) {
     const value = parsed[key];
     if (Array.isArray(value)) {
       value.forEach((entry) => {
         if (typeof entry === "object" && entry !== null && "href" in entry) {
-          const href = String((entry as Record<string, unknown>).href);
+          const href = String((entry as Record<string, unknown>)["href"]);
           if (!href.startsWith("https://")) throw new Error("Os links públicos devem usar HTTPS.");
         }
       });

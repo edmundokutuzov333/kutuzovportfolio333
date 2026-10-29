@@ -18,7 +18,7 @@ const reorderInput = z.object({
     "skills", "disciplines", "principles", "services", "process_steps",
   ]),
   ids: z.array(z.string().uuid()).min(1).max(500),
-  pageId: z.string().uuid().nullable().optional(),
+  pageId: z.string().uuid().nullable(),
 }).strict();
 
 const contactInput = z.object({

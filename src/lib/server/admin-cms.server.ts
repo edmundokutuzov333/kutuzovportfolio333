@@ -7,7 +7,9 @@ import {
 } from "../admin-cms.schema";
 
 type AdminContext = Awaited<ReturnType<typeof getAdminServerContext>>;
-type Row = Record<string, unknown>;
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+type Row = Record<string, JsonValue>;
+type InputRow = Record<string, unknown>;
 type TableState = { rows: Row[]; error: string | null };
 
 const TABLES = [
@@ -153,18 +155,46 @@ export async function mutateAdminContent(input: {
   entity: AdminEntity;
   action: AdminAction;
   id: string | null;
-  payload: Row;
+  payload: InputRow;
   expectedUpdatedAt: string | null;
   note?: string | null;
 }) {
   const context = await getAdminServerContext();
   const publicSiteUrl = process.env["PUBLIC_SITE_URL"]?.trim();
   let payload: Row;
+  let validationInput = input.payload;
+  if (
+    input.entity === "page_sections" &&
+    input.id &&
+    input.action !== "archive" &&
+    input.action !== "restore" &&
+    ("config" in input.payload || "is_visible" in input.payload)
+  ) {
+    const existing = await restRequest<Row[]>(
+      context,
+      `/rest/v1/page_sections?id=eq.${encodeURIComponent(input.id)}&select=id,page_id,section_type,config,is_visible,updated_at`,
+    );
+    const current = existing[0];
+    if (!current) throw new AdminCmsError("A secção já não existe. Actualize a lista.", "not_found");
+    if (current["updated_at"] !== input.expectedUpdatedAt) {
+      throw new AdminCmsError("Conflito: a secção foi alterada depois de abrir o formulário. Os seus valores locais foram preservados.", "conflict");
+    }
+    validationInput = {
+      page_id: input.payload["page_id"] ?? current["page_id"],
+      section_type: input.payload["section_type"] ?? current["section_type"],
+      config: input.payload["config"] ?? current["config"],
+      is_visible: input.payload["is_visible"] ?? current["is_visible"],
+      ...input.payload,
+    };
+  }
   try {
-    payload = validateAdminPayload(input.entity, input.payload, input.action, {
+    const validated = validateAdminPayload(input.entity, validationInput, input.action, {
       creating: input.id === null && input.action !== "archive" && input.action !== "restore",
-      publicSiteUrl,
+      publicSiteUrl: publicSiteUrl ?? "",
     });
+    payload = Object.fromEntries(
+      Object.keys(input.payload).map((key) => [key, validated[key]]),
+    ) as Row;
   } catch (error) {
     if (error instanceof Error) {
       throw new AdminCmsError(error.message, "invalid");

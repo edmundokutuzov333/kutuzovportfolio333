@@ -57,13 +57,13 @@ begin
   case p_entity_type
     when 'pages' then
       v_table := 'pages';
-      v_allowed := array['slug','route_path','title','locale','status','seo_title','seo_description','canonical_url','og_image_path'];
+      v_allowed := array['slug','route_path','title','locale','status','seo_title','seo_description','canonical_url','og_image_path','published_at'];
     when 'page_sections' then
       v_table := 'page_sections';
       v_allowed := array['page_id','section_key','section_type','position','is_visible','config'];
     when 'projects' then
       v_table := 'projects';
-      v_allowed := array['slug','title','client_id','client_label','year_label','discipline','project_type','summary','challenge','idea','outcome','cover_path','cover_alt','gallery','gallery_alt','featured','position','status','hue','locale'];
+      v_allowed := array['slug','title','client_id','client_label','year_label','discipline','project_type','summary','challenge','idea','outcome','cover_path','cover_alt','gallery','gallery_alt','featured','position','status','hue','locale','published_at'];
     when 'clients' then
       v_table := 'clients';
       v_allowed := array['slug','name','logo_path','logo_alt','display_as_text','position','show_on_home','show_on_clients_page','is_visible'];
@@ -100,6 +100,9 @@ begin
 
   if p_entity_type = 'site_settings' and (p_entity_id is null or p_action in ('create','archive')) then
     raise exception 'settings_must_be_updated_not_created_or_archived' using errcode = '22023';
+  end if;
+  if p_entity_type = 'profile_content' and (p_entity_id is null or p_action in ('create','archive')) then
+    raise exception 'profile_content_must_be_updated_not_created_or_archived' using errcode = '22023';
   end if;
   if p_entity_id is not null and p_action <> 'restore'
      and p_entity_type in ('page_sections','projects','clients','experience_items','metrics','skills','disciplines','principles','services','process_steps')
@@ -165,8 +168,32 @@ begin
       raise exception 'empty_create_payload' using errcode = '22023';
     end if;
 
-    if v_table in ('pages','page_sections','clients','projects') then
+    if p_entity_type = 'projects' and
+       jsonb_array_length(coalesce(v_payload -> 'gallery','[]'::jsonb)) <>
+       jsonb_array_length(coalesce(v_payload -> 'gallery_alt','[]'::jsonb)) then
+      raise exception 'gallery_alt_count_mismatch' using errcode = '22023';
+    end if;
+
+    if p_entity_type in ('page_sections','projects','clients','experience_items','metrics','skills','disciplines','principles','services','process_steps') then
+      if not (v_payload ? 'position') then
+        raise exception 'position_required' using errcode = '22023';
+      end if;
+      if p_entity_type = 'page_sections' then
+        execute 'select coalesce(max(position) + 1,0) from public.page_sections where page_id = $1'
+          into v_row_count using (v_payload ->> 'page_id')::uuid;
+      else
+        execute format('select coalesce(max(position) + 1,0) from public.%I',v_table)
+          into v_row_count;
+      end if;
+      if (v_payload ->> 'position')::integer <> v_row_count then
+        raise exception 'invalid_create_position' using errcode = '22023';
+      end if;
+    end if;
+
+    if v_table in ('pages','clients','projects') then
       v_payload := v_payload || jsonb_build_object('created_by',p_actor_id,'updated_by',p_actor_id);
+    elsif v_table = 'page_sections' then
+      v_payload := v_payload || jsonb_build_object('updated_by',p_actor_id);
     elsif v_table in ('profile_content','site_settings') then
       v_payload := v_payload || jsonb_build_object('updated_by',p_actor_id);
     end if;
@@ -196,6 +223,11 @@ begin
        and (v_payload ->> 'page_id') is distinct from (v_before ->> 'page_id') then
       raise exception 'section_page_is_immutable' using errcode = '22023';
     end if;
+    if p_entity_type = 'projects' and
+       jsonb_array_length(coalesce(case when v_payload ? 'gallery' then v_payload -> 'gallery' else v_before -> 'gallery' end,'[]'::jsonb)) <>
+       jsonb_array_length(coalesce(case when v_payload ? 'gallery_alt' then v_payload -> 'gallery_alt' else v_before -> 'gallery_alt' end,'[]'::jsonb)) then
+      raise exception 'gallery_alt_count_mismatch' using errcode = '22023';
+    end if;
 
     -- Restore an earlier list position without violating unique-position constraints.
     -- Sibling moves are snapshotted and audited in the same transaction as the target restore.
@@ -215,7 +247,11 @@ begin
         v_reorder_position := 0;
         for v_reorder_id in select id from public.page_sections where page_id = v_page_id and id <> p_entity_id order by position asc loop
           if v_reorder_position >= v_target_position then v_reorder_position := v_reorder_position + 1; end if;
-          update public.page_sections set position = v_reorder_position, updated_at = now(), updated_by = p_actor_id where id = v_reorder_id;
+          if (v_positions_before -> v_reorder_id::text ->> 'position')::integer is distinct from v_reorder_position then
+            update public.page_sections set position = v_reorder_position, updated_at = now(), updated_by = p_actor_id where id = v_reorder_id;
+          else
+            update public.page_sections set position = v_reorder_position where id = v_reorder_id;
+          end if;
           v_reorder_position := v_reorder_position + 1;
         end loop;
       else
@@ -229,7 +265,7 @@ begin
         v_reorder_position := 0;
         for v_reorder_id in execute format('select id from public.%I where id <> $1 order by position asc',v_table) using p_entity_id loop
           if v_reorder_position >= v_target_position then v_reorder_position := v_reorder_position + 1; end if;
-          execute format('update public.%I set position = $1, updated_at = now() where id = $2',v_table) using v_reorder_position,v_reorder_id;
+          execute format('update public.%I set position = $1, updated_at = case when position is distinct from $1 then now() else updated_at end where id = $2',v_table) using v_reorder_position,v_reorder_id;
           v_reorder_position := v_reorder_position + 1;
         end loop;
       end if;
