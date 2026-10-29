@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type ReactNode } from "react";
 import { PageHero } from "@/components/Reveal";
-import { emptyBrief, validateStep, type Brief } from "@/lib/brief";
+import { DELIVERABLE_OPTIONS, INDUSTRIES, MAX_TOTAL_FILE_BYTES, PROJECT_STAGES, emptyBrief, validateStep, type Brief } from "@/lib/brief";
 import { loadContactContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
@@ -33,6 +33,23 @@ function Contact() {
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [notificationStatus, setNotificationStatus] = useState<string>("");
   const set = <K extends keyof Brief>(k: K, v: Brief[K]) => setB((p) => ({ ...p, [k]: v }));
+  const toggleService = (service: string) => {
+    if (b.type === service) {
+      const [nextPrimary = "", ...remaining] = b.additionalTypes;
+      setB((current) => ({ ...current, type: nextPrimary, additionalTypes: remaining }));
+    } else if (b.additionalTypes.includes(service)) {
+      set("additionalTypes", b.additionalTypes.filter((item) => item !== service));
+    } else if (!b.type) {
+      set("type", service);
+    } else {
+      set("additionalTypes", [...b.additionalTypes, service]);
+    }
+  };
+  const toggleDeliverable = (item: string) => {
+    set("deliverables", b.deliverables.includes(item)
+      ? b.deliverables.filter((value) => value !== item)
+      : [...b.deliverables, item]);
+  };
 
   const next = async () => {
     const validationError = validateStep(step, b);
@@ -52,6 +69,12 @@ function Contact() {
     payload.set("location", b.location);
     payload.set("phone", b.phone);
     payload.set("type", b.type);
+    payload.set("additionalTypes", JSON.stringify(b.additionalTypes));
+    payload.set("projectName", b.projectName);
+    payload.set("industry", b.industry);
+    payload.set("projectStage", b.projectStage);
+    payload.set("deliverables", JSON.stringify(b.deliverables));
+    payload.set("audience", b.audience);
     payload.set("urgency", b.urgency);
     payload.set("currency", b.currency);
     payload.set("budget", b.budget);
@@ -141,58 +164,144 @@ function Contact() {
                   )}
 
                   {step === 1 && (
-                    <>
-                      <div className="flex flex-wrap gap-2">
-                        {projectTypes.map((t) => <Chip key={t} on={b.type === t} onClick={() => set("type", t)}>{t}</Chip>)}
-                      </div>
+                    <div className="space-y-8">
                       <div>
-                        <p className="eyebrow mb-3">Urgency</p>
+                        <p className="eyebrow mb-3">Services required * <span className="normal-case tracking-normal text-muted-foreground">Select all that apply. Your first selection becomes the main service.</span></p>
                         <div className="flex flex-wrap gap-2">
-                          {([["low", "Low — exploring"], ["normal", "Normal"], ["high", "High"], ["urgent", "Urgent"]] as const).map(([v, l]) => (
-                            <Chip key={v} on={b.urgency === v} onClick={() => set("urgency", v)}>{l}</Chip>
-                          ))}
+                          {projectTypes.map((service) => {
+                            const primary = b.type === service;
+                            const additional = b.additionalTypes.includes(service);
+                            return (
+                              <Chip key={service} on={primary || additional} onClick={() => toggleService(service)}>
+                                {primary ? "01 · " : additional ? "✓ · " : ""}{service}
+                              </Chip>
+                            );
+                          })}
+                        </div>
+                        {(b.type || b.additionalTypes.length > 0) && (
+                          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                            Main service: {b.type || "Not selected"}{b.additionalTypes.length ? ` · Also requested: ${b.additionalTypes.join(", ")}` : ""}
+                          </p>
+                        )}
+                      </div>
+                      <div className="grid gap-8 md:grid-cols-2">
+                        <Field label="Project / campaign name (optional)">
+                          <input className={input} maxLength={180} value={b.projectName} onChange={(e) => set("projectName", e.target.value)} placeholder="e.g. 2027 product launch" />
+                        </Field>
+                        <Field label="Industry">
+                          <select className={input} value={b.industry} onChange={(e) => set("industry", e.target.value)}>
+                            <option value="">Choose an industry</option>
+                            {INDUSTRIES.map((industry) => <option key={industry} value={industry}>{industry}</option>)}
+                          </select>
+                        </Field>
+                        <div className="md:col-span-2">
+                          <Field label="Project stage">
+                            <select className={input} value={b.projectStage} onChange={(e) => set("projectStage", e.target.value)}>
+                              <option value="">Choose a stage (optional)</option>
+                              {PROJECT_STAGES.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
+                            </select>
+                          </Field>
                         </div>
                       </div>
-                    </>
+                    </div>
                   )}
 
                   {step === 2 && (
-                    <>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.keys(budgets).map((c) => <Chip key={c} on={b.currency === c} onClick={() => set("currency", c)}>{c}</Chip>)}
+                    <div className="space-y-10">
+                      <div className="space-y-4">
+                        <p className="eyebrow">Expected deliverables <span className="normal-case tracking-normal text-muted-foreground">Select all that apply</span></p>
+                        <div className="flex flex-wrap gap-2">
+                          {DELIVERABLE_OPTIONS.map((item) => (
+                            <Chip key={item} on={b.deliverables.includes(item)} onClick={() => toggleDeliverable(item)}>{item}</Chip>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {["Prefer not to say", ...(budgets[b.currency] ?? [])].map((r) => <Chip key={r} on={b.budget === r} onClick={() => set("budget", r)}>{r}</Chip>)}
+                      <div className="space-y-4">
+                        <p className="eyebrow">Budget range</p>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.keys(budgets).map((currency) => <Chip key={currency} on={b.currency === currency} onClick={() => set("currency", currency)}>{currency}</Chip>)}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {["Prefer not to say", ...(budgets[b.currency] ?? [])].map((range) => <Chip key={range} on={b.budget === range} onClick={() => set("budget", range)}>{range}</Chip>)}
+                        </div>
+                        <div className="grid items-end gap-8 md:grid-cols-2">
+                          <Field label="Exact amount (optional)">
+                            <input inputMode="decimal" className={input} value={b.exact} onChange={(e) => set("exact", e.target.value)} placeholder="e.g. 45000" />
+                          </Field>
+                          <label className="flex items-center gap-3 pb-3">
+                            <input type="checkbox" checked={b.negotiable} onChange={(e) => set("negotiable", e.target.checked)} className="accent-primary" />
+                            Budget is negotiable
+                          </label>
+                        </div>
                       </div>
-                      <div className="grid items-end gap-8 md:grid-cols-2">
-                        <Field label="Exact amount (optional)"><input className={input} value={b.exact} onChange={(e) => set("exact", e.target.value)} /></Field>
-                        <label className="flex items-center gap-3 pb-3"><input type="checkbox" checked={b.negotiable} onChange={(e) => set("negotiable", e.target.checked)} className="accent-primary" /> Budget is negotiable</label>
-                      </div>
-                    </>
+                    </div>
                   )}
 
                   {step === 3 && (
-                    <>
-                      <Field label="Deadline"><input type="date" className={input} value={b.deadline} onChange={(e) => set("deadline", e.target.value)} /></Field>
+                    <div className="space-y-8">
                       <div>
-                        <p className="eyebrow mb-3">Preferred channel</p>
+                        <p className="eyebrow mb-3">Urgency</p>
                         <div className="flex flex-wrap gap-2">
-                          {(["email", "phone", "whatsapp", "linkedin"] as const).map((c) => <Chip key={c} on={b.channel === c} onClick={() => set("channel", c)}>{c.charAt(0).toUpperCase() + c.slice(1)}</Chip>)}
+                          {([["low", "Exploring"], ["normal", "Normal"], ["high", "High priority"], ["urgent", "Urgent"]] as const).map(([value, label]) => (
+                            <Chip key={value} on={b.urgency === value} onClick={() => set("urgency", value)}>{label}</Chip>
+                          ))}
                         </div>
                       </div>
-                    </>
+                      <Field label="Target deadline (optional)">
+                        <input type="date" className={input} value={b.deadline} onChange={(e) => set("deadline", e.target.value)} />
+                      </Field>
+                      <div>
+                        <p className="eyebrow mb-3">Preferred contact channel</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(["email", "phone", "whatsapp", "linkedin"] as const).map((channel) => <Chip key={channel} on={b.channel === channel} onClick={() => set("channel", channel)}>{channel.charAt(0).toUpperCase() + channel.slice(1)}</Chip>)}
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   {step === 4 && (
-                    <>
-                      <Field label={`Message * (${b.message.length}/4000)`}>
-                        <textarea rows={6} maxLength={4000} className={input} value={b.message} onChange={(e) => set("message", e.target.value)} />
+                    <div className="space-y-8">
+                      <Field label="Project brief *">
+                        <textarea rows={6} maxLength={4000} className={input} value={b.message} onChange={(e) => set("message", e.target.value)} placeholder="What are you building, what needs to change, and what would a successful result look like?" />
+                        <span className="mt-2 block text-xs text-muted-foreground">{b.message.length}/4000 characters</span>
                       </Field>
-                      <Field label="Reference links (space separated)"><input className={input} placeholder="https://" value={b.links} onChange={(e) => set("links", e.target.value)} /></Field>
-                      <Field label="Visual references — up to 5 · PNG, JPG, WEBP · 8 MB each">
-                        <input type="file" multiple accept="image/png,image/jpeg,image/webp" className="mt-3 block text-sm file:mr-4 file:rounded-full file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-foreground" onChange={(e) => set("files", Array.from(e.target.files ?? []))} />
+                      <Field label="Target audience (optional)">
+                        <textarea rows={2} maxLength={800} className={input} value={b.audience} onChange={(e) => set("audience", e.target.value)} placeholder="Who should this work reach or influence?" />
                       </Field>
-                    </>
+                      <Field label="Reference links">
+                        <textarea rows={3} maxLength={2000} className={input} placeholder={"One URL per line, up to 10 links\nhttps://example.com"} value={b.links} onChange={(e) => set("links", e.target.value)} />
+                      </Field>
+                      <div>
+                        <p className="eyebrow">Attachments</p>
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">Up to 5 files. PNG, JPG, WEBP or PDF. 8 MB per file, 17 MB combined. Files are attached to the email using the original filenames.</p>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/png,image/jpeg,image/webp,application/pdf,.pdf"
+                          className="mt-4 block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-foreground"
+                          onChange={(event) => {
+                            const files = Array.from(event.target.files ?? []);
+                            set("files", files);
+                            const total = files.reduce((sum, file) => sum + file.size, 0);
+                            if (files.length > 5) setErr("You can attach up to 5 files.");
+                            else if (total > MAX_TOTAL_FILE_BYTES) setErr("The combined file size must be 17 MB or less.");
+                            else if (files.some((file) => file.size > 8 * 1024 * 1024)) setErr("Each file must be 8 MB or less.");
+                            else setErr(null);
+                          }}
+                        />
+                        {b.files.length > 0 && (
+                          <ul className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+                            {b.files.map((file, index) => (
+                              <li key={`${file.name}-${file.lastModified}-${index}`} className="flex items-center justify-between gap-4">
+                                <span className="min-w-0 truncate">{file.name} <span className="text-xs text-muted-foreground">({(file.size / 1024 / 1024).toFixed(2)} MB)</span></span>
+                                <button type="button" className="shrink-0 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground" onClick={() => set("files", b.files.filter((_, fileIndex) => fileIndex !== index)}>Remove</button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {b.files.length > 0 && <p className="mt-2 text-xs text-muted-foreground">{(b.files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB of 17 MB used</p>}
+                      </div>
+                    </div>
                   )}
                 </motion.div>
               </AnimatePresence>
