@@ -692,7 +692,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
             ) : activeId === "overview" ? (
               <Overview workspace={workspace} stateBadge={stateBadge} />
             ) : activeId === "history" ? (
-              <HistoryView rows={tableRows} error={tableState?.error ?? null} onRestore={(row) => void restoreRevision(row)} busy={saving} stateBadge={stateBadge} />
+              <HistoryView rows={tableRows} tables={workspace?.tables} error={tableState?.error ?? null} onRestore={(row) => void restoreRevision(row)} busy={saving} stateBadge={stateBadge} />
             ) : activeId === "inbox" ? (
               <InboxView rows={tableRows} error={tableState?.error ?? null} busy={saving} onStatus={(row, status) => void setContactStatus(row, status)} stateBadge={stateBadge} />
             ) : activeId === "media" ? (
@@ -848,8 +848,46 @@ function Overview({ workspace, stateBadge }: { workspace: Workspace | null; stat
   );
 }
 
-function HistoryView({ rows, error, onRestore, busy, stateBadge }: { rows: Row[]; error: string | null; onRestore: (row: Row) => void; busy: boolean; stateBadge: (value: unknown) => ReactNode }) {
+function HistoryView({ rows, tables, error, onRestore, busy, stateBadge }: {
+  rows: Row[];
+  tables: Workspace["tables"] | undefined;
+  error: string | null;
+  onRestore: (row: Row) => void;
+  busy: boolean;
+  stateBadge: (value: unknown) => ReactNode;
+}) {
+  const [compareId, setCompareId] = useState<string | null>(null);
   if (error) return <div role="alert" className="rounded-xl border border-[#e8b4ae] bg-white p-5 text-sm text-[#922f25]">{error}</div>;
-  return <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm"><div className="border-b border-[#e8eaf0] p-4"><h2 className="text-sm font-semibold">Revisões registadas</h2><p className="mt-1 text-xs text-[#777c87]">Snapshots reais com autor, data e número de publicação. Restaurar escreve uma nova revisão.</p></div>{rows.length === 0 ? <p className="p-10 text-center text-sm text-[#727784]">Não existem revisões disponíveis.</p> : <div className="divide-y divide-[#eff0f4]">{rows.map((row) => <div key={asText(row["id"])} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{asText(row["entity_type"])} · {asText(row["action"])}</p><p className="mt-1 text-xs text-[#707582]">{asText(row["note"]) || "Sem nota"} · revisão {asText(row["publish_revision"])}</p><p className="mt-1 text-[10px] text-[#8b9099]">{asText(row["created_at"])} · actor {asText(row["actor_id"]) || "indisponível"}</p></div>{stateBadge(row["action"])}{getRestorableSnapshot(row) ? <button type="button" onClick={() => onRestore(row)} disabled={busy} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold hover:bg-[#f7f8fa] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-50">Restaurar</button> : null}</div>)}</div>}</div>;
+  return <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm">
+    <div className="border-b border-[#e8eaf0] p-4">
+      <h2 className="text-sm font-semibold">Revisões registadas</h2>
+      <p className="mt-1 text-xs leading-5 text-[#777c87]">Compare o snapshot seleccionado com o estado actual. Restaurar cria uma nova revisão sem apagar o histórico existente.</p>
+    </div>
+    {rows.length === 0 ? <p className="p-10 text-center text-sm text-[#727784]">Ainda não existem revisões registadas.</p> : <div className="divide-y divide-[#eff0f4]">
+      {rows.map((row) => {
+        const id = asText(row["id"]);
+        const entityType = asText(row["entity_type"]);
+        const entityId = asText(row["entity_id"]);
+        const current = tables?.[entityType]?.rows.find((item) => asText(item["id"]) === entityId);
+        const snapshot = getRestorableSnapshot(row);
+        const comparing = compareId === id;
+        return <article key={id} className="p-4">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="break-words text-sm font-semibold">{entityType} · {asText(row["action"])}</p>
+              <p className="mt-1 text-xs text-[#707582]">{asText(row["note"]) || "Sem nota"} · revisão {asText(row["publish_revision"])}</p>
+              <p className="mt-1 text-[10px] text-[#8b9099]">{asText(row["created_at"])} · actor {asText(row["actor_id"]) || "indisponível"}</p>
+            </div>
+            {stateBadge(row["action"])}
+            {snapshot && current ? <button type="button" onClick={() => setCompareId(comparing ? null : id)} aria-expanded={comparing} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold hover:bg-[#f7f8fa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98]">{comparing ? "Fechar comparação" : "Comparar com actual"}</button> : null}
+            {row["before_snapshot"] && snapshot ? <button type="button" onClick={() => onRestore(row)} disabled={busy || !current} className="h-8 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold hover:bg-[#f7f8fa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50">Restaurar esta versão</button> : null}
+          </div>
+          {comparing && snapshot && current ? <section aria-label={`Comparação da revisão ${asText(row["publish_revision"])} com o estado actual`} className="mt-4 grid gap-3 border-t border-[#eff0f4] pt-4 lg:grid-cols-2">
+            <div className="min-w-0"><h3 className="text-xs font-semibold">Snapshot da revisão seleccionada</h3><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[#f7f8fa] p-3 text-[11px] leading-5">{JSON.stringify(snapshot, null, 2)}</pre></div>
+            <div className="min-w-0"><h3 className="text-xs font-semibold">Registo actual</h3><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[#f7f8fa] p-3 text-[11px] leading-5">{JSON.stringify(current, null, 2)}</pre></div>
+          </section> : null}
+        </article>;
+      })}
+    </div>}
+  </div>;
 }
-
