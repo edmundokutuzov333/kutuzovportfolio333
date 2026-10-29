@@ -243,3 +243,84 @@ jobs:
             .e2e/test-results
           if-no-files-found: warn
           retention-days: 30
+
+  sync-route-tree:
+    name: Regenerate and sync TanStack file routes
+    runs-on: ubuntu-latest
+    needs: [quality, e2e]
+    if: \${{ success() }}
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Checkout the fully tested source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - name: Install locked application dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate the TanStack route tree through the Vite plugin
+        run: |
+          set -euo pipefail
+          bun run typecheck
+          grep -Fq "Route as AdminRouteImport" src/routeTree.gen.ts || {
+            echo "The generated route tree does not include src/routes/admin.tsx."
+            exit 1
+          }
+          grep -Fq "'/admin'" src/routeTree.gen.ts || {
+            echo "The generated route tree does not register the /admin route."
+            exit 1
+          }
+
+      - name: Commit generated route tree and start CI for the new SHA
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- src/routeTree.gen.ts; then
+            echo "The generated route tree is already current and includes /admin."
+            exit 0
+          fi
+
+          api="https://api.github.com/repos/$GITHUB_REPOSITORY"
+          auth_header="Authorization: Bearer $GITHUB_TOKEN"
+          api_version="X-GitHub-Api-Version: 2022-11-28"
+          current_json=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/ref/heads/main")
+          current_sha=$(printf '%s' "$current_json" | jq -er '.object.sha')
+          if [[ "$current_sha" != "$GITHUB_SHA" ]]; then
+            echo "main advanced during route generation; refusing to update it."
+            exit 1
+          fi
+
+          base_tree=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/commits/$current_sha" | jq -er '.tree.sha')
+          blob_payload="$RUNNER_TEMP/generated-route-tree-blob.json"
+          jq -n --rawfile content src/routeTree.gen.ts '{content:$content,encoding:"utf-8"}' > "$blob_payload"
+          blob_json=$(curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "@$blob_payload" "$api/git/blobs")
+          blob_sha=$(printf '%s' "$blob_json" | jq -er '.sha')
+          tree_payload=$(jq -n --arg base "$base_tree" --arg blob "$blob_sha" '{base_tree:$base,tree:[{path:"src/routeTree.gen.ts",mode:"100644",type:"blob",sha:$blob}]}')
+          tree_json=$(printf '%s' "$tree_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/trees")
+          tree_sha=$(printf '%s' "$tree_json" | jq -er '.sha')
+          commit_payload=$(jq -n --arg message "chore(router): sync generated /admin route" --arg tree "$tree_sha" --arg parent "$current_sha" '{message:$message,tree:$tree,parents:[$parent]}')
+          commit_json=$(printf '%s' "$commit_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/commits")
+          commit_sha=$(printf '%s' "$commit_json" | jq -er '.sha')
+          update_payload=$(jq -n --arg sha "$commit_sha" '{sha:$sha,force:false}')
+          curl -fsS -X PATCH -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "$update_payload" "$api/git/refs/heads/main" >/dev/null
+          verified_sha=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/ref/heads/main" | jq -er '.object.sha')
+          if [[ "$verified_sha" != "$commit_sha" ]]; then
+            echo "The generated route tree commit was not confirmed at main."
+            exit 1
+          fi
+          echo "Generated route tree committed to main: $commit_sha"
+
+          dispatch_payload=$(jq -n '{ref:"main"}')
+          curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "$dispatch_payload" "$api/actions/workflows/ci.yml/dispatches" >/dev/null
+          echo "Dispatched a fresh CI run against the generated router SHA."
+
