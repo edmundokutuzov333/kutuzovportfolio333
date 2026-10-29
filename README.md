@@ -366,7 +366,7 @@ flowchart TB
 - Supabase PostgreSQL através de REST e funções RPC.
 - Supabase Storage para assets públicos e anexos privados.
 - Supabase Edge Function `public-forms` para contacto, newsletter e acções de token.
-- Hostinger Email SMTP para envio transaccional; Resend permanece apenas como fallback temporário enquanto os segredos SMTP não estão configurados.
+- Hostinger Email SMTP para envio transaccional; não existe fornecedor alternativo.
 
 ### Fluxo de publicação
 
@@ -487,7 +487,7 @@ Os links assinados dos anexos privados são temporários e o servidor verifica a
 | Iconografia | Lucide React |
 | Notificações | Sonner |
 | Backend | Supabase PostgreSQL, REST, RPC, Storage e Edge Functions |
-| Email | Hostinger SMTP através da fila transaccional; fallback Resend temporário |
+| Email | Hostinger SMTP através da fila transaccional, sem fallback externo |
 | Testes unitários | Vitest + Testing Library + jsdom |
 | Testes de browser | Playwright |
 | Runtime local | Bun 1.3.10 |
@@ -576,8 +576,8 @@ Copia `.env.example` apenas para desenvolvimento local e configura os valores no
 | `SMTP_USERNAME` | Edge Function | Endereço completo da caixa Hostinger. |
 | `SMTP_PASSWORD` | **Segredo Edge Function** | Palavra-passe da caixa Hostinger, nunca versionada. |
 | `SMTP_FROM` | Edge Function | Nome e endereço do remetente. |
-| `RESEND_API_KEY` / `MAIL_FROM` | Edge Function, temporário | Fallback durante a migração; removível depois de confirmar SMTP. |
-| `ADMIN_EMAIL` | Edge Function, opcional | Endereço de notificação administrativa; sem override, o código pode usar o email público publicado do perfil. |
+| `CONTACT_NOTIFICATION_EMAILS` | Edge Function, opcional | Lista separada por vírgulas, ponto e vírgula ou linhas novas com aliases Hostinger já existentes para receber notificações de pedidos. Até 10 endereços. |
+| `ADMIN_EMAILS` / `ADMIN_EMAIL` | Edge Function, compatibilidade | Alternativa a `CONTACT_NOTIFICATION_EMAILS`; aceita uma lista ou um endereço. Sem configuração, usa o email público publicado do perfil. |
 
 **Nota sobre o Admin:** as credenciais Supabase são necessárias para as operações CMS com dados reais, mas a criação da sessão por PIN foi separada dessa dependência. Uma entrada bem-sucedida não prova, por si só, que a base de dados, o armazenamento ou o email estejam configurados.
 
@@ -770,7 +770,7 @@ A documentação de migração regista **41 manifestos de assets** cujos binári
 
 ### Email transaccional
 
-O envio real depende de `RESEND_API_KEY` e `MAIL_FROM` no ambiente da Edge Function. Quando o fornecedor não está configurado ou recusa o envio, a fila regista a falha e permite investigação/repetição. Não deve ser reportado sucesso de entrega sem confirmação do fornecedor.
+O envio usa exclusivamente o SMTP da Hostinger (`smtp.hostinger.com:465`, SSL/TLS). Se as credenciais faltarem, forem inválidas ou o servidor recusar a mensagem, a fila regista a falha e permite investigação/repetição. Não existe fallback para outro fornecedor. O `SMTP_FROM` tem de corresponder à caixa autenticada; os aliases são usados como destinatários de notificações, não como remetentes SMTP. A Hostinger documenta o envio a partir de aliases no Webmail, mas não em clientes externos/SMTP.
 
 ### Preview e domínio publicado
 
