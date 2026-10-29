@@ -167,11 +167,13 @@ jobs:
             exit 1
           fi
           base_tree=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/commits/$current_sha" | jq -er '.tree.sha')
-          package_content=$(base64 -w0 package.json)
-          lock_content=$(base64 -w0 bun.lock)
-          package_blob=$(jq -n --arg content "$package_content" '{content:$content,encoding:"base64"}' | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/blobs")
+          package_blob_payload="$proposal/package-blob.json"
+          lock_blob_payload="$proposal/lock-blob.json"
+          jq -n --rawfile content package.json '{content: ($content | @base64), encoding: "base64"}' > "$package_blob_payload"
+          jq -n --rawfile content bun.lock '{content: ($content | @base64), encoding: "base64"}' > "$lock_blob_payload"
+          package_blob=$(curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "@$package_blob_payload" "$api/git/blobs")
           package_blob_sha=$(printf '%s' "$package_blob" | jq -er '.sha')
-          lock_blob=$(jq -n --arg content "$lock_content" '{content:$content,encoding:"base64"}' | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/blobs")
+          lock_blob=$(curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "@$lock_blob_payload" "$api/git/blobs")
           lock_blob_sha=$(printf '%s' "$lock_blob" | jq -er '.sha')
           tree_payload=$(jq -n --arg base "$base_tree" --arg package_sha "$package_blob_sha" --arg lock_sha "$lock_blob_sha" '{base_tree:$base,tree:[{path:"package.json",mode:"100644",type:"blob",sha:$package_sha},{path:"bun.lock",mode:"100644",type:"blob",sha:$lock_sha}]}')
           tree_json=$(printf '%s' "$tree_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/trees")
