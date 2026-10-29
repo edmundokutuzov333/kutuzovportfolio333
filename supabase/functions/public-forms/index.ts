@@ -352,7 +352,8 @@ function readHostingerSmtpConfig(): HostingerSmtpConfigResult {
     return { status: "invalid", reason: "hostinger_smtp_from_must_match_mailbox" };
   }
 
-  return { status: "ready", config: { host, port: 465, user, password, from } };
+  const displayFrom = from.includes("<") ? from : `Edmundo Kutuzov | Creative Direction <${fromAddress}>`;
+  return { status: "ready", config: { host, port: 465, user, password, from: displayFrom } };
 }
 
 type EmailAttachment = { filename: string; content: Uint8Array; contentType: string };
@@ -922,7 +923,7 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
       p_unsubscribe_expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       p_outbox_id: outboxId,
       p_outbox_payload: {
-        kind: "newsletter_confirmation",
+        kind: "newsletter_welcome",
         site_origin: validOrigin,
         token_ciphertext: encrypted.token_ciphertext,
         token_iv: encrypted.token_iv,
@@ -933,13 +934,12 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
   const result = firstRecord(output);
   const status = typeof result?.["status"] === "string" ? result["status"] : "";
   if (status === "already_confirmed") return json({ ok: true, status: "already_confirmed" }, 200, origin);
-  if (status === "unsubscribed") return json({ ok: false, error: "already_unsubscribed" }, 409, origin);
   const id = typeof result?.["outbox_id"] === "string" ? result["outbox_id"] : null;
   if (!id) throw new Error("newsletter_persistence_not_confirmed");
   let deliveryStatus = "email_delivery_failed";
   try {
     const delivery = await attemptEmailOutbox(id);
-    deliveryStatus = delivery.sent ? "pending_confirmation" : delivery.reason;
+    deliveryStatus = delivery.sent ? "subscribed" : delivery.reason;
   } catch {
     await updateOutbox(id, {
       status: "failed",
@@ -947,7 +947,7 @@ async function newsletterSubscribe(request: Request, origin?: string): Promise<R
       next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     }).catch(() => undefined);
   }
-  // Persisted subscriptions remain pending; only the one-use token can activate them.
+  // Consent was explicit at signup; the subscriber is active immediately and receives a welcome email.
   return json({ ok: true, status: deliveryStatus }, 202, origin);
 }
 
