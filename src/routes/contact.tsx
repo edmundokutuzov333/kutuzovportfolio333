@@ -331,7 +331,7 @@ function Contact() {
                             {b.files.map((file, index) => (
                               <li key={`${file.name}-${file.lastModified}-${index}`} className="flex items-center justify-between gap-4">
                                 <span className="min-w-0 truncate">{file.name} <span className="text-xs text-muted-foreground">({(file.size / 1024 / 1024).toFixed(2)} MB)</span></span>
-                                <button type="button" className="shrink-0 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground" onClick={() => set("files", b.files.filter((_, fileIndex) => fileIndex !== index)}>Remove</button>
+                                <button type="button" className="shrink-0 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground" onClick={() => set("files", b.files.filter((_, fileIndex) => fileIndex !== index))}>Remove</button>
                               </li>
                             ))}
                           </ul>
