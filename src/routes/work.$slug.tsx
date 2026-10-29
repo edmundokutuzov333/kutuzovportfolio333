@@ -35,16 +35,16 @@ function CaseStudy() {
           ))}
         </dl>
         <div className="space-y-8 text-lg leading-relaxed text-muted-foreground md:col-span-2">
-          <Reveal><p><span className="text-foreground">The challenge.</span> Case narrative goes here — the brief, the context and the tension the work needed to resolve.</p></Reveal>
-          <Reveal><p><span className="text-foreground">The idea.</span> The core visual idea, its typographic and photographic language, and how it rolled out across channels.</p></Reveal>
-          <Reveal><p><span className="text-foreground">The outcome.</span> Reach, recall and results — to be completed with real figures.</p></Reveal>
+          <Reveal><p><span className="text-foreground">The challenge.</span> {project.challenge}</p></Reveal>
+          <Reveal><p><span className="text-foreground">The idea.</span> {project.idea}</p></Reveal>
+          <Reveal><p><span className="text-foreground">The outcome.</span> {project.outcome}</p></Reveal>
         </div>
       </section>
       <section className="grid gap-6 px-6 md:grid-cols-2 md:px-12">
-        {[0, 1, 2].map((n) => (
-          <Reveal key={n} className={n === 2 ? "md:col-span-2" : ""}>
-            <div className={n === 2 ? "aspect-[21/9]" : "aspect-square"}>
-              <ArtSlot project={{ ...project, hue: project.hue + n * 25 }} />
+        {project.gallery.map((src, n) => (
+          <Reveal key={src} className={n % 3 === 2 ? "md:col-span-2" : ""}>
+            <div className={`overflow-hidden rounded-sm ${n % 3 === 2 ? "aspect-[21/9]" : "aspect-square"}`}>
+              <img src={src} alt={`${project.title} — ${n + 1}`} loading="lazy" className="h-full w-full object-cover" />
             </div>
           </Reveal>
         ))}
