@@ -97,6 +97,10 @@ function AdminEntryPage() {
     }
   }
 
+  if (!checkingSession && session) {
+    return <AdminWorkspace email={session.email} onLogout={() => void logout()} />;
+  }
+
   return (
     <main className="min-h-screen bg-[#0b0b0d] px-5 py-12 text-[#f4f2ee] sm:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-5xl flex-col justify-between">
@@ -126,8 +130,6 @@ function AdminEntryPage() {
           <div className="border border-white/15 bg-white/[0.03] p-6 sm:p-8">
             {checkingSession ? (
               <p className="text-sm text-white/65" role="status">A verificar sessão segura...</p>
-            ) : session ? (
-              <AdminWorkspace email={session.email} onLogout={() => void logout()} />
             ) : (
               <form onSubmit={submitLogin} className="space-y-5">
                 <div>
