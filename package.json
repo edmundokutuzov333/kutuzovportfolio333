@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "typecheck": "vite build --mode development && tsc --noEmit",
     "assets:inventory": "node scripts/inventory-assets.mjs",
-    "import:cms": "bun run scripts/import-static-content.ts"
+    "import:cms": "bun run scripts/import-static-content.ts",
+    "test:contracts": "bun run scripts/verify-public-contracts.ts",
+    "test:e2e": "playwright test --config .e2e/playwright.config.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"

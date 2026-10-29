@@ -1,6 +1,4 @@
-const DEFAULT_SUPABASE_URL = "https://qwjaoheaolpxtciljzvb.supabase.co";
-// This is a browser-safe Supabase publishable key, not a service-role secret. RLS remains the access boundary.
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_D2urR5PRQGDpHqVBLtb_CA_n75HUgmE"; // gitleaks:allow
+import { DEFAULT_SUPABASE_PUBLISHABLE_KEY, DEFAULT_SUPABASE_URL } from "./public-config";
 
 const env = import.meta.env;
 

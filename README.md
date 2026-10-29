@@ -60,3 +60,10 @@ bun run import:cms
 ```
 
 Never commit the service-role key. The script inserts missing records without overwriting subsequent Admin edits and emits `reports/cms-import-reconciliation.json`. It marks legacy assets as awaiting source access and does not delete or replace any existing image reference. See `docs/cms-phase-2-reconciliation.md` for the observed initial counts and remaining asset/deploy blockers.
+
+
+## Phase 5 certification checks
+
+The GitHub Actions quality job now runs a read-only contract check against the dedicated Supabase project's public API. It verifies that only published content, visible clients/sections, public settings and approved public media are exposed; private operational tables, private storage and administrative RPCs must reject anonymous access. This job never creates or changes production records.
+
+A separate Playwright job launches the app in CI and exercises every public route plus the unauthenticated Admin gate. The test runner version is pinned separately under `.e2e`; application dependencies continue to install from the committed `bun.lock`. Dependency advisories at high or critical severity block the quality job. The deployment remains a separate operator-controlled step because the Lovable publishing API is not available as a GitHub Actions credential in this repository.
