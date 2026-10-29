@@ -184,7 +184,7 @@ function formStringArray(form: FormData, key: string, maxItems: number, maxLengt
   return [...new Set(value.map((item) => (item as string).trim()))];
 }
 
-function encodePath(path: string): string {function encodePath(path: string): string {
+function encodePath(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
 }
 
