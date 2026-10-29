@@ -37,11 +37,11 @@
 
 ## Acesso administrativo e configuração de runtime
 
-A rota `/admin` tem um gate próprio e não monta o Shell público, cursor, Lenis, intro ou cena WebGL. O login exige apenas o código fixo `333`, validado no servidor. Depois de validado, é criada uma sessão HMAC assinada com a chave server-only do Supabase, guardada num cookie HttpOnly, SameSite=Strict e com expiração. O servidor mantém limitação persistente de tentativas e registo de auditoria sem guardar PINs ou tokens. Não é necessária conta Supabase Auth, email autorizado ou palavra-passe.
+A rota `/admin` tem um gate próprio e não monta o Shell público, cursor, Lenis, intro ou cena WebGL. O login exige apenas o código de três dígitos, validado no servidor a partir de `ADMIN_ACCESS_CODE` na gestão de segredos do alojamento. Depois de validado, é criada uma sessão HMAC assinada com a chave server-only do Supabase, guardada num cookie HttpOnly, SameSite=Strict e com expiração. O servidor mantém limitação persistente de tentativas e registo de auditoria sem guardar PINs ou tokens. Não é necessária conta Supabase Auth, email autorizado ou palavra-passe.
 
 O backend administrativo continua a precisar dos segredos de infraestrutura para consultar e alterar dados reais: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` apenas no servidor, `PUBLIC_SITE_URL` para validar o canonical, e `RESEND_API_KEY` / `MAIL_FROM` quando estiver activado o envio real de email.
 
-`ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos de login. O código `333` está fixo no módulo server-side. Como o repositório pode ser público, o código é fraco e não deve ser tratado como segredo; mantêm-se a limitação de tentativas, a validação server-side e a sessão assinada.
+`ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos de login. O código real fica apenas em `ADMIN_ACCESS_CODE` no servidor, nunca no repositório nem em variáveis `VITE_*`. Não é necessária conta Supabase Auth, email ou palavra-passe. Mantêm-se a limitação de tentativas, a validação server-side e a sessão assinada.
 
 A base Supabase Auth pode continuar sem utilizadores. As funções SQL editoriais só aceitam actor nulo quando a chamada vem com o role `service_role`; a migration `20261029121015_admin_pin_only_authorization.sql` tem de estar aplicada no Supabase antes de certificar as mutações editoriais.
 
