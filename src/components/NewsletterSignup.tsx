@@ -21,13 +21,13 @@ export function NewsletterSignup() {
       const result = await requestNewsletterSubscription(email, consent);
       if (!result.ok) throw new Error("A subscrição não foi confirmada.");
       if (result.status === "already_confirmed") {
-        setMessage({ tone: "success", text: "Este endereço já está na lista. Não foi criada uma subscrição duplicada." });
+        setMessage({ tone: "success", text: "Este endereço já faz parte da lista. Não criámos uma inscrição duplicada." });
         setEmail("");
       } else if (result.status === "subscribed") {
-        setMessage({ tone: "success", text: "Está na lista. Enviámos um email de boas-vindas com os detalhes da subscrição." });
+        setMessage({ tone: "success", text: "Inscrição concluída. Enviámos um email a confirmar que já está na lista." });
         setEmail("");
       } else if (result.status === "email_delivery_failed") {
-        setMessage({ tone: "info", text: "A subscrição já está activa, mas não conseguimos entregar o email de boas-vindas. Não precisa de se inscrever novamente." });
+        setMessage({ tone: "info", text: "A inscrição está activa, mas não conseguimos entregar o email de confirmação. Não precisa de se inscrever novamente." });
         setEmail("");
       } else {
         setMessage({ tone: "info", text: "O pedido foi registado. Estado da entrega: " + String(result.status ?? "a verificar") + "." });
