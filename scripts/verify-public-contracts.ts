@@ -36,11 +36,26 @@ async function expectPrivateReadDenied(table: string): Promise<void> {
     cache: "no-store",
     signal: AbortSignal.timeout(15_000),
   });
+
+  if (response.status === 401 || response.status === 403) {
+    pass(`anonymous cannot read ${table} (HTTP ${response.status})`);
+    return;
+  }
+
   assert(
-    response.status === 401 || response.status === 403,
-    `Anonymous access to private table ${table} should be denied, received HTTP ${response.status}`,
+    response.ok,
+    `Anonymous access to private table ${table} must be denied or return zero visible rows, received HTTP ${response.status}`,
   );
-  pass(`anonymous cannot read ${table}`);
+  const payload: unknown = await response.json();
+  assert(
+    Array.isArray(payload),
+    `Anonymous read of private table ${table} returned a non-array response`,
+  );
+  assert(
+    payload.length === 0,
+    `Anonymous access to private table ${table} exposed ${payload.length} row(s)`,
+  );
+  pass(`anonymous cannot read ${table} (RLS returned zero rows)`);
 }
 
 async function expectRpcMutationDenied(name: string, body: Record<string, unknown>): Promise<void> {
