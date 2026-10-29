@@ -43,7 +43,7 @@ O backend administrativo continua a precisar dos segredos de infraestrutura para
 
 `ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos de login. O código `333` está fixo no módulo server-side. Como o repositório pode ser público, o código é fraco e não deve ser tratado como segredo; mantêm-se a limitação de tentativas, a validação server-side e a sessão assinada.
 
-A base Supabase Auth pode continuar sem utilizadores. As funções SQL editoriais só aceitam actor nulo quando a chamada vem com o role `service_role`; a migration `20261029120000_admin_pin_only_authorization.sql` tem de estar aplicada no Supabase antes de certificar as mutações editoriais.
+A base Supabase Auth pode continuar sem utilizadores. As funções SQL editoriais só aceitam actor nulo quando a chamada vem com o role `service_role`; a migration `20261029121015_admin_pin_only_authorization.sql` tem de estar aplicada no Supabase antes de certificar as mutações editoriais.
 
 ## CI e deploy
 
