@@ -168,7 +168,11 @@ export function inspectImageBytes(bytes: Uint8Array): InspectedImage | null {
 }
 
 export function normalizeObjectPath(path: string): string | null {
-  if (!path || path.length > 1024 || path.startsWith("/") || path.includes("\\") || /[\u0000-\u001f\u007f]/.test(path)) return null;
+  const hasControlCharacter = Array.from(path).some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+  if (!path || path.length > 1024 || path.startsWith("/") || path.includes("\\") || hasControlCharacter) return null;
   const segments = path.split("/");
   if (segments.some((part) => !part || part === "." || part === "..")) return null;
   return path;

@@ -18,7 +18,12 @@ function encodePath(path: string): string {
 }
 
 function safeOriginalName(value: string): string {
-  return value.replace(/[/\\]/g, "_").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 180) || "image";
+  const withoutPath = value.replace(/[/\\]/g, "_");
+  const safe = Array.from(withoutPath).filter((character) => {
+    const code = character.charCodeAt(0);
+    return code >= 32 && code !== 127;
+  }).join("");
+  return safe.trim().slice(0, 180) || "image";
 }
 
 function publicAssetUrl(url: string, path: string): string {
