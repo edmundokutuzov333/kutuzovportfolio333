@@ -53,7 +53,7 @@ Verificações directas à base de dados após a aplicação:
 
 O login de `/admin` usa exclusivamente o código fixo `333`. Não depende de utilizador em `auth.users`, email, palavra-passe ou `app_metadata.site_role`. O cookie de sessão é HttpOnly, SameSite=Strict, tem validade limitada e uma assinatura HMAC calculada no servidor com `SUPABASE_SERVICE_ROLE_KEY`. As tentativas continuam limitadas no PostgreSQL e os eventos são registados sem guardar o PIN.
 
-A ausência de utilizadores em `auth.users` deixou de bloquear o login. A migration `20261029120000_admin_pin_only_authorization.sql` adapta as três funções editoriais para aceitar `p_actor_id = null` apenas quando a chamada chega com role `service_role`; a chamada nunca fica acessível a anon ou authenticated. A migration tem de estar aplicada no ambiente Supabase que serve o site.
+A ausência de utilizadores em `auth.users` deixou de bloquear o login. A migration `20261029121015_admin_pin_only_authorization.sql` adapta as três funções editoriais para aceitar `p_actor_id = null` apenas quando a chamada chega com role `service_role`; a chamada nunca fica acessível a anon ou authenticated. A migration tem de estar aplicada no ambiente Supabase que serve o site.
 
 O runtime precisa de `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` para ler e alterar dados reais. São dependências de infraestrutura, não campos adicionais de login, e a chave deve permanecer exclusivamente no servidor. `ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos da autenticação PIN-only. O código fixo `333` é fraco e não deve ser tratado como segredo; mantêm-se rate limit, validação server-side e cookie assinado.
 
