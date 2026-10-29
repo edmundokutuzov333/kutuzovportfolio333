@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptyBrief, validateStep } from "@/lib/brief";
+import { MAX_TOTAL_FILE_BYTES, emptyBrief, validateStep } from "@/lib/brief";
 
 const ok = { ...emptyBrief, name: "Ana", email: "ana@x.com", type: "Brand Identity", message: "Hello there friend" };
 
@@ -19,7 +19,17 @@ describe("briefing form rules", () => {
     expect(validateStep(4, { ...ok, files: Array(6).fill(f) })).not.toBeNull();
     expect(validateStep(4, { ...ok, files: Array(5).fill(f) })).toBeNull();
   });
-  it("rejects files over 8 MB and non-image types", () => {
+  it("accepts PDF references and enforces the total upload budget", () => {
+    const pdf = new File(["%PDF-1.7\\n1 0 obj"], "brand-guidelines.pdf", { type: "application/pdf" });
+    expect(validateStep(4, { ...ok, files: [pdf] })).toBeNull();
+
+    const eightMb = new File([new Uint8Array(8 * 1024 * 1024)], "reference.png", { type: "image/png" });
+    expect(validateStep(4, { ...ok, files: [eightMb, eightMb] })).toBeNull();
+    expect(MAX_TOTAL_FILE_BYTES).toBe(17 * 1024 * 1024);
+    expect(validateStep(4, { ...ok, files: [eightMb, eightMb, eightMb] })).not.toBeNull();
+  });
+
+  it("rejects files over 8 MB and unsupported types", () => {
     const big = new File([new Uint8Array(8 * 1024 * 1024 + 1)], "b.png", { type: "image/png" });
     const pdf = new File(["x"], "a.pdf", { type: "application/pdf" });
     expect(validateStep(4, { ...ok, files: [big] })).not.toBeNull();
