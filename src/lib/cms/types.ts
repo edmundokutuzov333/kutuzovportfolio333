@@ -1,5 +1,67 @@
 import { z } from "zod";
 
+export const NavigationSettingSchema = z.array(z.object({
+  to: z.enum(["/", "/work", "/about", "/services", "/process", "/clients", "/contact"]),
+  label: z.string().min(1).max(80),
+}).strict()).min(1).max(7);
+export type NavigationSetting = z.infer<typeof NavigationSettingSchema>[number];
+
+export const FooterSettingSchema = z.object({
+  next_move_label: z.string().min(1).max(100),
+  cta_label: z.string().min(1).max(180),
+  cta_path: z.literal("/contact"),
+  cta_description: z.string().min(1).max(1000),
+  contact_label: z.string().min(1).max(100),
+  social_label: z.string().min(1).max(100),
+  newsletter_label: z.string().min(1).max(180),
+  newsletter_status: z.string().min(1).max(500),
+  signature: z.string().min(1).max(180),
+}).strict();
+export type FooterSetting = z.infer<typeof FooterSettingSchema>;
+
+export const PresentationSettingSchema = z.object({
+  availability_label: z.string().min(1).max(160),
+  open_menu_label: z.string().min(1).max(60),
+  close_menu_label: z.string().min(1).max(60),
+  replay_intro_label: z.string().min(1).max(80),
+}).strict();
+export type PresentationSetting = z.infer<typeof PresentationSettingSchema>;
+
+export const DEFAULT_PUBLIC_PRESENTATION: PublicPresentation = {
+  navigation: [
+    { to: "/", label: "Home" },
+    { to: "/work", label: "Work" },
+    { to: "/about", label: "About" },
+    { to: "/services", label: "Services" },
+    { to: "/process", label: "Process" },
+    { to: "/clients", label: "Clients" },
+    { to: "/contact", label: "Contact" },
+  ],
+  footer: {
+    next_move_label: "Next move",
+    cta_label: "Let's talk.",
+    cta_path: "/contact",
+    cta_description: "Let's build a visual presence impossible to ignore.",
+    contact_label: "Contact",
+    social_label: "Social",
+    newsletter_label: "Newsletter: new work and availability",
+    newsletter_status: "Newsletter subscription is currently unavailable while secure email confirmation is being configured.",
+    signature: "Design is how it works.",
+  },
+  presentation: {
+    availability_label: "Maputo · Available for projects",
+    open_menu_label: "Menu",
+    close_menu_label: "Close",
+    replay_intro_label: "Replay intro",
+  },
+};
+
+export type PublicPresentation = {
+  navigation: NavigationSetting[];
+  footer: FooterSetting;
+  presentation: PresentationSetting;
+};
+
 export const SocialLinkSchema = z.object({
   label: z.string().min(1).max(80),
   href: z.string().url().max(2048),

@@ -16,6 +16,10 @@ import {
   ServiceRowSchema,
   SkillSchema,
   BudgetsSchema,
+  NavigationSettingSchema,
+  FooterSettingSchema,
+  PresentationSettingSchema,
+  DEFAULT_PUBLIC_PRESENTATION,
   toClient,
   toDisciplineGroup,
   toExperience,
@@ -243,6 +247,37 @@ export async function getCapabilities() {
 
 export async function getContactSteps(): Promise<ContactStep[]> {
   return settingsValue("contact_steps", ContactStepsSchema);
+}
+
+export async function getPublicPresentation() {
+  const read = async (key: "navigation" | "footer" | "presentation") => {
+    try {
+      const rows = await selectPublicRows("site_settings", {
+        select: "setting_value",
+        setting_key: `eq.${key}`,
+        is_public: "eq.true",
+        limit: "1",
+      });
+      return rows.length > 0 ? (rows[0] as { setting_value?: unknown }).setting_value : undefined;
+    } catch {
+      // The versioned presentation-settings migration may not have reached this runtime yet.
+      return undefined;
+    }
+  };
+  const [navigation, footer, presentation] = await Promise.all([
+    read("navigation"), read("footer"), read("presentation"),
+  ]);
+  return {
+    navigation: NavigationSettingSchema.safeParse(navigation).success
+      ? NavigationSettingSchema.parse(navigation)
+      : DEFAULT_PUBLIC_PRESENTATION.navigation,
+    footer: FooterSettingSchema.safeParse(footer).success
+      ? FooterSettingSchema.parse(footer)
+      : DEFAULT_PUBLIC_PRESENTATION.footer,
+    presentation: PresentationSettingSchema.safeParse(presentation).success
+      ? PresentationSettingSchema.parse(presentation)
+      : DEFAULT_PUBLIC_PRESENTATION.presentation,
+  };
 }
 
 export async function getPublishedRevision(): Promise<number> {

@@ -8,6 +8,12 @@ As mutações são expostas como TanStack Start Server Functions. Cada handler e
 
 A acção principal dos formulários é **Guardar e publicar**. O sucesso só é apresentado após uma resposta válida do RPC com o registo e a revisão confirmados. A reordenação usa uma função de servidor dedicada que exige a lista completa de IDs do grupo, valida o âmbito e regista snapshots. Não existe eliminação definitiva nos módulos editoriais.
 
+## Definições de navegação e rodapé
+
+A migração adicional `20261029084900_admin_site_presentation_settings_20261029.sql` introduz valores tipados para a navegação pública, texto do rodapé e rótulos de apresentação. A interface pública lê esses registos depois da publicação e só os aceita se passarem os schemas; caminhos de navegação e do CTA são limitados às rotas implementadas. Se a migração ainda não estiver no ambiente, o site conserva a cópia actual para compatibilidade.
+
+A newsletter pública não apresenta um formulário que finja uma subscrição: o rodapé informa que a confirmação segura por email ainda não está activada. O formulário de contacto também informa que a submissão não é enviada nem guardada e desactiva a acção final até existir o fluxo persistente de contacto da Fase 4. Os links directos de email e WhatsApp continuam disponíveis.
+
 ## Funcionalidade de módulos
 
 - **Visão geral:** contagens lidas do CMS, pedidos por tratar, revisões recentes, revisão publicada e estado real dos buckets.

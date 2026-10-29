@@ -116,6 +116,56 @@ const processSchema = z.object({
   title: z.string().trim().min(1).max(180), description: z.string().max(3000),
   number_label: nullableText(32), position: z.number().int().min(0), is_published: z.boolean(),
 }).partial().strict();
+const budgetsSettingSchema = z.object({
+  BRL: z.array(z.string().min(1).max(80)).min(1).max(12),
+  EUR: z.array(z.string().min(1).max(80)).min(1).max(12),
+  GBP: z.array(z.string().min(1).max(80)).min(1).max(12),
+  MZN: z.array(z.string().min(1).max(80)).min(1).max(12),
+  USD: z.array(z.string().min(1).max(80)).min(1).max(12),
+}).strict();
+const navigationSettingSchema = z.array(z.object({
+  to: z.enum(["/", "/work", "/about", "/services", "/process", "/clients", "/contact"]),
+  label: z.string().trim().min(1).max(80),
+}).strict()).min(1).max(7);
+const footerSettingSchema = z.object({
+  next_move_label: z.string().trim().min(1).max(100),
+  cta_label: z.string().trim().min(1).max(180),
+  cta_path: z.enum(["/contact"]),
+  cta_description: z.string().trim().min(1).max(1000),
+  contact_label: z.string().trim().min(1).max(100),
+  social_label: z.string().trim().min(1).max(100),
+  newsletter_label: z.string().trim().min(1).max(180),
+  newsletter_status: z.string().trim().min(1).max(500),
+  signature: z.string().trim().min(1).max(180),
+}).strict();
+const presentationSettingSchema = z.object({
+  availability_label: z.string().trim().min(1).max(160),
+  open_menu_label: z.string().trim().min(1).max(60),
+  close_menu_label: z.string().trim().min(1).max(60),
+  replay_intro_label: z.string().trim().min(1).max(80),
+}).strict();
+const stringListSettingSchema = z.array(z.string().trim().min(1).max(180)).min(1).max(100);
+const contactStepsSettingSchema = z.array(z.object({
+  k: z.string().trim().min(1).max(80),
+  t: z.string().trim().min(1).max(240),
+  d: z.string().trim().min(1).max(600),
+}).strict()).length(5);
+
+export function validateSiteSettingValue(settingKey: string, value: unknown): unknown {
+  const schemasByKey: Record<string, z.ZodTypeAny> = {
+    budgets: budgetsSettingSchema,
+    capabilities: stringListSettingSchema,
+    project_types: stringListSettingSchema,
+    contact_steps: contactStepsSettingSchema,
+    navigation: navigationSettingSchema,
+    footer: footerSettingSchema,
+    presentation: presentationSettingSchema,
+  };
+  const schema = schemasByKey[settingKey];
+  if (!schema) throw new Error("Esta definição não tem um esquema editorial permitido.");
+  return schema.parse(value);
+}
+
 const settingsSchema = z.object({
   setting_value: z.unknown(), is_public: z.boolean(),
 }).partial().strict();
@@ -155,7 +205,7 @@ export function validateAdminPayload(
   entity: AdminEntity,
   incoming: Record<string, unknown>,
   action: AdminAction,
-  options: { creating?: boolean; publicSiteUrl?: string } = {},
+  options: { creating?: boolean; publicSiteUrl?: string; settingKey?: string } = {},
 ): Record<string, unknown> {
   if (action === "archive") return {};
   const reserved = ["id", "created_at", "updated_at", "created_by", "updated_by", "singleton_key"];
@@ -169,6 +219,16 @@ export function validateAdminPayload(
     const required = requiredOnCreate[entity] ?? [];
     const missing = required.filter((key) => parsed[key] === undefined || parsed[key] === null || parsed[key] === "");
     if (missing.length) throw new Error("Campos obrigatórios em falta: " + missing.join(", ") + ".");
+  }
+
+  if (entity === "site_settings") {
+    if (parsed["setting_value"] !== undefined) {
+      if (!options.settingKey) throw new Error("A chave da definição tem de ser confirmada no servidor.");
+      validateSiteSettingValue(options.settingKey, parsed["setting_value"]);
+    }
+    if (parsed["is_public"] === false) {
+      throw new Error("As definições apresentadas publicamente não podem ser ocultadas enquanto forem consumidas pelo site.");
+    }
   }
 
   if (entity === "pages" && parsed["route_path"] !== undefined) {

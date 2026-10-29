@@ -28,7 +28,6 @@ function Contact() {
   const [step, setStep] = useState(0);
   const [b, setB] = useState<Brief>(emptyBrief);
   const [err, setErr] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
   const set = <K extends keyof Brief>(k: K, v: Brief[K]) => setB((p) => ({ ...p, [k]: v }));
 
   const next = () => {
@@ -36,7 +35,7 @@ function Contact() {
     setErr(e);
     if (e) return;
     if (step < 4) setStep(step + 1);
-    else setSent(true);
+    else setErr("Not sent: this form is not connected to secure submission storage yet. Use the email or WhatsApp links above; your entered details have not been sent or saved.");
   };
 
   return (
@@ -68,13 +67,10 @@ function Contact() {
         </aside>
 
         <div>
-          {sent ? (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <h2 className="font-display text-5xl font-bold">Brief received.</h2>
-              <p className="mt-4 text-muted-foreground">Thanks, {b.name.split(" ")[0]}. Expect a reply within 48 hours.</p>
-            </motion.div>
-          ) : (
-            <form onSubmit={(e) => { e.preventDefault(); next(); }}>
+          <div role="status" className="mb-6 border border-border bg-secondary/40 p-4 text-sm leading-6 text-muted-foreground">
+            This brief form is not connected to secure submission storage yet. Nothing entered here is sent or saved. For a real enquiry, use the email or WhatsApp links above.
+          </div>
+          <form onSubmit={(e) => { e.preventDefault(); next(); }}>
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="space-y-8">
                   <div>
@@ -153,12 +149,11 @@ function Contact() {
               {err && <p className="mt-6 text-sm text-destructive">{err}</p>}
               <div className="mt-12 flex items-center justify-between">
                 <button type="button" disabled={step === 0} onClick={() => { setErr(null); setStep(step - 1); }} className="font-mono text-xs uppercase tracking-widest disabled:opacity-30">← Back</button>
-                <button type="submit" className="rounded-full bg-primary px-8 py-4 font-mono text-xs uppercase tracking-widest text-primary-foreground transition hover:scale-105">
-                  {step < 4 ? "Continue →" : "Send brief"}
+                <button type="submit" disabled={step === 4} aria-disabled={step === 4} className="rounded-full bg-primary px-8 py-4 font-mono text-xs uppercase tracking-widest text-primary-foreground transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
+                  {step < 4 ? "Continue →" : "Submission unavailable"}
                 </button>
               </div>
-            </form>
-          )}
+          </form>
         </div>
       </section>
     </>

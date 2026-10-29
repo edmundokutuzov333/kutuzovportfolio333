@@ -167,7 +167,7 @@ const MODULES: ModuleDef[] = [
   ] },
   { id: "settings", label: "Definições e SEO", description: "Definições de apresentação existentes e opções globais.", table: "site_settings", entity: "site_settings", icon: Settings2, fields: [
     { key: "setting_key", label: "Chave (fixa)", type: "text" },
-    { key: "setting_value", label: "Valor publicado (JSON)", type: "json", required: true },
+    { key: "setting_value", label: "Valor publicado (JSON)", type: "json", required: true, help: "O formato é validado no servidor conforme a chave: navigation, footer, presentation, capabilities, project_types, budgets ou contact_steps." },
     { key: "is_public", label: "Disponível nas páginas públicas", type: "checkbox" },
   ] },
   { id: "history", label: "Histórico", description: "Revisões reais, snapshots e restauro auditado.", table: "content_revisions", icon: History },
@@ -577,8 +577,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     if (field.type === "checkbox") {
       return (
         <label key={field.key} className="flex min-h-12 items-center gap-3 rounded-lg border border-[#e5e7eb] px-3 py-3 text-sm text-[#25272c]">
-          <input type="checkbox" checked={asBool(value)} onChange={(event) => updateDraft(field.key, event.target.checked)} disabled={saving || (field.key === "setting_key") || (field.key === "is_visible" && requiredSectionVisibility)} className="size-4 accent-[#243d98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98]" />
-          <span>{field.label}{field.key === "is_visible" && requiredSectionVisibility ? <small className="mt-1 block text-[11px] font-normal text-[#707582]">Obrigatória para o renderer desta página.</small> : null}</span>
+          <input type="checkbox" checked={asBool(value)} onChange={(event) => updateDraft(field.key, event.target.checked)} disabled={saving || (field.key === "setting_key") || (activeId === "settings" && field.key === "is_public") || (field.key === "is_visible" && requiredSectionVisibility)} className="size-4 accent-[#243d98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98]" />
+          <span>{field.label}{field.key === "is_visible" && requiredSectionVisibility ? <small className="mt-1 block text-[11px] font-normal text-[#707582]">Obrigatória para o renderer desta página.</small> : field.key === "is_public" && activeId === "settings" ? <small className="mt-1 block text-[11px] font-normal text-[#707582]">Esta definição é consumida pela apresentação pública e não pode ser ocultada.</small> : null}</span>
         </label>
       );
     }

@@ -163,6 +163,28 @@ export async function mutateAdminContent(input: {
   const publicSiteUrl = process.env["PUBLIC_SITE_URL"]?.trim();
   let payload: Row;
   let validationInput = input.payload;
+  let settingKey: string | undefined;
+  if (
+    input.entity === "site_settings" &&
+    input.id &&
+    input.action !== "archive" &&
+    input.action !== "restore"
+  ) {
+    const existing = await restRequest<Row[]>(
+      context,
+      `/rest/v1/site_settings?id=eq.${encodeURIComponent(input.id)}&select=id,setting_key,setting_value,is_public,updated_at`,
+    );
+    const current = existing[0];
+    if (!current) throw new AdminCmsError("A definição já não existe. Actualize a lista.", "not_found");
+    if (current["updated_at"] !== input.expectedUpdatedAt) {
+      throw new AdminCmsError("Conflito: a definição foi alterada depois de abrir o formulário. Os valores locais foram preservados.", "conflict");
+    }
+    if (typeof current["setting_key"] !== "string") {
+      throw new AdminCmsError("A chave da definição não foi confirmada pelo servidor.", "invalid");
+    }
+    settingKey = current["setting_key"];
+    validationInput = { setting_value: current["setting_value"], is_public: current["is_public"], ...input.payload };
+  }
   if (
     input.entity === "page_sections" &&
     input.id &&
@@ -191,6 +213,7 @@ export async function mutateAdminContent(input: {
     const validated = validateAdminPayload(input.entity, validationInput, input.action, {
       creating: input.id === null && input.action !== "archive" && input.action !== "restore",
       publicSiteUrl: publicSiteUrl ?? "",
+      ...(settingKey ? { settingKey } : {}),
     });
     payload = Object.fromEntries(
       Object.keys(input.payload).map((key) => [key, validated[key]]),

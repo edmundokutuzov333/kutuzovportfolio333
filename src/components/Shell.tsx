@@ -3,20 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import Lenis from "lenis";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { getPublishedRevision } from "@/lib/cms/queries";
-import type { Profile } from "@/lib/cms/types";
+import { getPublicPresentation, getPublishedRevision } from "@/lib/cms/queries";
+import { DEFAULT_PUBLIC_PRESENTATION, type Profile, type PublicPresentation } from "@/lib/cms/types";
 import { LogoMark } from "./LogoMark";
 import { Intro, REPLAY_EVENT } from "./Intro";
-
-const nav = [
-  { to: "/", label: "Home" },
-  { to: "/work", label: "Work" },
-  { to: "/about", label: "About" },
-  { to: "/services", label: "Services" },
-  { to: "/process", label: "Process" },
-  { to: "/clients", label: "Clients" },
-  { to: "/contact", label: "Contact" },
-] as const;
 
 function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
@@ -54,13 +44,13 @@ function Cursor() {
   );
 }
 
-function Header({ open, setOpen }: { open: boolean; setOpen: (value: boolean) => void }) {
+function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (value: boolean) => void; presentation: PublicPresentation["presentation"] }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 mix-blend-difference md:px-12">
       <Link to="/" aria-label="Home" className="text-bone"><LogoMark className="h-6 w-auto" /></Link>
-      <div className="eyebrow hidden text-bone md:block">Maputo · Available for projects</div>
+      <div className="eyebrow hidden text-bone md:block">{presentation.availability_label}</div>
       <button onClick={() => setOpen(!open)} className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
-        {open ? "Close" : "Menu"}
+        {open ? presentation.close_menu_label : presentation.open_menu_label}
         <span className="relative block h-3 w-6">
           <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
           <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
@@ -70,7 +60,7 @@ function Header({ open, setOpen }: { open: boolean; setOpen: (value: boolean) =>
   );
 }
 
-function Menu({ close, profile }: { close: () => void; profile: Profile | null }) {
+function Menu({ close, profile, presentation }: { close: () => void; profile: Profile | null; presentation: PublicPresentation }) {
   return (
     <motion.div
       className="fixed inset-0 z-40 flex flex-col justify-between bg-primary px-6 pb-10 pt-28 text-primary-foreground md:px-12"
@@ -80,7 +70,7 @@ function Menu({ close, profile }: { close: () => void; profile: Profile | null }
       transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
     >
       <nav className="flex flex-col">
-        {nav.map((item, index) => (
+        {presentation.navigation.map((item, index) => (
           <motion.div key={item.to} className="overflow-hidden" initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + index * 0.03, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <Link to={item.to} onClick={close} className="group flex items-baseline gap-4 font-display text-[11vw] font-bold leading-[0.95] md:text-[6.5vw]">
               <span className="font-mono text-xs">0{index + 1}</span>
@@ -102,46 +92,39 @@ function Menu({ close, profile }: { close: () => void; profile: Profile | null }
   );
 }
 
-export function Footer({ profile }: { profile: Profile | null }) {
-  const [joined, setJoined] = useState(false);
+export function Footer({ profile, presentation }: { profile: Profile | null; presentation: PublicPresentation }) {
+  const copy = presentation.footer;
   return (
     <footer className="border-t border-border px-6 pb-8 pt-24 md:px-12">
       <div className="grid gap-16 md:grid-cols-2">
         <div>
-          <p className="eyebrow mb-6">Next move</p>
-          <Link to="/contact" data-cursor="Talk" className="font-display text-6xl font-bold leading-none hover:text-primary md:text-8xl">Let's talk.</Link>
-          <p className="mt-6 max-w-sm text-muted-foreground">Let's build a visual presence impossible to ignore.</p>
+          <p className="eyebrow mb-6">{copy.next_move_label}</p>
+          <Link to={copy.cta_path} data-cursor="Talk" className="font-display text-6xl font-bold leading-none hover:text-primary md:text-8xl">{copy.cta_label}</Link>
+          <p className="mt-6 max-w-sm text-muted-foreground">{copy.cta_description}</p>
         </div>
         <div className="grid grid-cols-2 gap-10">
           <div className="space-y-3 text-sm">
-            <p className="eyebrow mb-4">Contact</p>
+            <p className="eyebrow mb-4">{copy.contact_label}</p>
             {profile?.email && <a className="block hover:text-primary" href={`mailto:${profile.email}`}>{profile.email}</a>}
             {profile?.whatsapp && profile.phone && <a className="block hover:text-primary" href={profile.whatsapp} target="_blank" rel="noreferrer">{profile.phone}</a>}
             {profile?.location && <p className="text-muted-foreground">{profile.location}</p>}
           </div>
           <div className="space-y-3 text-sm">
-            <p className="eyebrow mb-4">Social</p>
+            <p className="eyebrow mb-4">{copy.social_label}</p>
             {profile?.socials.map((social) => (
               <a key={social.label} className="block hover:text-primary" href={social.href} target="_blank" rel="noreferrer">{social.label} ↗</a>
             ))}
           </div>
-          <form className="col-span-2" onSubmit={(event) => { event.preventDefault(); setJoined(true); }}>
-            <p className="eyebrow mb-4">Newsletter — new work & availability</p>
-            {joined ? (
-              <p className="text-primary">Thanks — you're on the list.</p>
-            ) : (
-              <div className="flex border-b border-foreground/40">
-                <input required type="email" placeholder="your@email.com" className="w-full bg-transparent py-3 outline-none placeholder:text-muted-foreground" />
-                <button className="font-mono text-xs uppercase tracking-widest hover:text-primary">Join</button>
-              </div>
-            )}
-          </form>
+          <div className="col-span-2" aria-label="Newsletter status">
+            <p className="eyebrow mb-4">{copy.newsletter_label}</p>
+            <p className="max-w-xl text-sm leading-6 text-muted-foreground">{copy.newsletter_status}</p>
+          </div>
         </div>
       </div>
       <div className="mt-24 select-none overflow-hidden"><LogoMark className="w-full text-foreground/[0.06]" /></div>
       <div className="mt-6 flex flex-wrap justify-between gap-4 eyebrow">
         <span>© {new Date().getFullYear()} Edmundo Kutuzov</span>
-        <span>Design is how it works.</span>
+        <span>{copy.signature}</span>
       </div>
     </footer>
   );
@@ -149,6 +132,7 @@ export function Footer({ profile }: { profile: Profile | null }) {
 
 export function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [presentation, setPresentation] = useState<PublicPresentation>(DEFAULT_PUBLIC_PRESENTATION);
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const profile = useRouterState({
@@ -173,6 +157,20 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
   useEffect(() => {
+    let active = true;
+    const loadPresentation = async () => {
+      try {
+        const value = await getPublicPresentation();
+        if (active) setPresentation(value);
+      } catch {
+        // Keep the last validated public copy while the settings endpoint is unavailable.
+      }
+    };
+    void loadPresentation();
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     let previousRevision: number | null = null;
     let checking = false;
     let active = true;
@@ -187,6 +185,8 @@ export function Shell({ children }: { children: ReactNode }) {
         } else if (revision !== previousRevision) {
           previousRevision = revision;
           await router.invalidate();
+          const nextPresentation = await getPublicPresentation();
+          if (active) setPresentation(nextPresentation);
         }
       } catch {
         // Public content stays unchanged while the publication endpoint is unavailable.
@@ -212,11 +212,11 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="grain min-h-screen">
       <Intro />
       <Cursor />
-      <Header open={open} setOpen={setOpen} />
-      <AnimatePresence>{open && <Menu close={() => setOpen(false)} profile={profile} />}</AnimatePresence>
+      <Header open={open} setOpen={setOpen} presentation={presentation.presentation} />
+      <AnimatePresence>{open && <Menu close={() => setOpen(false)} profile={profile} presentation={presentation} />}</AnimatePresence>
       <motion.div key={pathname + "-curtain"} className="pointer-events-none fixed inset-0 z-[45] bg-[linear-gradient(180deg,var(--primary),var(--background))]" initial={{ scaleY: 1 }} animate={{ scaleY: 0 }} style={{ originY: 0 }} transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }} />
       <main>{children}</main>
-      <Footer profile={profile} />
+      <Footer profile={profile} presentation={presentation} />
     </div>
   );
 }
