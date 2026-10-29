@@ -16,7 +16,7 @@ describe("SafeAssetImage", () => {
     fireEvent.error(getByRole("img", { name: "Original project cover" }));
 
     const fallback = getByRole("img", { name: "Original project cover: Cover unavailable" });
-    expect(fallback).toHaveAttribute("data-asset-state", "unavailable");
-    expect(fallback).toHaveTextContent("Cover unavailable");
+    expect(fallback.getAttribute("data-asset-state")).toBe("unavailable");
+    expect(fallback.textContent).toContain("Cover unavailable");
   });
 });

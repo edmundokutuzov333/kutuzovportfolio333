@@ -1,5 +1,6 @@
 const DEFAULT_SUPABASE_URL = "https://qwjaoheaolpxtciljzvb.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_D2urR5PRQGDpHqVBLtb_CA_n75HUgmE";
+// This is a browser-safe Supabase publishable key, not a service-role secret. RLS remains the access boundary.
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_D2urR5PRQGDpHqVBLtb_CA_n75HUgmE"; // gitleaks:allow
 const DEFAULT_PUBLIC_SITE_URL = "https://kutuzovportfolio333.lovable.app";
 
 const env = import.meta.env;
