@@ -159,7 +159,12 @@ export function validateStep(step: number, b: Brief): string | null {
       }
     })) return "Each link must be a valid http:// or https:// URL.";
     if (b.files.length > MAX_FILES) return `Up to ${MAX_FILES} files.`;
-    if (b.files.some((file) => !FILE_TYPES.includes(file.type as typeof FILE_TYPES[number]))) return "Files must be PNG, JPG, WEBP or PDF.";
+    if (b.files.some((file) => {
+      const extension = file.name.split(".").pop()?.toLowerCase();
+      return !FILE_TYPES.includes(file.type as typeof FILE_TYPES[number])
+        && !(file.type === "" && ["png", "jpg", "jpeg", "webp", "pdf"].includes(extension ?? ""))
+        && !(file.type === "application/octet-stream" && extension === "pdf");
+    })) return "Files must be PNG, JPG, WEBP or PDF.";
     if (b.files.some((file) => file.size > MAX_FILE_BYTES)) return "Each file must be 8 MB or less.";
     if (b.files.reduce((total, file) => total + file.size, 0) > MAX_TOTAL_FILE_BYTES) return "The combined file size must be 17 MB or less.";
   }
