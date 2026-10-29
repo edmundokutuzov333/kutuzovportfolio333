@@ -39,7 +39,7 @@ jobs:
       - name: Dependency audit (high and critical)
         run: |
           mkdir -p reports
-          bun audit --audit-level=high --json > reports/dependency-audit.json
+          bun audit --audit-level=high 2>&1 | tee reports/dependency-audit.txt
 
       - name: TypeScript typecheck
         run: bun run typecheck
@@ -68,7 +68,7 @@ jobs:
           name: asset-inventory-${{ github.sha }}
           path: |
             reports/assets-inventory.json
-            reports/dependency-audit.json
+            reports/dependency-audit.txt
           if-no-files-found: warn
           retention-days: 30
 
