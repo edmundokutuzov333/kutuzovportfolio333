@@ -12,7 +12,7 @@ function readConfig(): AdminServerConfig | null {
   const url = process.env["SUPABASE_URL"]?.trim().replace(/\/+$/, "");
   const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
   const accessCode = process.env["ADMIN_ACCESS_CODE"]?.trim();
-  if (!url || !serviceRoleKey || !accessCode || !/^\\d{3}$/.test(accessCode)) return null;
+  if (!url || !serviceRoleKey || !accessCode || !/^\d{3}$/.test(accessCode)) return null;
   try { const parsed = new URL(url); if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1") return null; }
   catch { return null; }
   return { url, serviceRoleKey, accessCode };
