@@ -1,7 +1,7 @@
 import { SUPABASE_API_KEY, SUPABASE_URL } from "@/lib/cms/public-client";
 
 type PublicFormResponse =
-  | { ok: true; submissionId?: string; attachmentCount?: number; notification?: string; status?: string }
+  | { ok: true; submissionId?: string; attachmentCount?: number; notification?: string; receipt?: string; status?: string }
   | { ok: false; error?: string; status?: string };
 
 async function requestPublicForm(action: string, body: FormData | Record<string, unknown>): Promise<PublicFormResponse> {
@@ -37,6 +37,11 @@ async function requestPublicForm(action: string, body: FormData | Record<string,
       unsupported_image_type: "Os anexos devem ser imagens PNG, JPG ou WEBP válidas.",
       invalid_image_content_or_dimensions: "Uma das imagens está danificada ou excede as dimensões permitidas.",
       invalid_links: "Verifique os links. São permitidos apenas URLs HTTP ou HTTPS válidos.",
+      invalid_or_unsupported_file: "Cada anexo deve ser uma imagem PNG, JPG, WEBP ou um PDF válido.",
+      invalid_project_stage: "Escolha uma fase de projecto válida.",
+      invalid_industry: "Escolha uma indústria válida.",
+      invalid_deliverables: "Reveja os entregáveis seleccionados.",
+      duplicate_project_service: "O serviço principal não deve repetir-se nos serviços adicionais.",
       already_unsubscribed: "Este endereço foi cancelado anteriormente. Não foi reactivado automaticamente.",
       public_site_url_not_configured: "A confirmação por email ainda não está configurada. A subscrição não foi activada.",
       submission_unavailable: "Não foi possível confirmar a gravação. Os dados não foram apresentados como enviados.",
