@@ -131,12 +131,48 @@ export const projectTypes = [
   "Image Manipulation", "Video Direction", "Creative Strategy", "Content Creation", "Product Launch Design", "Visual Systems",
 ];
 
+import logoAbsa from "@/assets/logos/absa.webp.asset.json";
+import logoToyota from "@/assets/logos/toyota.webp.asset.json";
+import logoNissan from "@/assets/logos/nissan.webp.asset.json";
+import logoHyundai from "@/assets/logos/hyundai.webp.asset.json";
+import logoGalp from "@/assets/logos/galp.webp.asset.json";
+import logoTotal from "@/assets/logos/totalenergies.webp.asset.json";
+import logoVodacom from "@/assets/logos/vodacom.png.asset.json";
+import logoRonil from "@/assets/logos/ronil.webp.asset.json";
+import logoPernod from "@/assets/logos/pernod-ricard.webp.asset.json";
+import logoGiz from "@/assets/logos/giz.webp.asset.json";
+import logoMultiChoice from "@/assets/logos/multichoice.webp.asset.json";
+import logoKitKat from "@/assets/logos/kitkat.webp.asset.json";
+import logoFlyingFish from "@/assets/logos/flying-fish.png.asset.json";
+import logoJcs from "@/assets/logos/joaquim-chaves.webp.asset.json";
+import logoPonta from "@/assets/logos/ponta-apart.webp.asset.json";
+import logoCardoso from "@/assets/logos/hotel-cardoso.webp.asset.json";
+import logoEmose from "@/assets/logos/emose.webp.asset.json";
+import logoMcs from "@/assets/logos/mcs.webp.asset.json";
+import logoPromar from "@/assets/logos/promar.webp.asset.json";
+
 export const clients = [
-  "Absa", "Toyota Moçambique", "Nissan Moçambique", "Hyundai Moçambique", "Galp", "TotalEnergies", "Vodacom",
-  "Ronil Auto Moçambique", "Pernod Ricard Moçambique", "GIZ", "MultiChoice (DStv & GOtv)", "KitKat", "Flying Fish",
-  "Brutal Fruit", "Joaquim Chaves Saúde", "Ponta Apart Hotel", "Hotel Cardoso", "EMOSE",
-  "Moçambique Companhia de Seguros", "PROMAR",
-].map((name, i) => ({ id: i + 1, name, logo: null as string | null }));
+  { name: "Absa", logo: logoAbsa.url },
+  { name: "Toyota Moçambique", logo: logoToyota.url },
+  { name: "Nissan Moçambique", logo: logoNissan.url },
+  { name: "Hyundai Moçambique", logo: logoHyundai.url },
+  { name: "Galp", logo: logoGalp.url },
+  { name: "TotalEnergies", logo: logoTotal.url },
+  { name: "Vodacom", logo: logoVodacom.url },
+  { name: "Ronil Auto Moçambique", logo: logoRonil.url },
+  { name: "Pernod Ricard Moçambique", logo: logoPernod.url },
+  { name: "GIZ", logo: logoGiz.url },
+  { name: "MultiChoice (DStv & GOtv)", logo: logoMultiChoice.url },
+  { name: "KitKat", logo: logoKitKat.url },
+  { name: "Flying Fish", logo: logoFlyingFish.url },
+  { name: "Brutal Fruit", logo: null as string | null },
+  { name: "Joaquim Chaves Saúde", logo: logoJcs.url },
+  { name: "Ponta Apart Hotel", logo: logoPonta.url },
+  { name: "Hotel Cardoso", logo: logoCardoso.url },
+  { name: "EMOSE", logo: logoEmose.url },
+  { name: "Moçambique Companhia de Seguros", logo: logoMcs.url },
+  { name: "PROMAR", logo: logoPromar.url },
+].map((c, i) => ({ id: i + 1, ...c }));
 
 export const process = [
   { n: "01", title: "Discovery & Immersion", text: "Analysing strategic goals, competitive context and visual positioning." },
