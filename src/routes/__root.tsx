@@ -104,8 +104,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const locale = useRouterState({
+    select: (state) => {
+      const match = state.matches.at(-1);
+      const data = match?.loaderData as { page?: { locale?: string }; project?: { locale?: string } } | undefined;
+      return data?.project?.locale ?? data?.page?.locale ?? "en";
+    },
+  });
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <HeadContent />
       </head>

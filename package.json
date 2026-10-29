@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "vite build --mode development && tsc --noEmit",
-    "assets:inventory": "node scripts/inventory-assets.mjs"
+    "assets:inventory": "node scripts/inventory-assets.mjs",
+    "import:cms": "bun run scripts/import-static-content.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"

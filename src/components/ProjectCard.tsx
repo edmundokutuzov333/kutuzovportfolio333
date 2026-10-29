@@ -1,19 +1,28 @@
 import { Link } from "@tanstack/react-router";
-import type { Project } from "@/lib/content";
+import type { Project } from "@/lib/cms/types";
+import { SafeAssetImage } from "./SafeAssetImage";
 
-/** Art slot: shows the official cover when provided, otherwise a generative placeholder. */
 export function ArtSlot({ project, className }: { project: Project; className?: string }) {
   if (project.cover) {
-    return <img src={project.cover} alt={project.title} className={`h-full w-full object-cover ${className ?? ""}`} />;
+    return (
+      <SafeAssetImage
+        src={project.cover}
+        alt={project.coverAlt}
+        className={`h-full w-full object-cover ${className ?? ""}`}
+        fallbackClassName={`flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center ${className ?? ""}`}
+        fallbackLabel="Cover unavailable"
+        loading="eager"
+      />
+    );
   }
   return (
     <div
-      className={`relative h-full w-full overflow-hidden ${className ?? ""}`}
-      style={{
-        background: `radial-gradient(circle at 30% 30%, oklch(0.55 0.16 ${project.hue}) 0%, transparent 55%), radial-gradient(circle at 75% 80%, oklch(0.4 0.12 ${project.hue + 40}) 0%, transparent 50%), var(--card)`,
-      }}
+      className={`flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center ${className ?? ""}`}
+      role="img"
+      aria-label={`No verified cover is available for ${project.title}`}
+      data-asset-state="unavailable"
     >
-      <span className="eyebrow absolute bottom-4 left-4 text-foreground/60">Official art slot</span>
+      <span className="eyebrow text-muted-foreground">Cover unavailable</span>
     </div>
   );
 }

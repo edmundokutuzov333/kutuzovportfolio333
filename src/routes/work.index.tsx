@@ -1,33 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+
 import { PageHero, Reveal } from "@/components/Reveal";
 import { ProjectCard } from "@/components/ProjectCard";
-import { projects } from "@/lib/content";
-import { seo } from "@/lib/seo";
+import { loadWorkContent } from "@/lib/cms/loaders";
+import type { HeroSection } from "@/lib/cms/types";
+import { seoFromPage } from "@/lib/seo";
 
 export const Route = createFileRoute("/work/")({
-  head: () => seo("Work", "Selected campaigns, identities and digital systems directed by Edmundo Kutuzov."),
+  loader: () => loadWorkContent(),
+  head: ({ loaderData }) => loaderData ? seoFromPage(loaderData.page) : { meta: [{ title: "Work — Edmundo Kutuzov" }] },
   component: Work,
 });
 
 function Work() {
-  const filters = ["All", ...Array.from(new Set(projects.map((p) => p.discipline)))];
-  const [f, setF] = useState("All");
-  const list = projects.filter((p) => f === "All" || p.discipline === f);
+  const data = Route.useLoaderData();
+  const hero = data.sections.find((section): section is HeroSection => section.section_type === "hero");
+  if (!hero) throw new Error("The published Work page is missing its hero section.");
+
+  const filters = ["All", ...Array.from(new Set(data.projects.map((project) => project.discipline)))];
+  const [filter, setFilter] = useState("All");
+  const projects = data.projects.filter((project) => filter === "All" || project.discipline === filter);
+
   return (
     <>
-      <PageHero eyebrow="Index of work" lines={["Selected", "work."]} intro="Campaigns, key visuals and content systems directed for brands in Mozambique and beyond." />
+      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro} />
       <div className="flex flex-wrap gap-2 px-6 pb-12 md:px-12">
-        {filters.map((x) => (
-          <button key={x} onClick={() => setF(x)} className={`rounded-full border px-4 py-2 font-mono text-xs uppercase tracking-widest transition ${f === x ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-foreground"}`}>
-            {x}
+        {filters.map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setFilter(value)}
+            aria-pressed={filter === value}
+            className={`rounded-full border px-4 py-2 font-mono text-xs uppercase tracking-widest transition ${filter === value ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-foreground"}`}
+          >
+            {value}
           </button>
         ))}
       </div>
       <section className="grid gap-x-8 gap-y-20 px-6 pb-32 md:grid-cols-2 md:px-12 lg:grid-cols-3">
-        {list.map((p, i) => (
-          <Reveal key={p.slug} delay={(i % 3) * 0.05}>
-            <ProjectCard project={p} index={i} />
+        {projects.map((project, index) => (
+          <Reveal key={project.slug} delay={(index % 3) * 0.05}>
+            <ProjectCard project={project} index={index} />
           </Reveal>
         ))}
       </section>

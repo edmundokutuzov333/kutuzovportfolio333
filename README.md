@@ -47,3 +47,16 @@ bun run assets:inventory
 ```
 
 Runtime secrets belong in the deployment provider's server-side environment, not in the repository. See `docs/admin-phase-1-baseline.md` for the initial CMS infrastructure and external configuration requirements.
+
+## CMS content migration
+
+The eight public routes read published content from the dedicated Supabase project through the typed loaders under `src/lib/cms/`. The initial import is idempotent and preserves the values in `src/lib/content.ts`:
+
+```sh
+SUPABASE_URL="https://your-project-ref.supabase.co" \
+SUPABASE_SERVICE_ROLE_KEY="set-only-in-your-local-shell-or-secret-manager" \
+PUBLIC_SITE_URL="https://kutuzovportfolio333.lovable.app" \
+bun run import:cms
+```
+
+Never commit the service-role key. The script upserts records and emits `reports/cms-import-reconciliation.json`. It marks legacy assets as awaiting source access and does not delete or replace any existing image reference. See `docs/cms-phase-2-reconciliation.md` for the observed initial counts and remaining asset/deploy blockers.

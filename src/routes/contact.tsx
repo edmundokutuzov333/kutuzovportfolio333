@@ -3,21 +3,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, type ReactNode } from "react";
 import { PageHero } from "@/components/Reveal";
 import { emptyBrief, validateStep, type Brief } from "@/lib/brief";
-import { budgets, profile, projectTypes } from "@/lib/content";
-import { seo } from "@/lib/seo";
+import { loadContactContent } from "@/lib/cms/loaders";
+import { requireHeroSection } from "@/lib/cms/section-utils";
+import { seoFromPage } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
-  head: () => seo("Contact", "Tell Edmundo Kutuzov about your project — every message answered within 48 hours."),
+  loader: () => loadContactContent(),
+  head: ({ loaderData }) => loaderData ? seoFromPage(loaderData.page) : { meta: [{ title: "Contact — Edmundo Kutuzov" }] },
   component: Contact,
 });
-
-const steps = [
-  { k: "Identity", t: "Start with the people behind the project.", d: "Enough about you or your team to start the conversation." },
-  { k: "Project", t: "What are we making?", d: "Pick the main discipline and how pressing the work is." },
-  { k: "Budget", t: "What scale should I design for?", d: "Share a range if useful — not disclosing is fine." },
-  { k: "Timing", t: "When does the work need to move?", d: "A target date and preferred channel help shape the reply." },
-  { k: "References", t: "Give the idea enough context.", d: "Describe the brief, add links and useful visual references." },
-];
 
 const input = "w-full border-b border-foreground/30 bg-transparent py-3 text-lg outline-none transition focus:border-primary placeholder:text-muted-foreground/60";
 const Field = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -28,6 +22,9 @@ const Chip = ({ on, children, onClick }: { on: boolean; children: ReactNode; onC
 );
 
 function Contact() {
+  const data = Route.useLoaderData();
+  const { profile, budgets, projectTypes, contactSteps } = data;
+  const hero = requireHeroSection(data.sections);
   const [step, setStep] = useState(0);
   const [b, setB] = useState<Brief>(emptyBrief);
   const [err, setErr] = useState<string | null>(null);
@@ -44,7 +41,7 @@ function Contact() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" lines={["Let's talk."]} intro="Tell me about your project. I respond to every message within 48 hours with an initial process proposal." />
+      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro} />
 
       <section className="grid gap-px bg-border md:grid-cols-3">
         {[
@@ -61,7 +58,7 @@ function Contact() {
 
       <section className="grid gap-16 px-6 py-32 md:grid-cols-[1fr_2fr] md:px-12">
         <aside className="space-y-4">
-          {steps.map((s, i) => (
+          {contactSteps.map((s, i) => (
             <div key={s.k} className={`flex items-center gap-4 transition ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
               <span className={`font-mono text-xs ${i <= step ? "text-primary" : ""}`}>0{i + 1}</span>
               <span className="font-display text-xl">{s.k}</span>
@@ -81,8 +78,8 @@ function Contact() {
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="space-y-8">
                   <div>
-                    <h2 className="font-display text-4xl font-bold md:text-5xl">{steps[step]?.t}</h2>
-                    <p className="mt-3 text-muted-foreground">{steps[step]?.d}</p>
+                    <h2 className="font-display text-4xl font-bold md:text-5xl">{contactSteps[step]?.t}</h2>
+                    <p className="mt-3 text-muted-foreground">{contactSteps[step]?.d}</p>
                   </div>
 
                   {step === 0 && (
