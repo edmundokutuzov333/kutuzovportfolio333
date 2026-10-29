@@ -1,4 +1,3 @@
-export const ADMIN_ACCESS_CODE = "333" as const;
 export interface AdminAttemptState { attempt_count: number; blocked_until: string | null; }
 export const ADMIN_MAX_ATTEMPTS = 5;
 function constantTimeEqual(left: string, right: string): boolean {
