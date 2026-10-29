@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "reconciled_at": "2026-10-29T07:28:30Z",
+  "project": {
+    "repository": "edmundokutuzov333/kutuzovportfolio333",
+    "branch": "main",
+    "supabase_project_ref": "qwjaoheaolpxtciljzvb",
+    "public_origin": "https://kutuzovportfolio333.lovable.app",
+    "published_revision": 1
+  },
+  "import": {
+    "method": "Versioned Supabase migration cms_initial_content_import_20261029",
+    "source": "src/lib/content.ts and current public route copy",
+    "idempotency": "SQL uses conflict-safe upserts; scripts/import-static-content.ts is insert-only and preserves later Admin edits on re-execution",
+    "migration_versions": [
+      "20261029070959_cms_content_domain_and_asset_inventory_20261029",
+      "20261029071751_cms_initial_content_import_20261029"
+    ]
+  },
+  "counts": {
+    "pages": {
+      "source": 8,
+      "database": 8,
+      "match": true
+    },
+    "page_sections": {
+      "source": 15,
+      "database": 15,
+      "match": true
+    },
+    "home_sections": {
+      "source": 7,
+      "database": 7,
+      "match": true
+    },
+    "projects": {
+      "source": 4,
+      "database": 4,
+      "match": true
+    },
+    "published_projects": {
+      "source": 4,
+      "database": 4,
+      "match": true
+    },
+    "featured_projects": {
+      "source": 4,
+      "database": 4,
+      "match": true
+    },
+    "clients": {
+      "source": 20,
+      "database": 20,
+      "match": true
+    },
+    "clients_without_logo": {
+      "source": 1,
+      "database": 1,
+      "match": true
+    },
+    "profile": {
+      "source": 1,
+      "database": 1,
+      "match": true
+    },
+    "social_links": {
+      "source": 3,
+      "database": 3,
+      "match": true
+    },
+    "metrics": {
+      "source": 5,
+      "database": 5,
+      "match": true
+    },
+    "experience_items": {
+      "source": 5,
+      "database": 5,
+      "match": true
+    },
+    "skills": {
+      "source": 5,
+      "database": 5,
+      "match": true
+    },
+    "discipline_groups": {
+      "source": 3,
+      "database": 3,
+      "match": true
+    },
+    "discipline_items": {
+      "source": 15,
+      "database": 15,
+      "match": true
+    },
+    "services": {
+      "source": 5,
+      "database": 5,
+      "match": true
+    },
+    "capabilities": {
+      "source": 6,
+      "database": 6,
+      "match": true
+    },
+    "project_types": {
+      "source": 12,
+      "database": 12,
+      "match": true
+    },
+    "budget_currencies": {
+      "source": 5,
+      "database": 5,
+      "match": true
+    },
+    "process_steps": {
+      "source": 4,
+      "database": 4,
+      "match": true
+    },
+    "principles": {
+      "source": 4,
+      "database": 4,
+      "match": true
+    },
+    "contact_form_steps": {
+      "source": 5,
+      "database": 5,
+      "match": true
+    },
+    "asset_manifests": {
+      "source": 41,
+      "database": 41,
+      "match": true
+    }
+  },
+  "projects": [
+    {
+      "position": 0,
+      "slug": "diga-yes",
+      "title": "Diga YES & Viva o Mundo Online",
+      "client": "Webmasters / YES",
+      "year": "2026",
+      "featured": true,
+      "gallery_images": 6,
+      "status": "published"
+    },
+    {
+      "position": 1,
+      "slug": "jogue-venca-repita",
+      "title": "Jogue, Vença, Repita.",
+      "client": "Webmasters",
+      "year": "2026",
+      "featured": true,
+      "gallery_images": 2,
+      "status": "published"
+    },
+    {
+      "position": 2,
+      "slug": "datas-que-ligam",
+      "title": "Datas que Ligam",
+      "client": "Webmasters / YES",
+      "year": "2025 — 2026",
+      "featured": true,
+      "gallery_images": 7,
+      "status": "published"
+    },
+    {
+      "position": 3,
+      "slug": "somos-uma",
+      "title": "Somos Uma",
+      "client": "Webmasters",
+      "year": "2026",
+      "featured": true,
+      "gallery_images": 3,
+      "status": "published"
+    }
+  ],
+  "clients_without_logo": [
+    "Brutal Fruit"
+  ],
+  "assets": {
+    "manifest_count": 41,
+    "binaries_available_in_git": 0,
+    "migrated_to_supabase_bucket": 0,
+    "status_counts": {
+      "pending_source_access": 41
+    },
+    "original_references_preserved": true,
+    "binary_mime_validated": 0,
+    "dimensions_verified": 0,
+    "sha256_verified": 0,
+    "reason": "Asset binaries are absent from Git and source access could not be verified in this execution. The original URL, source manifest, declared MIME and declared size are retained. No existing image was deleted or substituted.",
+    "removal_policy": "Do not remove or replace a legacy reference until the original binary is retrieved, its actual MIME and dimensions are validated, SHA-256 is recorded, and the uploaded Supabase object has been verified."
+  },
+  "security_validation": {
+    "public_role_can_read_published_projects": true,
+    "public_role_can_read_draft_projects": false,
+    "public_role_can_read_contact_submissions": false,
+    "public_role_can_read_newsletter_subscribers": false,
+    "test_method": "Temporary records within a PostgreSQL transaction, set local role anon, read visibility counts, then rollback.",
+    "tables_with_rls": 24,
+    "tables_without_rls": 0,
+    "supabase_security_advisor_findings": 0
+  },
+  "route_integration": {
+    "routes": [
+      "/",
+      "/work",
+      "/work/$slug",
+      "/about",
+      "/services",
+      "/process",
+      "/clients",
+      "/contact"
+    ],
+    "public_routes_use_cms_loaders": true,
+    "static_content_module_used_as_public_source": false,
+    "home_section_order_and_visibility_from_database": true,
+    "unpublished_projects_filtered_by_query_and_rls": true,
+    "project_slug_redirect_lookup_supported": true,
+    "route_seo_from_published_page_records": true,
+    "public_revision_recheck_seconds": 3,
+    "asset_failure_state_explicit": true
+  },
+  "ci": {
+    "run_id": 40835466172,
+    "result": "success",
+    "url": "https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/40835466172",
+    "test_files_passed": 5,
+    "tests_passed": 16,
+    "secret_scan": "passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "production_build": "passed",
+    "asset_inventory": "41 manifests, 0 invalid, 0 binaries in Git"
+  },
+  "limitations": [
+    "The published domain could not be retrieved by the available browser tool, so live route-by-route smoke tests could not be completed.",
+    "The Lovable project reports the latest GitHub commit as synchronized and published, but the actual public application response remains unverified.",
+    "Legacy asset binaries still need retrieval and validation before migration to the new bucket.",
+    "Contact persistence, private attachment uploads and real newsletter confirmation remain scheduled for Phase 4 and are not represented as completed by this phase."
+  ]
+}
