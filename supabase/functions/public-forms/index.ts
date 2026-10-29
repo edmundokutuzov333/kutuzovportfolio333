@@ -355,9 +355,98 @@ function readHostingerSmtpConfig(): HostingerSmtpConfigResult {
   return { status: "ready", config: { host, port: 465, user, password, from } };
 }
 
+type EmailAttachment = { filename: string; content: Uint8Array; contentType: string };
+
+function brandedEmail(preheader: string, eyebrow: string, title: string, intro: string, body: string): string {
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#070a10;color:#e9edf7;font-family:Arial,Helvetica,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(preheader)}</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#070a10;padding:32px 12px;">
+    <tr><td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:640px;border:1px solid #242c3d;background:#0d111b;">
+        <tr><td style="padding:28px 32px 24px;border-bottom:1px solid #273148;background:#090c14;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td valign="middle" width="48"><div style="width:40px;height:40px;line-height:40px;text-align:center;background:#b6ccff;color:#0b1020;font-size:15px;font-weight:800;letter-spacing:-1px;">EK.</div></td>
+            <td valign="middle" style="padding-left:12px;"><div style="font-size:12px;line-height:18px;letter-spacing:2px;font-weight:700;color:#f4f6ff;">EDMUNDO KUTUZOV</div><div style="margin-top:4px;font-size:10px;line-height:15px;letter-spacing:1.6px;color:#8d9ab7;">CREATIVE DIRECTION / DESIGN</div></td>
+            <td align="right" valign="middle" style="font-size:10px;letter-spacing:1.4px;color:#8d9ab7;">MAPUTO · MZ</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding:34px 32px 12px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ebaff;">${escapeHtml(eyebrow)}</div>
+          <h1 style="margin:14px 0 12px;font-size:29px;line-height:1.18;letter-spacing:-.8px;font-weight:700;color:#f4f6ff;">${escapeHtml(title)}</h1>
+          <p style="margin:0;font-size:14px;line-height:1.8;color:#b9c3d8;">${escapeHtml(intro)}</p>
+        </td></tr>
+        <tr><td style="padding:18px 32px 34px;">${body}</td></tr>
+        <tr><td style="padding:22px 32px;border-top:1px solid #273148;background:#090c14;">
+          <div style="font-size:12px;line-height:1.8;font-weight:700;letter-spacing:.4px;color:#e9edf7;">Edmundo Kutuzov</div>
+          <div style="font-size:11px;line-height:1.8;color:#8d9ab7;">Creative Direction &amp; Design</div>
+          <div style="margin-top:12px;font-size:10px;line-height:1.7;color:#65718c;">This message was sent by the Edmundo Kutuzov portfolio. Replies to this email reach the studio mailbox.</div>
+          <div style="margin-top:14px;font-size:10px;letter-spacing:1.5px;color:#65718c;">EDMUNDOKUTUZOV.ART</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
+function emailSection(label: string, content: string): string {
+  return `<div style="margin-top:22px;border:1px solid #273148;background:#111827;">
+    <div style="padding:12px 16px;border-bottom:1px solid #273148;font-size:10px;font-weight:700;letter-spacing:1.6px;color:#9ebaff;text-transform:uppercase;">${escapeHtml(label)}</div>
+    <div style="padding:16px;font-size:13px;line-height:1.75;color:#d6deee;">${content}</div>
+  </div>`;
+}
+
+function emailValueRows(rows: Array<[string, unknown]>): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows
+    .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+    .map(([label, value]) => `<tr>
+      <td valign="top" style="width:35%;padding:7px 10px 7px 0;color:#8d9ab7;font-size:11px;letter-spacing:.3px;">${escapeHtml(label)}</td>
+      <td valign="top" style="padding:7px 0;color:#edf1fa;font-size:12px;word-break:break-word;">${escapeHtml(String(value))}</td>
+    </tr>`).join("")}</table>`;
+}
+
+function renderReferenceLinks(value: unknown): { text: string; html: string } {
+  if (!Array.isArray(value)) return { text: "No links supplied", html: '<span style="color:#8d9ab7;">No links supplied.</span>' };
+  const links = value.filter((item): item is string => typeof item === "string").slice(0, 10);
+  if (!links.length) return { text: "No links supplied", html: '<span style="color:#8d9ab7;">No links supplied.</span>' };
+  return {
+    text: links.map((link, index) => `${index + 1}. ${link}`).join("\n"),
+    html: '<ol style="margin:0;padding-left:20px;">' + links.map((link) =>
+      '<li style="padding:5px 0;overflow-wrap:anywhere;"><a href="' + escapeHtml(link) + '" style="color:#b6ccff;text-decoration:underline;">' + escapeHtml(link) + '</a></li>'
+    ).join("") + "</ol>",
+  };
+}
+
+function formatFileSize(value: unknown): string {
+  const size = typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+  return size < 1024 * 1024 ? Math.round(size / 1024) + " KB" : (size / (1024 * 1024)).toFixed(2) + " MB";
+}
+
+async function downloadPrivateAttachment(path: string, submissionId: string, expectedSize?: number): Promise<Uint8Array> {
+  if (!/^[0-9a-f-]{36}$/i.test(submissionId) ||
+      !path.startsWith(submissionId + "/") ||
+      !/^[0-9a-f-]{36}\\.[a-z0-9]+$/i.test(path.slice(submissionId.length + 1))) {
+    throw new Error("invalid_private_attachment_path");
+  }
+  const key = serviceKey();
+  const response = await fetch(apiBase() + "/storage/v1/object/" + BUCKET_PRIVATE + "/" + encodePath(path), {
+    method: "GET",
+    headers: { apikey: key, authorization: "Bearer " + key },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("private_attachment_download_failed");
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.byteLength > MAX_FILE_BYTES || (expectedSize !== undefined && bytes.byteLength !== expectedSize)) {
+    throw new Error("private_attachment_integrity_check_failed");
+  }
+  return bytes;
+}
+
 async function sendViaHostingerSmtp(
   config: HostingerSmtpConfig,
-  message: { to: string; subject: string; text: string; html: string; replyTo?: string },
+  message: { to: string; subject: string; text: string; html: string; replyTo?: string; attachments?: EmailAttachment[] },
 ): Promise<void> {
   const transport = nodemailer.createTransport({
     host: config.host,
@@ -366,7 +455,7 @@ async function sendViaHostingerSmtp(
     auth: { user: config.user, pass: config.password },
     connectionTimeout: 10_000,
     greetingTimeout: 10_000,
-    socketTimeout: 20_000,
+    socketTimeout: 30_000,
   });
 
   try {
@@ -377,6 +466,7 @@ async function sendViaHostingerSmtp(
       text: message.text,
       html: message.html,
       ...(message.replyTo ? { replyTo: message.replyTo } : {}),
+      ...(message.attachments?.length ? { attachments: message.attachments } : {}),
     });
   } finally {
     transport.close();
@@ -391,7 +481,6 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
   if (!row || typeof row["id"] !== "string") return { sent: false, reason: "not_claimable" };
 
   const smtp = readHostingerSmtpConfig();
-
   if (smtp.status === "invalid") {
     await updateOutbox(id, { status: "failed", last_error: smtp.reason,
       next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() });
@@ -404,30 +493,172 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
   }
 
   const payload = row["payload"] && typeof row["payload"] === "object" ? row["payload"] as Record<string, unknown> : {};
+  const metadata = payload["metadata"] && typeof payload["metadata"] === "object" ? payload["metadata"] as Record<string, unknown> : {};
   let subject = "";
   let text = "";
   let html = "";
+  let attachments: EmailAttachment[] = [];
+
   try {
     if (row["message_type"] === "contact_submission") {
-      subject = "New portfolio enquiry: " + String(payload["request_type"] ?? "Contact request").slice(0, 180);
-      const metadata = payload["metadata"] && typeof payload["metadata"] === "object" ? payload["metadata"] as Record<string, unknown> : {};
-      const lines = [
-        "A new enquiry was recorded in the portfolio.",
-        "Name: " + String(payload["name"] ?? ""),
-        "Email: " + String(payload["email"] ?? ""),
-        "Company: " + String(payload["company"] ?? ""),
-        "Request: " + String(payload["request_type"] ?? ""),
-        "Budget: " + String(payload["budget"] ?? ""),
-        "Message: " + String(payload["message"] ?? ""),
-        "Phone: " + String(metadata["phone"] ?? ""),
-        "Location: " + String(metadata["location"] ?? ""),
-        "Deadline: " + String(metadata["deadline"] ?? ""),
-        "Links: " + (Array.isArray(payload["links"]) ? (payload["links"] as unknown[]).join(", ") : ""),
-        "Submission ID: " + String(payload["submission_id"] ?? ""),
+      const submissionId = String(payload["submission_id"] ?? "");
+      const links = renderReferenceLinks(payload["links"]);
+      const services = Array.isArray(metadata["services"]) ? (metadata["services"] as unknown[]).filter((value) => typeof value === "string") as string[] : [String(payload["request_type"] ?? "")];
+      const deliverables = Array.isArray(metadata["deliverables"]) ? (metadata["deliverables"] as unknown[]).filter((value) => typeof value === "string") as string[] : [];
+      const attachmentPaths = Array.isArray(payload["attachment_paths"]) ? (payload["attachment_paths"] as unknown[]).filter((value): value is string => typeof value === "string") : [];
+      const attachmentMeta = Array.isArray(metadata["attachments"]) ? metadata["attachments"] as Array<Record<string, unknown>> : [];
+      const fallbackPaths = attachmentPaths.length === 0 && Number(payload["attachment_count"] ?? 0) > 0
+        ? firstRecord(await db("/rest/v1/contact_submissions?select=attachment_paths,metadata&id=eq." + encodeURIComponent(submissionId)))
+        : null;
+      const finalPaths = attachmentPaths.length > 0 ? attachmentPaths
+        : Array.isArray(fallbackPaths?.["attachment_paths"]) ? (fallbackPaths["attachment_paths"] as unknown[]).filter((value): value is string => typeof value === "string") : [];
+      if (finalPaths.length > MAX_FILES) throw new Error("too_many_private_attachments");
+      let totalBytes = 0;
+      const namesAndSizes: Array<{ name: string; size: number; mime: string }> = [];
+      for (let index = 0; index < finalPaths.length; index += 1) {
+        const path = finalPaths[index];
+        const item = attachmentMeta[index] ?? {};
+        const expectedSize = typeof item["size"] === "number" ? item["size"] as number : undefined;
+        const mime = typeof item["mime"] === "string" ? item["mime"] as string
+          : path.endsWith(".pdf") ? "application/pdf"
+          : path.endsWith(".jpg") ? "image/jpeg"
+          : path.endsWith(".webp") ? "image/webp" : "image/png";
+        if (!["application/pdf", "image/png", "image/jpeg", "image/webp"].includes(mime)) throw new Error("invalid_private_attachment_type");
+        const content = await downloadPrivateAttachment(path, submissionId, expectedSize);
+        totalBytes += content.byteLength;
+        if (totalBytes > MAX_TOTAL_FILE_BYTES) throw new Error("private_attachments_exceed_email_limit");
+        const filename = typeof item["name"] === "string" ? cleanOriginalName(item["name"] as string)
+          : "reference-" + String(index + 1).padStart(2, "0") + "." + (mime === "application/pdf" ? "pdf" : mime === "image/jpeg" ? "jpg" : mime.split("/")[1]);
+        attachments.push({ filename, content, contentType: mime });
+        namesAndSizes.push({ name: filename, size: content.byteLength, mime });
+      }
+
+      const serviceList = services.map((value) => escapeHtml(value)).join(" / ");
+      const attachmentsText = namesAndSizes.length
+        ? namesAndSizes.map((item, index) => `${index + 1}. ${item.name} (${formatFileSize(item.size)})`).join("\n")
+        : "No files attached";
+      const attachmentsHtml = namesAndSizes.length
+        ? '<ul style="margin:0;padding-left:20px;">' + namesAndSizes.map((item) =>
+            '<li style="padding:4px 0;">' + escapeHtml(item.name) + ' <span style="color:#8d9ab7;">(' + formatFileSize(item.size) + ', ' + escapeHtml(item.mime) + ')</span></li>'
+          ).join("") + "</ul><p style=\"margin:12px 0 0;color:#8d9ab7;font-size:11px;\">The original uploaded files are attached to this email.</p>"
+        : '<span style="color:#8d9ab7;">No files attached.</span>';
+      const contactRows: Array<[string, unknown]> = [
+        ["Name", payload["name"]],
+        ["Email", payload["email"]],
+        ["Company / brand", payload["company"]],
+        ["Role", metadata["role"]],
+        ["Location", metadata["location"]],
+        ["Phone / WhatsApp", metadata["phone"]],
+        ["Preferred reply channel", metadata["channel"]],
       ];
-      text = lines.join("\n");
-      html = "<h2>New portfolio enquiry</h2><pre style=\"white-space:pre-wrap;font-family:Arial,sans-serif\">" + escapeHtml(lines.join("\n")) + "</pre>";
+      const projectRows: Array<[string, unknown]> = [
+        ["Reference", submissionId],
+        ["Project name", metadata["project_name"]],
+        ["Primary service", payload["request_type"]],
+        ["Additional services", Array.isArray(metadata["additional_services"]) ? (metadata["additional_services"] as unknown[]).join(", ") : ""],
+        ["Industry", metadata["industry"]],
+        ["Project stage", metadata["project_stage"]],
+        ["Deliverables", deliverables.join(", ")],
+        ["Urgency", metadata["urgency"]],
+        ["Budget range", payload["budget"] ?? metadata["budget"]],
+        ["Budget negotiable", metadata["negotiable"] === true ? "Yes" : metadata["negotiable"] === false ? "No" : ""],
+        ["Deadline", metadata["deadline"]],
+        ["Audience", metadata["audience"]],
+        ["Received at (UTC)", new Date().toISOString()],
+      ];
+      subject = "New enquiry | " + String(payload["request_type"] ?? "Project request").slice(0, 90) + " | " + String(payload["name"] ?? "Client").slice(0, 70);
+      text = [
+        "NEW PROJECT ENQUIRY",
+        "Reference: " + submissionId,
+        "",
+        "CONTACT",
+        ...contactRows.filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "").map(([label, value]) => label + ": " + String(value)),
+        "",
+        "PROJECT",
+        ...projectRows.filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "").map(([label, value]) => label + ": " + String(value)),
+        "",
+        "BRIEF",
+        String(payload["message"] ?? ""),
+        "",
+        "REFERENCE LINKS",
+        links.text,
+        "",
+        "FILES ATTACHED",
+        attachmentsText,
+      ].join("\n");
+
+      const contactBody = emailSection("Client", emailValueRows(contactRows));
+      const projectBody = emailSection("Project overview", emailValueRows(projectRows));
+      const briefBody = emailSection("Project brief", '<div style="white-space:pre-wrap;word-break:break-word;">' + escapeHtml(String(payload["message"] ?? "")) + "</div>");
+      const linksBody = emailSection("Reference links", links.html);
+      const attachmentsBody = emailSection("Uploaded files", attachmentsHtml);
+      const servicesBody = emailSection("Selected services", '<div style="font-size:13px;line-height:1.8;">' + (serviceList || "No services selected") + "</div>");
+      html = brandedEmail(
+        "A new project request has been recorded.",
+        "Incoming project enquiry",
+        "New project enquiry",
+        "A new project request has been securely recorded. Review the summary below and reply directly to the client.",
+        servicesBody + contactBody + projectBody + briefBody + linksBody + attachmentsBody,
+      );
+    } else if (row["message_type"] === "contact_receipt") {
+      const firstName = String(payload["name"] ?? "there").trim().split(/\\s+/)[0] || "there";
+      const reference = String(payload["submission_id"] ?? "");
+      const requestType = String(payload["request_type"] ?? "Project enquiry");
+      subject = "We've received your enquiry | Edmundo Kutuzov";
+      text = [
+        "Hello " + firstName + ",",
+        "",
+        "Thank you for getting in touch. Your project enquiry has been received and securely recorded.",
+        "Reference: " + reference,
+        "Main service: " + requestType,
+        "",
+        "I'll review the information you shared and follow up using your preferred contact channel. You can reply to this email if you need to add anything.",
+        "",
+        "Edmundo Kutuzov",
+        "Creative Direction & Design",
+        "Maputo, Mozambique",
+      ].join("\n");
+      html = brandedEmail(
+        "Your project enquiry is safely recorded.",
+        "Enquiry received",
+        "Thank you, " + firstName + ".",
+        "Your project enquiry has reached my studio. The reference below can be used if you need to follow up.",
+        emailSection("Your reference", emailValueRows([
+          ["Reference", reference],
+          ["Main service", requestType],
+          ["Project / brand", payload["company"]],
+        ])) +
+        emailSection("What happens next", '<p style="margin:0;">I will review the information you shared and follow up using your preferred contact channel. If you need to add context, simply reply to this email.</p>') +
+        '<p style="margin:24px 0 0;font-size:12px;color:#9ebaff;">Thank you for considering Edmundo Kutuzov for your project.</p>',
+      );
+    } else if (row["message_type"] === "newsletter_welcome") {
+      const bundle = await decryptTokenBundle(payload, serviceKey());
+      const origin = typeof payload["site_origin"] === "string" && ALLOWED_ORIGINS.has(payload["site_origin"])
+        ? payload["site_origin"] : "";
+      if (!origin || !origin.startsWith("https://") || origin !== PRODUCTION_ORIGIN) throw new Error("public_site_url_not_configured");
+      const unsubscribeUrl = origin + "/newsletter/unsubscribe?token=" + encodeURIComponent(bundle.unsubscribeToken);
+      subject = "You're on the list | Edmundo Kutuzov";
+      text = [
+        "You're on the list.",
+        "",
+        "Thank you for subscribing to notes from Edmundo Kutuzov. You may receive selected work, ideas on creative direction and design, and occasional availability updates.",
+        "",
+        "You can unsubscribe at any time using this link:",
+        unsubscribeUrl,
+        "",
+        "Edmundo Kutuzov",
+        "Creative Direction & Design",
+      ].join("\n");
+      html = brandedEmail(
+        "Your newsletter preferences have been saved.",
+        "Newsletter",
+        "You're on the list.",
+        "Thank you for subscribing. You'll receive occasional notes from my work in creative direction, brand design and visual culture.",
+        emailSection("What to expect", '<p style="margin:0;">Selected projects, useful ideas and occasional availability updates. No daily noise, and no sharing your address with other people.</p>') +
+        emailSection("Your preferences", '<p style="margin:0 0 14px;">You can leave the list at any time. The link below will remove this address from future newsletter emails.</p><p style="margin:0;"><a href="' + escapeHtml(unsubscribeUrl) + '" style="display:inline-block;padding:12px 18px;background:#b6ccff;color:#0b1020;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;">UNSUBSCRIBE</a></p>'),
+      );
     } else if (row["message_type"] === "newsletter_confirmation") {
+      // Backward compatibility for manually inspected legacy outbox records only.
       const bundle = await decryptTokenBundle(payload, serviceKey());
       const origin = typeof payload["site_origin"] === "string" && ALLOWED_ORIGINS.has(payload["site_origin"])
         ? payload["site_origin"] : "";
@@ -435,15 +666,22 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       const confirmUrl = origin + "/newsletter/confirm?token=" + encodeURIComponent(bundle.confirmToken);
       const unsubscribeUrl = origin + "/newsletter/unsubscribe?token=" + encodeURIComponent(bundle.unsubscribeToken);
       subject = "Confirm your Kutuzov newsletter subscription";
-      text = "Please confirm your subscription by opening:\n" + confirmUrl + "\n\nTo unsubscribe, open:\n" + unsubscribeUrl + "\n\nIf you did not request this, ignore this message.";
-      html = "<p>Please confirm your subscription.</p><p><a href=\"" + escapeHtml(confirmUrl) + "\">Confirm subscription</a></p><p>If you did not request this, ignore this message.</p><p><a href=\"" + escapeHtml(unsubscribeUrl) + "\">Unsubscribe</a></p>";
+      text = "Please confirm your subscription by opening:\\n" + confirmUrl + "\\n\\nTo unsubscribe, open:\\n" + unsubscribeUrl;
+      html = brandedEmail(
+        "Legacy newsletter confirmation email.",
+        "Newsletter",
+        "Confirm your subscription",
+        "This message belongs to the previous double opt-in flow.",
+        emailSection("Confirm", '<p style="margin:0;"><a href="' + escapeHtml(confirmUrl) + '" style="color:#b6ccff;">Confirm subscription</a></p>') +
+        emailSection("Unsubscribe", '<p style="margin:0;"><a href="' + escapeHtml(unsubscribeUrl) + '" style="color:#b6ccff;">Unsubscribe</a></p>'),
+      );
     } else {
       throw new Error("unsupported_email_message_type");
     }
 
     const replyTo = row["message_type"] === "contact_submission" &&
       typeof payload["email"] === "string" &&
-      /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload["email"])
+      /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(payload["email"])
       ? payload["email"].trim()
       : undefined;
 
@@ -453,6 +691,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
       text,
       html,
       replyTo,
+      attachments,
     });
     const provider = "hostinger_smtp";
 
