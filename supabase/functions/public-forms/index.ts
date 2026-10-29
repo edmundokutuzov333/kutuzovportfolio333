@@ -237,9 +237,9 @@ async function getNotificationRecipient(): Promise<string | null> {
   // Set PROJECTS_NOTIFICATION_EMAIL only when a deliberate override is required.
   const configured = Deno.env.get("PROJECTS_NOTIFICATION_EMAIL")?.trim();
   const recipient = configured || "projects@edmundokutuzov.art";
-  const recipients = recipient.split(/[;,\\n]+/).map((item) => item.trim().toLowerCase()).filter(Boolean);
+  const recipients = recipient.split(/[;,\n]+/).map((item) => item.trim().toLowerCase()).filter(Boolean);
   if (recipients.length === 0 || recipients.length > 10 ||
-      recipients.some((item) => !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(item))) return null;
+      recipients.some((item) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(item))) return null;
   return [...new Set(recipients)].join(", ");
 }
 
