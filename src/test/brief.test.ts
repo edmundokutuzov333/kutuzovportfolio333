@@ -35,6 +35,20 @@ describe("briefing form rules", () => {
     expect(validateStep(4, { ...ok, files: [big] })).not.toBeNull();
     expect(validateStep(4, { ...ok, files: [pdf] })).not.toBeNull();
   });
+
+  it("validates the expanded project objective and delivery channels", () => {
+    expect(validateStep(1, { ...ok, projectGoal: "Lead generation and sales", channels: ["Social media", "Digital advertising"] })).toBeNull();
+    expect(validateStep(1, { ...ok, projectGoal: "Invented objective" })).not.toBeNull();
+    expect(validateStep(1, { ...ok, channels: ["Invented channel"] })).not.toBeNull();
+  });
+
+  it("accepts supported file extensions when browser MIME metadata is absent", () => {
+    const file = new File(["minimal test payload"], "client-reference.pdf", { type: "" });
+    expect(validateStep(4, { ...ok, files: [file] })).toBeNull();
+    const unsupported = new File(["payload"], "client-reference.exe", { type: "" });
+    expect(validateStep(4, { ...ok, files: [unsupported] })).not.toBeNull();
+  });
+
   it("links must be http or https", () => {
     expect(validateStep(4, { ...ok, links: "ftp://x.com" })).not.toBeNull();
     expect(validateStep(4, { ...ok, links: "https://x.com" })).toBeNull();
