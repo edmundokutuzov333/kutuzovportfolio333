@@ -1,7 +1,7 @@
 import { inspectImageBytes } from "./image-validation.ts";
 import nodemailer from "npm:nodemailer@^9";
 
-const PRODUCTION_ORIGIN = "https://edmundokutuzov.art";
+const PRODUCTION_ORIGIN = "https://kutuzovportfolio333.lovable.app";
 const ALLOWED_ORIGINS = new Set([
   PRODUCTION_ORIGIN,
   "https://www.edmundokutuzov.art",
