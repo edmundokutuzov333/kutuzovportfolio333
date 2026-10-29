@@ -477,12 +477,18 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const form = await request.formData();
   const name = formText(form, "name", 180, true);
   const email = formText(form, "email", 320, true).toLowerCase();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400, origin);
+  if (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400, origin);
   const company = formText(form, "company", 180);
   const role = formText(form, "role", 180);
   const location = formText(form, "location", 240);
   const phone = formText(form, "phone", 80);
   const type = formText(form, "type", 180, true);
+  const additionalTypes = formStringArray(form, "additionalTypes", 22, 180);
+  const projectName = formText(form, "projectName", 180);
+  const industry = formText(form, "industry", 120);
+  const projectStage = formText(form, "projectStage", 120);
+  const deliverables = formStringArray(form, "deliverables", 16, 120);
+  const audience = formText(form, "audience", 800);
   const urgency = formText(form, "urgency", 20, true);
   const currency = formText(form, "currency", 3, true);
   const budget = formText(form, "budget", 120);
@@ -492,19 +498,27 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const channel = formText(form, "channel", 20, true);
   const message = formText(form, "message", 4000, true);
   const rawLinks = formText(form, "links", 2000);
+
   if (message.length < 10) return json({ ok: false, error: "invalid_message" }, 400, origin);
-  if (!["low","normal","high","urgent"].includes(urgency)) return json({ ok: false, error: "invalid_urgency" }, 400, origin);
-  if (!["email","phone","whatsapp","linkedin"].includes(channel)) return json({ ok: false, error: "invalid_channel" }, 400, origin);
-  if (!["EUR","USD","GBP","BRL","MZN"].includes(currency)) return json({ ok: false, error: "invalid_currency" }, 400, origin);
-  if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return json({ ok: false, error: "invalid_deadline" }, 400, origin);
+  if (![ "low", "normal", "high", "urgent" ].includes(urgency)) return json({ ok: false, error: "invalid_urgency" }, 400, origin);
+  if (![ "email", "phone", "whatsapp", "linkedin" ].includes(channel)) return json({ ok: false, error: "invalid_channel" }, 400, origin);
+  if (![ "EUR", "USD", "GBP", "BRL", "MZN" ].includes(currency)) return json({ ok: false, error: "invalid_currency" }, 400, origin);
+  if (deadline && !/^\\d{4}-\\d{2}-\\d{2}$/.test(deadline)) return json({ ok: false, error: "invalid_deadline" }, 400, origin);
+  if (industry && !ALLOWED_INDUSTRIES.has(industry)) return json({ ok: false, error: "invalid_industry" }, 400, origin);
+  if (projectStage && !ALLOWED_PROJECT_STAGES.has(projectStage)) return json({ ok: false, error: "invalid_project_stage" }, 400, origin);
+  if (deliverables.some((item) => !ALLOWED_DELIVERABLES.has(item))) return json({ ok: false, error: "invalid_deliverables" }, 400, origin);
+  if (additionalTypes.includes(type)) return json({ ok: false, error: "duplicate_project_service" }, 400, origin);
 
   const projectTypes = await getPublishedProjectTypes();
-  if (!projectTypes.includes(type)) return json({ ok: false, error: "invalid_project_type" }, 400, origin);
+  if (![type, ...additionalTypes].every((item) => projectTypes.includes(item))) {
+    return json({ ok: false, error: "invalid_project_type" }, 400, origin);
+  }
+
   const links: string[] = [];
-  for (const value of rawLinks.split(/\s+/).filter(Boolean)) {
+  for (const value of rawLinks.split(/\\s+/).filter(Boolean)) {
     let parsed: URL;
     try { parsed = new URL(value); } catch { return json({ ok: false, error: "invalid_links" }, 400, origin); }
-    if (!["http:","https:"].includes(parsed.protocol) || !parsed.hostname) return json({ ok: false, error: "invalid_links" }, 400, origin);
+    if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) return json({ ok: false, error: "invalid_links" }, 400, origin);
     links.push(parsed.href);
     if (links.length > 10) return json({ ok: false, error: "too_many_links" }, 400, origin);
   }
@@ -519,13 +533,11 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const preparedFiles: ContactUpload[] = [];
   for (const file of fileEntries) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const image = inspectImageBytes(bytes);
-    if (!image) return json({ ok: false, error: "invalid_image_content_or_dimensions" }, 400, origin);
-    if (!["image/png","image/jpeg","image/webp"].includes(image.mime) || (file.type && file.type !== image.mime)) {
-      return json({ ok: false, error: "unsupported_image_type" }, 400, origin);
-    }
+    const inspected = inspectContactFile(file, bytes);
+    if (!inspected) return json({ ok: false, error: "invalid_or_unsupported_file" }, 400, origin);
     preparedFiles.push({
-      path: "", mime: image.mime, size: bytes.byteLength, width: image.width, height: image.height,
+      path: "", mime: inspected.mime, size: bytes.byteLength,
+      width: inspected.width, height: inspected.height,
       name: cleanOriginalName(file.name), bytes,
     });
   }
@@ -534,14 +546,40 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const uploaded: string[] = [];
   try {
     for (const file of preparedFiles) {
-      file.path = submissionId + "/" + crypto.randomUUID() + "." + file.mime.split("/")[1].replace("jpeg", "jpg");
+      const extension = file.mime === "application/pdf" ? "pdf"
+        : file.mime === "image/jpeg" ? "jpg" : file.mime.split("/")[1];
+      file.path = submissionId + "/" + crypto.randomUUID() + "." + extension;
       await uploadPrivate(file.path, file.mime, file.bytes);
       uploaded.push(file.path);
     }
 
     const notificationRecipient = await getNotificationRecipient().catch(() => null);
     const outboxId = notificationRecipient ? crypto.randomUUID() : null;
+    const receiptOutboxId = crypto.randomUUID();
     const sourceHash = await sha256Hex(serviceKey() + ":contact:" + requestIp(request));
+    const metadata = {
+      role,
+      location,
+      phone,
+      urgency,
+      currency,
+      budget,
+      exact,
+      negotiable,
+      deadline,
+      channel,
+      project_name: projectName,
+      industry,
+      project_stage: projectStage,
+      services: [type, ...additionalTypes],
+      additional_services: additionalTypes,
+      deliverables,
+      audience,
+      attachments: preparedFiles.map(({ name, mime, size, width, height }) => ({
+        name, mime, size, width, height,
+      })),
+    };
+
     const resultValue = await db("/rest/v1/rpc/submit_contact_submission", {
       method: "POST",
       body: JSON.stringify({
@@ -555,9 +593,10 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
         p_links: links,
         p_attachment_paths: uploaded,
         p_source_ip_hash: sourceHash,
-        p_metadata: { role, location, phone, urgency, currency, budget, exact, negotiable, deadline, channel },
+        p_metadata: metadata,
         p_notification_recipient: notificationRecipient,
         p_notification_outbox_id: outboxId,
+        p_receipt_outbox_id: receiptOutboxId,
         p_now: new Date().toISOString(),
       }),
     });
@@ -577,8 +616,26 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
         }).catch(() => undefined);
       }
     }
-    // Once Postgres confirmed the row, an email failure must not report the enquiry itself as failed.
-    return json({ ok: true, submissionId: result["submission_id"], notification, attachmentCount: uploaded.length }, 201, origin);
+
+    let receipt = "queued";
+    try {
+      receipt = (await attemptEmailOutbox(receiptOutboxId)).reason;
+    } catch {
+      receipt = "email_delivery_failed";
+      await updateOutbox(receiptOutboxId, {
+        status: "failed",
+        last_error: "email_delivery_failed",
+        next_attempt_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+      }).catch(() => undefined);
+    }
+
+    return json({
+      ok: true,
+      submissionId: result["submission_id"],
+      notification,
+      receipt,
+      attachmentCount: uploaded.length,
+    }, 201, origin);
   } catch {
     await Promise.all(uploaded.map(deletePrivate));
     return json({ ok: false, error: "submission_unavailable" }, 503, origin);
