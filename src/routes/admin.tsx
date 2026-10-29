@@ -98,7 +98,7 @@ function AdminEntryPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0b0b0d] px-5 py-12 text-[#f4f2ee] sm:px-8">
+    <main data-admin-root className="min-h-screen bg-[#0b0b0d] px-5 py-12 text-[#f4f2ee] sm:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-5xl flex-col justify-between">
         <header className="flex items-center justify-between border-b border-white/15 pb-5">
           <a href="/" className="font-mono text-xs uppercase tracking-[0.2em] text-white/65">

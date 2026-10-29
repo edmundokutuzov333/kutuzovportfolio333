@@ -89,3 +89,30 @@ test("the valid PIN opens the Admin workspace without database credentials for s
   await expect(page.getByText("Sessão autenticada", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Código de acesso")).toHaveCount(0);
 });
+
+test("Admin uses the dark site palette without effects and restores a native cursor only inside Admin", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/admin", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-admin-root]")).toBeVisible();
+
+  const adminStyles = await page.evaluate(() => ({
+    cursor: getComputedStyle(document.body).cursor,
+    pageBackgroundImage: getComputedStyle(document.documentElement).backgroundImage,
+    adminBackground: getComputedStyle(document.querySelector("[data-admin-root]")).backgroundColor,
+    animation: getComputedStyle(document.querySelector("[data-admin-root]")).animationName,
+    transitionDuration: getComputedStyle(document.querySelector("[data-admin-root]")).transitionDuration,
+  }));
+  expect(adminStyles.cursor).toBe("auto");
+  expect(adminStyles.pageBackgroundImage).toBe("none");
+  expect(adminStyles.adminBackground).not.toBe("rgba(0, 0, 0, 0)");
+  expect(adminStyles.animation).toBe("none");
+  expect(adminStyles.transitionDuration).toBe("0s");
+
+  await page.goto("/about", { waitUntil: "domcontentloaded" });
+  const publicStyles = await page.evaluate(() => ({
+    cursor: getComputedStyle(document.body).cursor,
+    pageBackgroundImage: getComputedStyle(document.documentElement).backgroundImage,
+  }));
+  expect(publicStyles.cursor).toBe("none");
+  expect(publicStyles.pageBackgroundImage).not.toBe("none");
+});

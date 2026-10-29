@@ -622,7 +622,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const stateBadge = (value: unknown) => <span className="inline-flex rounded-full border border-[#d8dbe2] bg-[#f6f7f9] px-2.5 py-1 text-[11px] font-medium text-[#555a65]">{statusLabel(value)}</span>;
 
   return (
-    <main className="min-h-screen bg-[#f5f6f8] text-[#17191f]">
+    <main data-admin-root data-admin-workspace className="min-h-screen bg-[#f5f6f8] text-[#17191f]">
       <a href="#admin-main" className="sr-only z-50 rounded bg-white p-3 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-2 focus-visible:outline-[#243d98]">Saltar para o conteúdo principal</a>
       <header className="sticky top-0 z-30 flex h-[68px] items-center justify-between border-b border-[#e0e2e8] bg-white/95 px-4 backdrop-blur sm:px-7">
         <div className="flex min-w-0 items-center gap-3">
