@@ -1,5 +1,5 @@
 const DEFAULT_SUPABASE_URL = "https://qwjaoheaolpxtciljzvb.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3amFvaGVhb2xweHRjaWxqenZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNDI3MTgsImV4cCI6MjEwODgxODcxOH0.Sfgvv-SioHWrGzYcSQGiTJDklMvTSbDWkF3kIlqMv7M";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_D2urR5PRQGDpHqVBLtb_CA_n75HUgmE";
 const DEFAULT_PUBLIC_SITE_URL = "https://kutuzovportfolio333.lovable.app";
 
 const env = import.meta.env;
@@ -9,9 +9,8 @@ export const SUPABASE_URL =
 const publishableKey = env["VITE_SUPABASE_PUBLISHABLE_KEY"]?.trim();
 const anonKey = env["VITE_SUPABASE_ANON_KEY"]?.trim();
 
-export const SUPABASE_API_KEY = publishableKey || anonKey || DEFAULT_SUPABASE_ANON_KEY;
-const AUTHORIZATION_KEY =
-  anonKey || (publishableKey ? null : DEFAULT_SUPABASE_ANON_KEY);
+export const SUPABASE_API_KEY = publishableKey || anonKey || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+const AUTHORIZATION_KEY = anonKey || null;
 export const PUBLIC_SITE_URL =
   env["VITE_PUBLIC_SITE_URL"]?.trim().replace(/\/+$/, "") || DEFAULT_PUBLIC_SITE_URL;
 
