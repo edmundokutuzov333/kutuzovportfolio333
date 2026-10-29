@@ -717,7 +717,7 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   const form = await request.formData();
   const name = formText(form, "name", 180, true);
   const email = formText(form, "email", 320, true).toLowerCase();
-  if (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400, origin);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400, origin);
   const company = formText(form, "company", 180);
   const role = formText(form, "role", 180);
   const location = formText(form, "location", 240);
@@ -755,7 +755,7 @@ async function contactSubmit(request: Request, origin?: string): Promise<Respons
   }
 
   const links: string[] = [];
-  for (const value of rawLinks.split(/\\s+/).filter(Boolean)) {
+  for (const value of rawLinks.split(/\s+/).filter(Boolean)) {
     let parsed: URL;
     try { parsed = new URL(value); } catch { return json({ ok: false, error: "invalid_links" }, 400, origin); }
     if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) return json({ ok: false, error: "invalid_links" }, 400, origin);
