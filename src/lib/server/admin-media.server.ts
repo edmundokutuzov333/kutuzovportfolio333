@@ -80,7 +80,7 @@ export async function createMediaUpload(input: { originalName: string; contentTy
   validateMediaUploadInput(input);
   const extension = input.contentType === "image/jpeg" ? "jpg" : input.contentType === "image/png" ? "png" : "webp";
   const now = new Date();
-  const path = `uploads/${context.actor.id}/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID()}.${extension}`;
+  const path = `uploads/${context.actor.sessionId}/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID()}.${extension}`;
   const data = await storageRequest<{ url?: string; token?: string; path?: string }>(
     context,
     `/storage/v1/object/upload/sign/${PUBLIC_BUCKET}/${encodePath(path)}`,
@@ -109,7 +109,7 @@ async function deleteStorageObject(context: Awaited<ReturnType<typeof getAdminSe
 export async function cancelUnregisteredMediaUpload(input: { path: string }) {
   const context = await getAdminServerContext();
   const path = normalizeObjectPath(input.path);
-  if (!path || !path.startsWith(`uploads/${context.actor.id}/`)) throw new AdminMediaError("O caminho de upload não pertence à sua sessão.", "forbidden");
+  if (!path || !path.startsWith(`uploads/${context.actor.sessionId}/`)) throw new AdminMediaError("O caminho de upload não pertence à sua sessão.", "forbidden");
   const rows = await request<Row[]>(context, `/rest/v1/media_assets?bucket_id=eq.${PUBLIC_BUCKET}&object_path=eq.${encodeURIComponent(path)}&select=id`);
   if (rows.length > 0) return { removed: false, reason: "already_registered" };
   const references = await findAssetReferences(context, path);
@@ -124,7 +124,7 @@ export async function completeMediaUpload(input: {
   const context = await getAdminServerContext();
   validateMediaUploadInput(input);
   const path = normalizeObjectPath(input.path);
-  if (!path || !path.startsWith(`uploads/${context.actor.id}/`)) {
+  if (!path || !path.startsWith(`uploads/${context.actor.sessionId}/`)) {
     throw new AdminMediaError("O caminho de upload não pertence à sessão administrativa actual.", "forbidden");
   }
   if (input.altText.length > 300 || input.caption.length > 500) throw new AdminMediaError("Texto alternativo ou legenda demasiado longos.", "invalid");
