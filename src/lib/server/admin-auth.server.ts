@@ -1,8 +1,8 @@
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from "@tanstack/react-start/server";
-import { ADMIN_ACCESS_CODE, isAdminAttemptLocked, isAdminPinValid, type AdminAttemptState } from "./admin-auth-core";
+import { isAdminAttemptLocked, isAdminPinValid, type AdminAttemptState } from "./admin-auth-core";
 const SESSION_COOKIE = "kutuzov-admin-session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
-type AdminServerConfig = { url: string; serviceRoleKey: string };
+type AdminServerConfig = { url: string; serviceRoleKey: string; accessCode: string };
 type AdminSessionCookie = { sessionId: string; issuedAt: number; expiresAt: number; signature: string };
 export type AdminLoginResult = { ok: true; email: string } | { ok: false; error: "invalid_credentials" | "rate_limited" | "unavailable" };
 export class AdminAuthorizationError extends Error {
@@ -11,10 +11,11 @@ export class AdminAuthorizationError extends Error {
 function readConfig(): AdminServerConfig | null {
   const url = process.env["SUPABASE_URL"]?.trim().replace(/\/+$/, "");
   const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
-  if (!url || !serviceRoleKey) return null;
+  const accessCode = process.env["ADMIN_ACCESS_CODE"]?.trim();
+  if (!url || !serviceRoleKey || !accessCode || !/^\\d{3}$/.test(accessCode)) return null;
   try { const parsed = new URL(url); if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1") return null; }
   catch { return null; }
-  return { url, serviceRoleKey };
+  return { url, serviceRoleKey, accessCode };
 }
 function cookieOptions() { return { httpOnly: true, secure: process.env["NODE_ENV"] === "production", sameSite: "strict" as const, path: "/", maxAge: SESSION_MAX_AGE_SECONDS }; }
 function parseSessionCookie(value: string | undefined): AdminSessionCookie | null {
@@ -88,7 +89,7 @@ export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResu
       await recordAuthAudit(config, "admin_login_rate_limited", false, "code-only").catch(() => undefined);
       return { ok: false, error: "rate_limited" };
     }
-    if (!isAdminPinValid(input.pin, ADMIN_ACCESS_CODE)) {
+    if (!isAdminPinValid(input.pin, config.accessCode)) {
       await recordAuthAudit(config, "admin_login_rejected", false, "code-only").catch(() => undefined);
       return { ok: false, error: "invalid_credentials" };
     }
