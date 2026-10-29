@@ -35,23 +35,15 @@
 - A primeira execução do teste do RPC encontrou dois defeitos no SQL; ambos foram corrigidos por migrações compensatórias e a função devolveu resultados após a correcção. A verificação completa dos tempos de bloqueio progressivo ainda precisa de concluir.
 - O advisor de segurança não indicou findings na verificação anterior. O advisor de desempenho indicou índices sem utilização, esperado num esquema ainda sem tráfego. Repetir ambos após a última migração antes de certificar.
 
-## Autenticação e configuração pendente
+## Acesso administrativo e configuração de runtime
 
-A rota `/admin` agora apresenta um gate próprio e não monta o Shell público, cursor, Lenis, intro ou cena WebGL. O PIN é validado apenas no servidor. A autenticação requer sessão Supabase Auth, correspondência com `ADMIN_EMAIL` e claim `app_metadata.site_role=admin`. O servidor aplica limitação persistente de tentativas e regista eventos de acesso sem registar PINs, palavras-passe ou tokens.
+A rota `/admin` tem um gate próprio e não monta o Shell público, cursor, Lenis, intro ou cena WebGL. O login exige apenas o código fixo `333`, validado no servidor. Depois de validado, é criada uma sessão HMAC assinada com a chave server-only do Supabase, guardada num cookie HttpOnly, SameSite=Strict e com expiração. O servidor mantém limitação persistente de tentativas e registo de auditoria sem guardar PINs ou tokens. Não é necessária conta Supabase Auth, email autorizado ou palavra-passe.
 
-O servidor exige as variáveis abaixo e falha fechado quando estão ausentes:
+O backend administrativo continua a precisar dos segredos de infraestrutura para consultar e alterar dados reais: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` apenas no servidor, `PUBLIC_SITE_URL` para validar o canonical, e `RESEND_API_KEY` / `MAIL_FROM` quando estiver activado o envio real de email.
 
-- `SUPABASE_URL`
-- `SUPABASE_PUBLISHABLE_KEY` ou `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`, apenas no runtime do servidor
-- `ADMIN_ACCESS_CODE`, configurado com o código de acesso acordado no gestor de segredos do servidor
-- `ADMIN_EMAIL`, correspondente à identidade autorizada
-- `ADMIN_RATE_LIMIT_SALT`, valor aleatório com pelo menos 32 caracteres
-- `PUBLIC_SITE_URL`, depois de confirmado o domínio canónico
-- `RESEND_API_KEY` e `MAIL_FROM`, quando for activado o envio de email
+`ADMIN_EMAIL`, `ADMIN_RATE_LIMIT_SALT` e `SUPABASE_PUBLISHABLE_KEY` não são requisitos de login. O código `333` está fixo no módulo server-side. Como o repositório pode ser público, o código é fraco e não deve ser tratado como segredo; mantêm-se a limitação de tentativas, a validação server-side e a sessão assinada.
 
-A integração actual não permite configurar settings do Auth hospedado, convidar a identidade de proprietário nem actualizar `app_metadata`. Estas operações ainda têm de ser concluídas no painel/API administrativa Supabase. Até lá, não é possível certificar um login de produção.
-`supabase/config.toml` configura a Supabase CLI/local, mas não prova que a configuração hospedada esteja fechada.
+A base Supabase Auth pode continuar sem utilizadores. As funções SQL editoriais só aceitam actor nulo quando a chamada vem com o role `service_role`; a migration `20261029120000_admin_pin_only_authorization.sql` tem de estar aplicada no Supabase antes de certificar as mutações editoriais.
 
 ## CI e deploy
 
