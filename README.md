@@ -27,11 +27,23 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Use Bun for reproducible installs. The project pins Bun in `.bun-version` and commits only `bun.lock`.
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
-npm run dev
+bun install --frozen-lockfile
+bun run dev
 ```
+
+## Quality checks
+
+```sh
+bun run typecheck
+bun run lint
+bun run test
+bun run build
+bun run assets:inventory
+```
+
+Runtime secrets belong in the deployment provider's server-side environment, not in the repository. See `docs/admin-phase-1-baseline.md` for the initial CMS infrastructure and external configuration requirements.

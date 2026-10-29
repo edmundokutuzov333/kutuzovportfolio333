@@ -6,13 +6,14 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Shell } from "../components/Shell";
+const PublicShell = lazy(() => import("../components/Shell").then((module) => ({ default: module.Shell })));
 
 function NotFoundComponent() {
   return (
@@ -118,12 +119,22 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const isAdminRoute = useRouterState({
+    select: (state) =>
+      state.location.pathname === "/admin" || state.location.pathname.startsWith("/admin/"),
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Shell>
+      {isAdminRoute ? (
         <Outlet />
-      </Shell>
+      ) : (
+        <Suspense fallback={<div className="min-h-screen bg-background" aria-busy="true" />}>
+          <PublicShell>
+            <Outlet />
+          </PublicShell>
+        </Suspense>
+      )}
     </QueryClientProvider>
   );
 }
