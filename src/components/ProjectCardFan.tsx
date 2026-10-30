@@ -240,6 +240,19 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = pointerStart.current;
+    if (!start || start.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    if (Math.abs(deltaX) > 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+      pointerStart.current = null;
+      suppressNextClick.current = true;
+      cycle(deltaX < 0 ? "right" : "left");
+    }
+  };
+
   const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
     const start = pointerStart.current;
     if (!start || start.pointerId !== event.pointerId) return;
@@ -282,6 +295,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           className="fan-layout relative flex items-center justify-center"
           onMouseLeave={() => setHoveredSlot(null)}
           onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={() => {
             pointerStart.current = null;
