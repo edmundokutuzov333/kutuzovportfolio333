@@ -3,11 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const configPath = path.join(root, "src/lib/cms/public-config.ts");
-const publicClientPath = path.join(root, "src/lib/cms/public-client.ts");
-const [config, publicClient] = await Promise.all([
-  readFile(configPath, "utf8"),
-  readFile(publicClientPath, "utf8"),
-]);
+const config = await readFile(configPath, "utf8");
 
 function readConstant(source, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -36,7 +32,6 @@ const cmsEndpoint = new URL(
 const cmsResponse = await fetch(cmsEndpoint, {
   headers: {
     apikey: publishableKey,
-    Authorization: `Bearer ${publishableKey}`,
     Accept: "application/json",
   },
   signal: AbortSignal.timeout(20000),
