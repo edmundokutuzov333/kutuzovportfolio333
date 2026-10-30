@@ -32,7 +32,7 @@ function Work() {
             type="button"
             onClick={() => setFilter(value)}
             aria-pressed={filter === value}
-            className={`rounded-full border px-4 py-2 font-mono text-xs uppercase tracking-widest transition ${filter === value ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-foreground"}`}
+            className="liquid-glass-button rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest"
           >
             {value}
           </button>

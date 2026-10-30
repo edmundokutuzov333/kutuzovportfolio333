@@ -19,7 +19,7 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <label className="block"><span className="eyebrow">{label}</span>{children}</label>
 );
 const Chip = ({ on, children, onClick }: { on: boolean; children: ReactNode; onClick: () => void }) => (
-  <button type="button" onClick={onClick} className={`rounded-full border px-4 py-2 text-sm transition ${on ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-foreground"}`}>{children}</button>
+  <button type="button" aria-pressed={on} onClick={onClick} className={`liquid-glass-button rounded-full px-4 py-2 text-sm ${on ? "text-foreground" : "text-muted-foreground"}`}>{children}</button>
 );
 
 function Contact() {
@@ -345,8 +345,8 @@ function Contact() {
 
               {err && <p className="mt-6 text-sm text-destructive">{err}</p>}
               <div className="mt-12 flex items-center justify-between">
-                <button type="button" disabled={step === 0} onClick={() => { setErr(null); setStep(step - 1); }} className="font-mono text-xs uppercase tracking-widest disabled:opacity-30">← Back</button>
-                <button type="submit" disabled={submitting} className="rounded-full bg-primary px-8 py-4 font-mono text-xs uppercase tracking-widest text-primary-foreground transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="button" disabled={step === 0} onClick={() => { setErr(null); setStep(step - 1); }} className="liquid-glass-button rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest">← Back</button>
+                <button type="submit" disabled={submitting} className="liquid-glass-button rounded-full px-8 py-4 font-mono text-xs uppercase tracking-widest disabled:cursor-not-allowed">
                   {submitting ? "Sending..." : step < 4 ? "Continue →" : "Send enquiry"}
                 </button>
               </div>

@@ -47,10 +47,10 @@ function Cursor() {
 
 function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (value: boolean) => void; presentation: PublicPresentation["presentation"] }) {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 mix-blend-difference md:px-12">
+    <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 text-bone md:px-12">
       <Link to="/" aria-label="Home" className="text-bone"><LogoMark className="h-6 w-auto" /></Link>
       <div className="eyebrow hidden text-bone md:block">{presentation.availability_label}</div>
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
+      <button onClick={() => setOpen(!open)} className="liquid-glass-button flex items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
         {open ? presentation.close_menu_label : presentation.open_menu_label}
         <span className="relative block h-3 w-6">
           <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
@@ -83,7 +83,7 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
       <div className="flex flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest">
         {profile?.email && <a href={`mailto:${profile.email}`}>{profile.email}</a>}
         <div className="flex gap-6">
-          <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="uppercase">Replay intro</button>
+          <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="liquid-glass-button rounded-full px-4 py-2 uppercase">Replay intro</button>
           {profile?.socials.map((social) => (
             <a key={social.label} href={social.href} target="_blank" rel="noreferrer">{social.label}</a>
           ))}

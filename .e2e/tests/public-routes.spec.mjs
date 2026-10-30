@@ -119,81 +119,109 @@ test("Admin uses the dark site palette without effects and restores a native cur
 });
 
 
-test("homepage renders two separated 1:2 artwork rows with opposite viewpoints and no cross-row duplicates", async ({ page }) => {
-  await page.setViewportSize({ width: 1536, height: 1000 });
+
+test("homepage renders the seven-card fan carousel with strict 4:5 artwork at all breakpoints", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  const viewports = [
+    { width: 1920, height: 1080 },
+    { width: 1536, height: 900 },
+    { width: 1280, height: 800 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+    { width: 360, height: 800 },
+  ];
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    const response = await page.goto("/", { waitUntil: "domcontentloaded" });
+    expect(response?.status(), `homepage response at ${viewport.width}px`).toBe(200);
+
+    const menuButton = page.locator("header button[aria-expanded]");
+    await expect(menuButton).toHaveClass(/liquid-glass-button/);
+    const glassMaterial = await menuButton.evaluate((button) => ({
+      backdropFilter: getComputedStyle(button).backdropFilter,
+      borderTopColor: getComputedStyle(button).borderTopColor,
+    }));
+    expect(glassMaterial.backdropFilter).toContain("blur");
+    expect(glassMaterial.borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
+
+    const fan = page.locator("[data-project-fan]");
+    await expect(fan).toBeVisible();
+    await expect(fan).toHaveAttribute("data-project-fan-count", "22");
+    await expect(fan).toHaveAttribute("data-project-fan-visible", "7");
+    await expect(fan).toHaveAttribute("data-project-fan-ratio", "4:5");
+
+    const cards = fan.locator("[data-project-fan-card]");
+    await expect(cards).toHaveCount(7);
+    await expect.poll(() => fan.locator('[data-project-card-slot="3"] img').evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+
+    const cardMetrics = await cards.evaluateAll((elements) =>
+      elements.map((card) => {
+        const image = card.querySelector("img");
+        const link = card.querySelector("a");
+        return {
+          ratio: card.offsetWidth / card.offsetHeight,
+          declaredRatio: Number(card.getAttribute("data-card-aspect-ratio")),
+          source: card.getAttribute("data-project-artwork-src"),
+          href: link?.getAttribute("href"),
+          imageLoaded: Boolean(image && image.complete && image.naturalWidth > 0),
+          slot: Number(card.getAttribute("data-project-card-slot")),
+        };
+      }),
+    );
+
+    expect(cardMetrics.map((card) => card.slot)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(cardMetrics.every((card) => Math.abs(card.ratio - 0.8) < 0.02)).toBe(true);
+    expect(cardMetrics.every((card) => card.declaredRatio === 0.8)).toBe(true);
+    expect(new Set(cardMetrics.map((card) => card.source)).size).toBe(7);
+    expect(cardMetrics.every((card) => card.href?.startsWith("/work/"))).toBe(true);
+
+    const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(pageWidth, `horizontal overflow at ${viewport.width}px`).toBeLessThanOrEqual(viewport.width + 1);
+  }
+
+  await page.setViewportSize({ width: 1536, height: 900 });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const fan = page.locator("[data-project-fan]");
+  const centerCard = fan.locator('[data-project-card-slot="3"]');
+  await expect(centerCard).toHaveAttribute("data-project-card-index", "3");
+
+  await fan.getByRole("button", { name: "Next project" }).click();
+  await expect.poll(() => fan.locator('[data-project-card-slot="3"]').getAttribute("data-project-card-index")).toBe("4");
+  await fan.getByRole("button", { name: "Previous project" }).click();
+  await expect.poll(() => fan.locator('[data-project-card-slot="3"]').getAttribute("data-project-card-index")).toBe("3");
+
+  await expect(fan.locator("[data-project-fan-card]")).toHaveCount(7);
+});
+
+test("desktop fan carousel lifts the hovered card and fans its neighbours away", async ({ page }) => {
+  await page.setViewportSize({ width: 1536, height: 900 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  const ribbons = page.locator("[data-project-ribbon]");
-  await expect(ribbons).toHaveCount(2);
-  await expect(ribbons.nth(0)).toHaveAttribute("data-project-artwork-count", "11");
-  await expect(ribbons.nth(1)).toHaveAttribute("data-project-artwork-count", "11");
-  await expect(ribbons.nth(0)).toHaveAttribute("data-project-ribbon-viewpoint", "below");
-  await expect(ribbons.nth(1)).toHaveAttribute("data-project-ribbon-viewpoint", "above");
+  const centerCard = page.locator('[data-project-fan-card][data-project-card-slot="3"]');
+  const leftCard = page.locator('[data-project-fan-card][data-project-card-slot="2"]');
+  const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="4"]');
+  await expect(centerCard).toBeVisible();
+  await page.waitForTimeout(2100);
 
-  const boxes = await ribbons.evaluateAll((rows) =>
-    rows.map((row) => {
-      const box = row.getBoundingClientRect();
-      return { top: box.top, bottom: box.bottom, height: box.height };
-    }),
-  );
-  expect(boxes[1].top - boxes[0].bottom).toBeGreaterThanOrEqual(40);
+  const beforeCenter = await centerCard.boundingBox();
+  const beforeLeft = await leftCard.boundingBox();
+  const beforeRight = await rightCard.boundingBox();
+  await centerCard.hover();
 
-  const rowSources = [];
-  for (const ribbon of await ribbons.all()) {
-    await expect(ribbon).toBeVisible();
-    const row = await ribbon.locator("[data-project-ribbon-static]").evaluate((element) => ({
-      hiddenByDefault: getComputedStyle(element).display === "none",
-      sources: Array.from(
-        element.querySelectorAll("[data-project-artwork-src]"),
-        (tile) => tile.getAttribute("data-project-artwork-src"),
-      ),
-      aspectRatio: Number(element.closest("[data-project-ribbon]")?.getAttribute("data-project-ribbon-aspect-ratio")),
-    }));
-    expect(row.hiddenByDefault).toBe(true);
-    expect(row.sources).toHaveLength(11);
-    expect(row.aspectRatio).toBe(0.5);
-    rowSources.push(...row.sources);
-
-    const animatedTiles = ribbon.locator("[data-project-ribbon-animated] [data-project-ribbon-tile]");
-    const links = await animatedTiles.evaluateAll((anchors) =>
-      anchors.map((anchor) => ({
-        href: anchor.getAttribute("href"),
-        label: anchor.getAttribute("aria-label"),
-        imageCount: anchor.querySelectorAll("img").length,
-        visibleText: anchor.textContent?.trim() ?? "",
-      })),
+  await expect.poll(async () => {
+    const afterCenter = await centerCard.boundingBox();
+    const afterLeft = await leftCard.boundingBox();
+    const afterRight = await rightCard.boundingBox();
+    return Boolean(
+      beforeCenter && beforeLeft && beforeRight &&
+      afterCenter && afterLeft && afterRight &&
+      afterCenter.width > beforeCenter.width * 1.04 &&
+      afterCenter.y < beforeCenter.y &&
+      afterLeft.x < beforeLeft.x - 10 &&
+      afterRight.x > beforeRight.x + 10
     );
-    expect(links.length).toBeGreaterThanOrEqual(8);
-    expect(links.length).toBeLessThanOrEqual(11);
-    expect(links.every((link) => link.href?.startsWith("/work/"))).toBe(true);
-    expect(links.every((link) => Boolean(link.label))).toBe(true);
-    expect(links.every((link) => link.imageCount === 16)).toBe(true);
-    expect(links.every((link) => link.visibleText === "")).toBe(true);
-  }
-
-  expect(rowSources).toHaveLength(22);
-  expect(new Set(rowSources).size).toBe(22);
-
-  const firstImage = page.locator("[data-project-ribbon-animated] [data-project-ribbon-tile] img").first();
-  await expect.poll(() => firstImage.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
-
-  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  expect(pageWidth).toBeLessThanOrEqual(1537);
-
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const ribbon of await ribbons.all()) {
-    const animated = ribbon.locator("[data-project-ribbon-animated]");
-    const staticGallery = ribbon.locator("[data-project-ribbon-static]");
-    await expect(animated).toBeHidden();
-    await expect(staticGallery).toBeVisible();
-    await expect(staticGallery.locator("[data-project-ribbon-tile]")).toHaveCount(11);
-    await expect(staticGallery.locator("[data-project-ribbon-tile]").first()).toBeVisible();
-  }
-
-  const mobile = await page.context().newPage();
-  await mobile.setViewportSize({ width: 390, height: 844 });
-  await mobile.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(mobile.locator("[data-project-ribbon]")).toHaveCount(2);
-  expect(await mobile.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
-  await mobile.close();
+  }).toBe(true);
 });

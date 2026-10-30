@@ -1,20 +1,12 @@
 import type { Project } from "@/lib/cms/types";
 import { PUBLIC_PRODUCTION_ORIGIN } from "@/lib/cms/public-config";
 
-export const PROJECT_RIBBON_ASPECT_RATIO = 1 / 2;
-
-export type ProjectRibbonImage = {
+export type ProjectArtwork = {
   src: string;
   alt: string;
   slug: string;
   projectTitle: string;
   artworkIndex: number;
-};
-
-export type ProjectRibbonRows = {
-  upper: ProjectRibbonImage[];
-  lower: ProjectRibbonImage[];
-  total: number;
 };
 
 /**
@@ -48,18 +40,14 @@ type ProjectArtworkSource = Pick<
   "slug" | "title" | "position" | "cover" | "coverAlt" | "gallery" | "galleryAlt"
 >;
 
-/**
- * Convert published CMS projects into a deterministic visual artwork stream:
- * cover first, then gallery in CMS order, and finally distribute every image
- * alternately between the two rows. This keeps both rows balanced and ensures
- * each published artwork appears in only one row before its loop repeats.
- */
-export function buildProjectRibbonRows(
+/** Flatten published projects into a single editorial stream: cover, then gallery. */
+export function buildProjectArtwork(
   projects: readonly ProjectArtworkSource[],
-): ProjectRibbonRows {
+): ProjectArtwork[] {
   const orderedProjects = [...projects].sort((a, b) => a.position - b.position);
-  const artwork = orderedProjects.flatMap((project) => {
-    const images: ProjectRibbonImage[] = [];
+
+  return orderedProjects.flatMap((project) => {
+    const images: ProjectArtwork[] = [];
     let artworkIndex = 1;
 
     if (project.cover) {
@@ -89,10 +77,4 @@ export function buildProjectRibbonRows(
 
     return images;
   });
-
-  return {
-    upper: artwork.filter((_, index) => index % 2 === 0),
-    lower: artwork.filter((_, index) => index % 2 === 1),
-    total: artwork.length,
-  };
 }

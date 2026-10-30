@@ -63,7 +63,7 @@ export function NewsletterSignup() {
           <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} required className="mt-1 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" />
           <span>Consinto receber actualizações ocasionais por email e compreendo que posso cancelar a subscrição a qualquer momento.</span>
         </label>
-        <button type="submit" disabled={pending || !consent || !email.trim()} className="rounded-full border border-foreground/30 px-4 py-2 font-mono text-[10px] uppercase tracking-widest transition hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" disabled={pending || !consent || !email.trim()} className="liquid-glass-button rounded-full px-5 py-2.5 font-mono text-[10px] uppercase tracking-widest focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed">
           {pending ? "A registar..." : "Entrar na lista"}
         </button>
       </form>
