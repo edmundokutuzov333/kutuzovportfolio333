@@ -6,6 +6,7 @@ import {
   resolveProjectArtworkUrl,
 } from "@/lib/project-ribbon";
 import { measureProjectRibbon } from "@/components/TiltedProjectRibbon";
+import { measureProjectRibbon } from "@/components/TiltedProjectRibbon";
 import { PUBLIC_PRODUCTION_ORIGIN } from "@/lib/cms/public-config";
 
 function project(
@@ -152,6 +153,25 @@ describe("homepage dual-perspective project ribbons", () => {
   });
 
   it("returns an empty layout safely for an unmeasurable row", () => {
+    expect(measureProjectRibbon(0, 0, 90, 0.5, 5, Math.PI / 3, 11)).toEqual({
+      columns: 0,
+      sweep: 0,
+      unit: 0,
+      limit: 0,
+    });
+  });
+
+  it("measures a wide desktop row for 10-11 narrow posters, capped by unique artwork", () => {
+    const upper = measureProjectRibbon(1536, 320, 90, 0.5, 5, 55 * Math.PI / 180, 11);
+    const wide = measureProjectRibbon(2048, 320, 90, 0.5, 5, 55 * Math.PI / 180, 11);
+    expect(upper.columns).toBeGreaterThanOrEqual(9);
+    expect(upper.columns).toBeLessThanOrEqual(10);
+    expect(wide.columns).toBe(11);
+    expect(upper.limit).toBeGreaterThan(0);
+    expect(upper.sweep).toBeGreaterThan(0);
+  });
+
+  it("returns an empty layout when the row has no measurable dimensions", () => {
     expect(measureProjectRibbon(0, 0, 90, 0.5, 5, Math.PI / 3, 11)).toEqual({
       columns: 0,
       sweep: 0,
