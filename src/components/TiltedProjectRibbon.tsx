@@ -89,6 +89,8 @@ export function TiltedProjectRibbon({
   const orbit = `project-ribbon-orbit-${id}`;
   const tileClass = `project-ribbon-tile-${id}`;
   const rowClass = `project-ribbon-row-${id}`;
+  const animatedClass = `project-ribbon-animated-${id}`;
+  const staticClass = `project-ribbon-static-${id}`;
   const bend = (Math.min(85, Math.max(5, curve)) * Math.PI) / 180;
   const [layout, setLayout] = useState<RibbonLayout | null>(null);
   const [shown, setShown] = useState<Record<number, number>>({});
@@ -154,7 +156,7 @@ export function TiltedProjectRibbon({
     `0%,${hiddenUntil}%,${100 - hiddenUntil}%,100%{visibility:hidden}` +
     `${hiddenUntil + 0.001}%,${100 - hiddenUntil - 0.001}%{visibility:visible}}` +
     `.${rowClass}:hover .${tileClass},.${rowClass}:focus-within .${tileClass}{animation-play-state:paused}` +
-    `@media(prefers-reduced-motion:reduce){.${tileClass}{animation-play-state:paused!important}}`;
+    `@media(prefers-reduced-motion:reduce){.${animatedClass}{display:none!important}.${staticClass}{display:flex!important}}`;
 
   const share = aspectRatio / SLICES;
   const duration = columns * Math.max(0.25, speed);
@@ -176,7 +178,7 @@ export function TiltedProjectRibbon({
       <style>{css}</style>
 
       <div
-        className="absolute inset-0"
+        className={`absolute inset-0 ${animatedClass}`}
         style={{
           opacity: layout ? 1 : 0,
           transition: "opacity 450ms ease",
@@ -254,6 +256,34 @@ export function TiltedProjectRibbon({
             </Link>
           );
         })}
+      </div>
+
+      <div
+        className={`absolute inset-0 hidden items-center gap-3 overflow-x-auto px-4 ${staticClass}`}
+        data-project-ribbon-static
+        aria-label="Static project artwork gallery"
+      >
+        {images.map((image, index) => (
+          <Link
+            key={`${image.slug}-${image.artworkIndex}-${index}`}
+            to="/work/$slug"
+            params={{ slug: image.slug }}
+            className="block h-[84%] shrink-0 overflow-hidden rounded-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            style={{ width: "auto", aspectRatio }}
+            aria-label={`Open project: ${image.projectTitle}. ${image.alt}`}
+            data-project-ribbon-tile
+            data-project-slug={image.slug}
+          >
+            <img
+              src={image.src}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
+          </Link>
+        ))}
       </div>
     </div>
   );
