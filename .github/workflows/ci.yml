@@ -149,7 +149,7 @@ jobs:
           };
           writeFileSync("package.json", JSON.stringify(manifest, null, 2) + "\n");
           NODE
-          rm -f bun.lock
+          # Keep bun.lock and reconcile only the explicitly overridden vulnerable packages.
           bun install 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/install.txt"
           bun audit --audit-level=high 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/audit.txt"
           bun run typecheck 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/typecheck.txt"
