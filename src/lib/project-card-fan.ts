@@ -46,7 +46,7 @@ export function getFanHeightMultiplier(width: number, height: number): number {
 export function getFanSlotConfig(totalCards: number, slot: number): FanSlotConfig {
   if (totalCards >= MAX_VISIBLE_FAN_CARDS) {
     const index = Math.max(0, Math.min(FAN_POSITIONS.length - 1, slot));
-    return FAN_POSITIONS[index] ?? FAN_POSITIONS[FAN_CENTER_SLOT];
+    return FAN_POSITIONS[index] ?? FAN_POSITIONS[FAN_CENTER_SLOT]!;
   }
 
   const center = totalCards >> 1;
