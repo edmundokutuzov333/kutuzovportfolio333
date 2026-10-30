@@ -192,6 +192,7 @@ export function TiltedProjectRibbon({
             ((shown[tileIndex] ?? firstImageIndex) % images.length + images.length) %
             images.length;
           const image = images[imageIndex];
+          if (!image) return null;
 
           return (
             <Link
