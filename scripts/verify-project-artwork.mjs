@@ -4,7 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const configPath = path.join(root, "src/lib/cms/public-config.ts");
 const config = await readFile(configPath, "utf8");
-const originMatch = config.match(/PUBLIC_PRODUCTION_ORIGIN\\s*=\\s*"([^"]+)"/);
+const originMatch = config.match(/PUBLIC_PRODUCTION_ORIGIN\s*=\s*"([^"]+)"/);
 
 if (!originMatch) {
   throw new Error("PUBLIC_PRODUCTION_ORIGIN is missing from public-config.ts.");
