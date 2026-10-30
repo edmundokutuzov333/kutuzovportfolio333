@@ -6,7 +6,7 @@ import { Logo3D } from "@/components/Logo3D";
 import { Reveal } from "@/components/Reveal";
 import { ClientsMarquee } from "@/components/Clients";
 import { TiltedProjectRibbon } from "@/components/TiltedProjectRibbon";
-import { buildProjectRibbonImages, PROJECT_RIBBON_ASPECT_RATIO } from "@/lib/project-ribbon";
+import { buildProjectRibbonRows, PROJECT_RIBBON_ASPECT_RATIO } from "@/lib/project-ribbon";
 import { loadHomeContent } from "@/lib/cms/loaders";
 import type { Profile } from "@/lib/cms/types";
 import { seoFromPage } from "@/lib/seo";
@@ -86,7 +86,7 @@ function Word({
 function Home() {
   const data = Route.useLoaderData();
   const { profile, sections, projects, services, metrics, clients, principles } = data;
-  const ribbonImages = useMemo(() => buildProjectRibbonImages(projects), [projects]);
+  const ribbonRows = useMemo(() => buildProjectRibbonRows(projects), [projects]);
   const numberedSectionTypes = new Set(["manifesto", "featured_work", "services", "clients"]);
 
   return (
@@ -119,31 +119,33 @@ function Home() {
                     {section.config.link_label} →
                   </Link>
                 </div>
-                {ribbonImages.length > 0 && (
-                  <div className="-mx-6 flex flex-col gap-3 md:-mx-12 md:gap-6">
+                {ribbonRows.total > 0 && (
+                  <div className="-mx-6 flex flex-col gap-14 md:-mx-12 md:gap-16">
                     <TiltedProjectRibbon
-                      images={ribbonImages}
+                      images={ribbonRows.upper}
                       direction="left"
-                      speed={4.8}
-                      tileHeight={86}
+                      viewpoint="below"
+                      speed={4.6}
+                      tileHeight={90}
                       aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
-                      gap={7}
+                      gap={5}
                       axis={50}
-                      curve={78}
-                      fade={13}
-                      className="h-[clamp(16rem,28vw,24rem)] w-full"
+                      curve={60}
+                      fade={8}
+                      className="h-[clamp(18rem,23vw,20rem)] w-full"
                     />
                     <TiltedProjectRibbon
-                      images={ribbonImages}
+                      images={ribbonRows.lower}
                       direction="right"
-                      speed={5.6}
-                      tileHeight={86}
+                      viewpoint="above"
+                      speed={5.2}
+                      tileHeight={90}
                       aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
-                      gap={7}
+                      gap={5}
                       axis={50}
-                      curve={78}
-                      fade={13}
-                      className="h-[clamp(16rem,28vw,24rem)] w-full"
+                      curve={60}
+                      fade={8}
+                      className="h-[clamp(18rem,23vw,20rem)] w-full"
                     />
                   </div>
                 )}
