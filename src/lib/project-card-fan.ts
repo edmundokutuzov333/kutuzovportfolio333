@@ -45,7 +45,8 @@ export function getFanHeightMultiplier(width: number, height: number): number {
 
 export function getFanSlotConfig(totalCards: number, slot: number): FanSlotConfig {
   if (totalCards >= MAX_VISIBLE_FAN_CARDS) {
-    return FAN_POSITIONS[Math.max(0, Math.min(FAN_POSITIONS.length - 1, slot))];
+    const index = Math.max(0, Math.min(FAN_POSITIONS.length - 1, slot));
+    return FAN_POSITIONS[index] ?? FAN_POSITIONS[FAN_CENTER_SLOT];
   }
 
   const center = totalCards >> 1;
@@ -81,6 +82,6 @@ export function getVisibleFanCards<T>(
   return Array.from({ length: MAX_VISIBLE_FAN_CARDS }, (_, slot) => {
     const index =
       ((centerIndex + slot - FAN_CENTER_SLOT) % cards.length + cards.length) % cards.length;
-    return { item: cards[index], index, slot };
+    return { item: cards[index]!, index, slot };
   });
 }
