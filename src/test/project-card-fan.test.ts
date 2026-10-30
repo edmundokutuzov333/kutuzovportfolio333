@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { Project } from "@/lib/cms/types";
 import {
   buildProjectArtwork,
-  PROJECT_FAN_ASPECT_RATIO,
   resolveProjectArtworkUrl,
 } from "@/lib/project-artwork";
 import {
@@ -12,6 +11,7 @@ import {
   getFanSlotConfig,
   getVisibleFanCards,
   MAX_VISIBLE_FAN_CARDS,
+  PROJECT_FAN_ASPECT_RATIO,
 } from "@/lib/project-card-fan";
 import { PUBLIC_PRODUCTION_ORIGIN } from "@/lib/cms/public-config";
 
