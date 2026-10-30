@@ -12,11 +12,17 @@ const loginInput = z.object({
 }).strict();
 
 export const loginAdminFn = createServerFn({ method: "POST" })
-  .inputValidator(loginInput)
-  .handler(async ({ data }) => loginAdmin(data));
+  .validator(loginInput)
+  .handler(async ({ data }) => {
+    if (process.env["NODE_ENV"] !== "production") console.info("[admin-auth] login handler entered");
+    return loginAdmin(data);
+  });
 
 export const getAdminSessionFn = createServerFn({ method: "GET" }).handler(
-  async () => getAdminSession(),
+  async () => {
+    if (process.env["NODE_ENV"] !== "production") console.info("[admin-auth] session read handler entered");
+    return getAdminSession();
+  },
 );
 
 export const logoutAdminFn = createServerFn({ method: "POST" }).handler(
