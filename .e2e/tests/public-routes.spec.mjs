@@ -82,12 +82,29 @@ test("fresh and invalid Admin access never renders the protected workspace", asy
 test("the valid PIN opens the Admin workspace without database credentials for sign-in", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   const adminRequests = [];
-  page.on("request", (request) => {
-    if (request.method() !== "GET") adminRequests.push({ method: request.method(), url: new URL(request.url()).pathname });
+  let captureAdminTraffic = false;
+  page.on("console", (message) => {
+    if (message.type() === "warning" || message.type() === "error") {
+      console.log("[E2E] Browser console:", message.type(), message.text().slice(0, 240));
+    }
   });
-  page.on("response", async (response) => {
-    if (response.request().method() !== "GET") {
-      console.log("[E2E] Admin response:", response.request().method(), new URL(response.url()).pathname, response.status());
+  page.on("pageerror", (error) => {
+    console.log("[E2E] Browser page error:", error.name, error.message.slice(0, 240));
+  });
+  page.on("request", (request) => {
+    if (captureAdminTraffic) {
+      const pathname = new URL(request.url()).pathname;
+      if (/admin|server|tsr|function/i.test(pathname) || request.method() !== "GET") {
+        adminRequests.push({ method: request.method(), url: pathname });
+      }
+    }
+  });
+  page.on("response", (response) => {
+    if (captureAdminTraffic) {
+      const pathname = new URL(response.url()).pathname;
+      if (/admin|server|tsr|function/i.test(pathname) || response.request().method() !== "GET") {
+        console.log("[E2E] Admin response:", response.request().method(), pathname, response.status());
+      }
     }
   });
   page.on("requestfailed", (request) => {
@@ -97,9 +114,10 @@ test("the valid PIN opens the Admin workspace without database credentials for s
   await page.goto("/admin", { waitUntil: "domcontentloaded" });
   await expect(page.getByLabel("Código de acesso")).toBeVisible();
   await page.getByLabel("Código de acesso").fill("333");
+  captureAdminTraffic = true;
   await page.getByRole("button", { name: "Entrar no Admin" }).click();
   await page.waitForTimeout(500);
-  console.log("[E2E] Admin non-GET requests:", JSON.stringify(adminRequests));
+  console.log("[E2E] Admin server-function requests:", JSON.stringify(adminRequests));
   const loginAlert = await page.getByRole("alert").allTextContents();
   console.log("[E2E] Admin login alert:", loginAlert.join(" | ") || "none");
   console.log("[E2E] Admin PIN field after submit:", await page.getByLabel("Código de acesso").count());
