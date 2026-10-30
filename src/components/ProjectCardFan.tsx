@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
-import type { ProjectRibbonImage } from "@/lib/project-ribbon";
+import type { ProjectArtwork } from "@/lib/project-artwork";
 import {
   FAN_CENTER_SLOT,
   getFanHeightMultiplier,
@@ -14,7 +14,7 @@ import {
 } from "@/lib/project-card-fan";
 
 type ProjectCardFanProps = {
-  cards: ProjectRibbonImage[];
+  cards: ProjectArtwork[];
 };
 
 type Viewport = { width: number; height: number };
@@ -174,7 +174,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           data-project-fan-visible={visibleCards.length}
           data-project-fan-ratio="4:5"
         >
-          <AnimatePresence initial={false} mode="sync">
+          <AnimatePresence mode="sync">
             {visibleCards.map(({ item, index, slot }) => {
               const target = getTarget(slot);
               const firstEntry = !hasEntered.current;
@@ -259,7 +259,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                     <img
                       src={item.src}
                       alt={item.alt}
-                      loading={slot < 3 || slot > 3 ? "lazy" : "eager"}
+                      loading={slot === FAN_CENTER_SLOT ? "eager" : "lazy"}
                       decoding="async"
                       draggable={false}
                       className="block h-full w-full select-none object-cover"
@@ -279,7 +279,6 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
             className={ARROW_CLASSES}
             onClick={() => cycle("left")}
             aria-label="Previous project"
-            disabled={isAnimating.current}
           >
             <Chevron direction="left" />
           </button>
