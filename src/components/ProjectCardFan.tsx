@@ -180,7 +180,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           data-project-fan-visible={visibleCards.length}
           data-project-fan-ratio="4:5"
         >
-          <AnimatePresence mode="sync">
+          <AnimatePresence custom={directionRef.current} mode="sync">
             {visibleCards.map(({ item, index, slot }) => {
               const target = getTarget(slot);
               const firstEntry = !hasEntered.current;
@@ -194,8 +194,6 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                     scale: 0.5,
                     opacity: 0,
                   };
-              const exitX = directionRef.current === "right" ? -40 : 40;
-              const exitRotation = directionRef.current === "right" ? -30 : 30;
 
               return (
                 <motion.div
@@ -210,18 +208,20 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                     opacity: 1,
                     zIndex: target.zIndex,
                   }}
-                  exit={
-                    reducedMotion
-                      ? { opacity: 0 }
-                      : {
-                          x: exitX * 16,
-                          y: target.y,
-                          rotate: exitRotation,
-                          scale: 0.5,
-                          opacity: 0,
-                          zIndex: 0,
-                        }
-                  }
+                  custom={directionRef.current}
+                  variants={{
+                    exit: (direction: "left" | "right") =>
+                      reducedMotion
+                        ? { opacity: 0 }
+                        : {
+                            x: (direction === "right" ? -40 : 40) * 16,
+                            rotate: direction === "right" ? -30 : 30,
+                            scale: 0.5,
+                            opacity: 0,
+                            zIndex: 0,
+                          },
+                  }}
+                  exit="exit"
                   transition={
                     reducedMotion
                       ? { duration: 0.01 }
