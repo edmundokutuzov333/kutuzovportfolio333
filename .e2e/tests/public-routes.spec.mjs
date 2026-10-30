@@ -147,6 +147,11 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
     expect(glassMaterial.backdropFilter).toContain("blur");
     expect(glassMaterial.borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
 
+    const clientMarquee = page.locator(".clients-marquee");
+    await expect(clientMarquee).toHaveCSS("overflow-x", "clip");
+    const marqueeWidth = await clientMarquee.evaluate((element) => element.getBoundingClientRect().width);
+    expect(marqueeWidth).toBeLessThanOrEqual(viewport.width + 1);
+
     const fan = page.locator("[data-project-fan]");
     await expect(fan).toBeVisible();
     await expect(fan).toHaveAttribute("data-project-fan-count", "22");

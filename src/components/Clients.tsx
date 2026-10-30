@@ -46,7 +46,7 @@ export function ClientsMarquee({ clients }: { clients: Client[] }) {
   const rowA = clients.slice(0, Math.ceil(clients.length / 2));
   const rowB = clients.slice(Math.ceil(clients.length / 2));
   const Row = ({ items, reverse }: { items: Client[]; reverse?: boolean }) => (
-    <div className="flex overflow-hidden">
+    <div className="flex w-full min-w-0 max-w-full overflow-hidden">
       <div className={`flex shrink-0 gap-4 pr-4 ${reverse ? "animate-marquee-rev" : "animate-marquee"}`}>
         {[...items, ...items].map((client, i) => (
           <div key={`${client.slug}-${i}`} className="flex h-20 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-8">
@@ -70,7 +70,7 @@ export function ClientsMarquee({ clients }: { clients: Client[] }) {
     </div>
   );
   return (
-    <div className="space-y-4 [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+    <div className="clients-marquee w-full min-w-0 max-w-full overflow-x-clip space-y-4 [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
       <Row items={rowA} />
       {rowB.length > 0 && <Row items={rowB} reverse />}
     </div>
