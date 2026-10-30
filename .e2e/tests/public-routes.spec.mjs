@@ -195,7 +195,7 @@ test("desktop fan carousel lifts the hovered card and fans its neighbours away",
   const leftCard = page.locator('[data-project-fan-card][data-project-card-slot="2"]');
   const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="4"]');
   await expect(centerCard).toBeVisible();
-  await page.waitForTimeout(1900);
+  await page.waitForTimeout(2100);
 
   const beforeCenter = await centerCard.boundingBox();
   const beforeLeft = await leftCard.boundingBox();
