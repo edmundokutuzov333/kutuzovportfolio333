@@ -1,15 +1,22 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Link } from "@tanstack/react-router";
 
 import type { ProjectArtwork } from "@/lib/project-artwork";
 import {
-  FAN_CENTER_SLOT,
   getFanHeightMultiplier,
-  getFanResponsiveMultiplier,
   getFanSlotConfig,
+  getFanVisibleCount,
   getVisibleFanCards,
-  MAX_VISIBLE_FAN_CARDS,
+  INITIAL_FAN_INDEX,
   PROJECT_FAN_ASPECT_RATIO,
 } from "@/lib/project-card-fan";
 
@@ -17,7 +24,18 @@ type ProjectCardFanProps = {
   cards: ProjectArtwork[];
 };
 
-type Viewport = { width: number; height: number };
+type Viewport = {
+  width: number;
+  height: number;
+  stageWidth: number;
+  cardWidth: number;
+};
+
+type PointerStart = {
+  pointerId: number;
+  x: number;
+  y: number;
+};
 
 const ARROW_CLASSES =
   "liquid-glass-button relative z-30 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/80 active:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:h-12 md:w-12";
@@ -44,25 +62,56 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
   const isAnimating = useRef(false);
   const hasEntered = useRef(false);
   const directionRef = useRef<"left" | "right">("right");
+  const pointerStart = useRef<PointerStart | null>(null);
+  const suppressNextClick = useRef(false);
   const unlockTimer = useRef<number | null>(null);
-  const [viewport, setViewport] = useState<Viewport>({ width: 0, height: 0 });
+  const [viewport, setViewport] = useState<Viewport>({
+    width: 0,
+    height: 0,
+    stageWidth: 0,
+    cardWidth: 0,
+  });
   const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
 
   const totalCards = cards.length;
-  const needsPagination = totalCards > MAX_VISIBLE_FAN_CARDS;
-  const [centerIndex, setCenterIndex] = useState(
-    needsPagination ? FAN_CENTER_SLOT : totalCards >> 1,
-  );
+  const visibleCount = getFanVisibleCount(viewport.width);
+  const needsPagination = totalCards > visibleCount;
+  const [centerIndex, setCenterIndex] = useState(INITIAL_FAN_INDEX);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    const stage = containerRef.current;
     const updateViewport = () => {
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
+      const currentStage = containerRef.current;
+      const currentCard = currentStage?.querySelector<HTMLElement>(".fan-card");
+      const width = window.innerWidth;
+
+      setViewport({
+        width,
+        height: window.innerHeight,
+        stageWidth: currentStage?.clientWidth || width * (width < 768 ? 0.94 : 0.89),
+        cardWidth:
+          currentCard?.offsetWidth ||
+          width * (width < 768 ? 0.55 : width < 1024 ? 0.27 : 0.28),
+      });
     };
+
     updateViewport();
+    const observer =
+      typeof ResizeObserver !== "undefined" && stage ? new ResizeObserver(updateViewport) : null;
+    if (stage && observer) observer.observe(stage);
     window.addEventListener("resize", updateViewport, { passive: true });
-    return () => window.removeEventListener("resize", updateViewport);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateViewport);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!totalCards) return;
+    if (centerIndex >= totalCards) setCenterIndex(totalCards - 1);
+  }, [centerIndex, totalCards]);
 
   useEffect(() => {
     if (!totalCards) return;
@@ -79,7 +128,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
       isAnimating.current = false;
       hasEntered.current = true;
       unlockTimer.current = null;
-    }, firstEntry ? 1900 : 700);
+    }, firstEntry ? 1450 : 680);
 
     return () => {
       if (unlockTimer.current !== null) {
@@ -97,7 +146,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
 
   const cycle = useCallback(
     (direction: "left" | "right") => {
-      if (isAnimating.current || !needsPagination || totalCards <= MAX_VISIBLE_FAN_CARDS) return;
+      if (isAnimating.current || !needsPagination || totalCards <= visibleCount) return;
       isAnimating.current = !reducedMotion;
       directionRef.current = direction;
       setHoveredSlot(null);
@@ -107,77 +156,147 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           : (previous - 1 + totalCards) % totalCards,
       );
     },
-    [needsPagination, totalCards, reducedMotion],
+    [needsPagination, totalCards, visibleCount, reducedMotion],
   );
 
-  const visibleCards = getVisibleFanCards(cards, centerIndex);
-  const multiplier = getFanResponsiveMultiplier(viewport.width);
+  const visibleCards = getVisibleFanCards(cards, centerIndex, visibleCount);
+  const centerSlot = Math.floor(visibleCards.length / 2);
+  const slotCount = visibleCards.length;
   const heightMultiplier = getFanHeightMultiplier(viewport.width, viewport.height);
-  const slotCount = needsPagination ? MAX_VISIBLE_FAN_CARDS : totalCards;
-  const centerSlot = visibleCards.length >> 1;
+  const stageWidth =
+    viewport.stageWidth ||
+    (viewport.width > 0 ? viewport.width * (viewport.width < 768 ? 0.94 : 0.89) : 1280);
+  const cardWidth =
+    viewport.cardWidth ||
+    (viewport.width > 0
+      ? viewport.width * (viewport.width < 768 ? 0.55 : viewport.width < 1024 ? 0.27 : 0.28)
+      : 358);
 
   const getTarget = (slot: number) => {
     const base = getFanSlotConfig(slotCount, slot);
-    let x = base.x * multiplier;
-    let y = base.y * heightMultiplier;
+    const rotationRadians = (Math.abs(base.rot) * Math.PI) / 180;
+    const rotateYRadians = (Math.abs(base.rotateY) * Math.PI) / 180;
+    const projectedHalfWidth =
+      cardWidth *
+      base.scale *
+      0.5 *
+      (Math.cos(rotationRadians) * Math.cos(rotateYRadians) +
+        PROJECT_FAN_ASPECT_RATIO ** -1 * Math.sin(rotationRadians));
+    const desktopOuterOffset = Math.max(0, stageWidth * 0.5 - projectedHalfWidth - 14);
+    const horizontalOffset = slotCount === 3 ? stageWidth * 0.22 : desktopOuterOffset;
+    let x = base.x * horizontalOffset;
+    let y = base.y * 16 * heightMultiplier;
     let rotation = base.rot;
+    const rotateY = base.rotateY;
     let scale = base.scale;
-    let delay = 0;
+    let z = base.z;
+    const opacity = base.opacity;
+    let delay = Math.abs(slot - centerSlot) * 0.025;
 
-    if (hoveredSlot !== null) {
+    if (hoveredSlot !== null && viewport.width >= 768) {
       const distance = Math.abs(slot - hoveredSlot);
-      delay = distance * 0.02;
+      delay = distance * 0.018;
 
       if (slot === hoveredSlot) {
-        y -= 2.5 * heightMultiplier;
-        scale *= 1.08;
+        y -= 0.65 * 16 * heightMultiplier;
+        scale *= 1.025;
+        z += 8;
       } else {
-        const normalized = centerSlot > 0 ? (slot - centerSlot) / centerSlot : 0;
-        const pushStrength =
-          8 * (1 - Math.abs(normalized)) * (1 + 0.2 * Math.max(0, 3 - distance));
-
+        const normalized = centerSlot > 0 ? Math.abs(slot - centerSlot) / centerSlot : 0;
+        const pushStrength = stageWidth * 0.022 * (1 - normalized * 0.3);
         if (slot < hoveredSlot) {
-          x -= pushStrength * multiplier;
-          rotation -= 3 / (distance + 1);
+          x -= pushStrength;
+          rotation -= 1.2 / Math.max(1, distance);
         } else {
-          x += pushStrength * multiplier;
-          rotation += 3 / (distance + 1);
+          x += pushStrength;
+          rotation += 1.2 / Math.max(1, distance);
         }
-
-        if (slot === visibleCards.length - 1 && hoveredSlot < centerSlot) y -= heightMultiplier;
-        if (slot === 0 && hoveredSlot > centerSlot) y -= heightMultiplier;
       }
-    } else {
-      delay = Math.abs(slot - centerSlot) * 0.02;
     }
 
     return {
-      x: x * 16,
-      y: y * 16,
+      x,
+      y,
+      z,
       rotate: rotation,
+      rotateY,
       scale,
-      opacity: 1,
+      opacity,
       zIndex: base.zIndex,
       delay,
     };
   };
 
-  const onMouseLeave = () => setHoveredSlot(null);
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if ((event.target as HTMLElement).closest("button")) return;
+
+    pointerStart.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+    };
+    suppressNextClick.current = false;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = pointerStart.current;
+    if (!start || start.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    pointerStart.current = null;
+
+    if (Math.abs(deltaX) > 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+      suppressNextClick.current = true;
+      cycle(deltaX < 0 ? "right" : "left");
+    }
+  };
+
+  const handleClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!suppressNextClick.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressNextClick.current = false;
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.target instanceof HTMLElement && event.target.closest("button")) return;
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      cycle("left");
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      cycle("right");
+    }
+  };
 
   if (totalCards === 0) return null;
 
   return (
-    <section className="relative z-20 flex w-full flex-col items-center overflow-x-clip px-4 py-4 md:px-8 lg:py-8">
+    <section className="relative z-20 flex w-full flex-col items-center overflow-visible px-4 py-4 md:px-8 lg:py-8">
       <div className="flex w-full items-center justify-center">
         <div
           ref={containerRef}
-          className="fan-layout relative flex w-full items-center justify-center"
-          onMouseLeave={onMouseLeave}
-          role="group"
-          aria-label="Project artwork fan carousel"
+          className="fan-layout relative flex items-center justify-center"
+          onMouseLeave={() => setHoveredSlot(null)}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={() => {
+            pointerStart.current = null;
+          }}
+          onClickCapture={handleClickCapture}
+          onKeyDown={handleKeyDown}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Featured project gallery"
+          tabIndex={0}
           data-project-fan
           data-project-fan-count={totalCards}
           data-project-fan-visible={visibleCards.length}
+          data-project-fan-center-slot={centerSlot}
+          data-project-fan-mode={visibleCount === 3 ? "mobile" : "desktop"}
           data-project-fan-ratio="4:5"
           data-project-fan-viewport-ready={viewport.width > 0 ? "true" : "false"}
         >
@@ -185,14 +304,24 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
             {visibleCards.map(({ item, index, slot }) => {
               const target = getTarget(slot);
               const firstEntry = !hasEntered.current;
-              const entryFrom = directionRef.current === "right" ? 40 : -40;
+              const entryFrom = directionRef.current === "right" ? 1 : -1;
               const initial = firstEntry
-                ? { x: 0, y: 12 * heightMultiplier * 16, rotate: 0, scale: 0.5, opacity: 0 }
+                ? {
+                    x: target.x,
+                    y: target.y + 14,
+                    z: target.z - 12,
+                    rotate: target.rotate,
+                    rotateY: target.rotateY,
+                    scale: target.scale * 0.94,
+                    opacity: 0,
+                  }
                 : {
-                    x: entryFrom * 16,
-                    y: target.y,
-                    rotate: directionRef.current === "right" ? 30 : -30,
-                    scale: 0.5,
+                    x: target.x + entryFrom * stageWidth * 0.12,
+                    y: target.y - 8,
+                    z: target.z - 16,
+                    rotate: target.rotate + entryFrom * 8,
+                    rotateY: target.rotateY,
+                    scale: target.scale * 0.94,
                     opacity: 0,
                   };
 
@@ -205,9 +334,11 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                   animate={{
                     x: target.x,
                     y: target.y,
+                    z: target.z,
                     rotate: target.rotate,
+                    rotateY: target.rotateY,
                     scale: target.scale,
-                    opacity: 1,
+                    opacity: target.opacity,
                     zIndex: target.zIndex,
                   }}
                   custom={directionRef.current}
@@ -217,11 +348,13 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                       return reducedMotion
                         ? { opacity: 0 }
                         : {
-                            x: (isRight ? -40 : 40) * 16,
-                            rotate: isRight ? -30 : 30,
-                            scale: 0.5,
+                            x: target.x + (isRight ? -1 : 1) * stageWidth * 0.12,
+                            y: target.y - 8,
+                            z: target.z - 16,
+                            rotate: target.rotate + (isRight ? -8 : 8),
+                            rotateY: target.rotateY,
+                            scale: target.scale * 0.92,
                             opacity: 0,
-                            zIndex: 0,
                           };
                     },
                   }}
@@ -229,21 +362,15 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                   transition={
                     reducedMotion
                       ? { duration: 0.01 }
-                      : firstEntry
-                        ? {
-                            type: "spring",
-                            stiffness: 115,
-                            damping: 10,
-                            mass: 0.8,
-                            delay: 0.2 + slot * 0.06,
-                          }
-                        : {
-                            type: "spring",
-                            stiffness: 190,
-                            damping: 17,
-                            mass: 0.8,
-                            delay: target.delay,
-                          }
+                      : {
+                          type: "spring",
+                          stiffness: firstEntry ? 135 : 165,
+                          damping: 24,
+                          mass: 0.9,
+                          delay: firstEntry
+                            ? 0.08 + Math.abs(slot - centerSlot) * 0.055
+                            : target.delay,
+                        }
                   }
                   onMouseEnter={() => {
                     if (!isAnimating.current) setHoveredSlot(slot);
@@ -314,6 +441,9 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           </button>
         </div>
       )}
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {centerIndex + 1} of {totalCards}: {cards[centerIndex]?.projectTitle ?? "Featured project"}
+      </span>
     </section>
   );
 }

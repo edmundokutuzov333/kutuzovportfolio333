@@ -7,10 +7,13 @@ import {
 import {
   FAN_CENTER_SLOT,
   getFanHeightMultiplier,
-  getFanResponsiveMultiplier,
   getFanSlotConfig,
+  getFanVisibleCount,
   getVisibleFanCards,
+  INITIAL_FAN_INDEX,
   MAX_VISIBLE_FAN_CARDS,
+  MOBILE_FAN_CENTER_SLOT,
+  MOBILE_VISIBLE_FAN_CARDS,
   PROJECT_FAN_ASPECT_RATIO,
 } from "@/lib/project-card-fan";
 import { PUBLIC_PRODUCTION_ORIGIN } from "@/lib/cms/public-config";
@@ -60,8 +63,21 @@ function currentPublishedProjects(): Project[] {
 describe("homepage project card fan carousel", () => {
   it("locks every artwork frame to the non-negotiable 4:5 ratio", () => {
     expect(PROJECT_FAN_ASPECT_RATIO).toBe(0.8);
-    expect(MAX_VISIBLE_FAN_CARDS).toBe(7);
-    expect(FAN_CENTER_SLOT).toBe(3);
+    expect(MAX_VISIBLE_FAN_CARDS).toBe(5);
+    expect(MOBILE_VISIBLE_FAN_CARDS).toBe(3);
+    expect(FAN_CENTER_SLOT).toBe(2);
+    expect(MOBILE_FAN_CENTER_SLOT).toBe(1);
+    expect(INITIAL_FAN_INDEX).toBe(3);
+  });
+
+  it("selects five desktop positions and three mobile positions", () => {
+    expect(getFanVisibleCount(1920)).toBe(5);
+    expect(getFanVisibleCount(1024)).toBe(5);
+    expect(getFanVisibleCount(768)).toBe(5);
+    expect(getFanVisibleCount(767)).toBe(3);
+    expect(getFanVisibleCount(390)).toBe(3);
+    expect(getFanVisibleCount(360)).toBe(3);
+    expect(getFanVisibleCount(0)).toBe(5);
   });
 
   it("resolves legacy root-relative artwork paths against the configured asset origin", () => {
@@ -130,27 +146,38 @@ describe("homepage project card fan carousel", () => {
     expect(artwork.filter((image) => image.slug === "project-3")).toHaveLength(4);
   });
 
-  it("uses the reference responsive position multipliers at each breakpoint", () => {
-    const cases: Array<[number, number]> = [
-      [1920, 1],
-      [1536, 1],
-      [1280, 1],
-      [1279, 0.9990625],
-      [1024, 0.76],
-      [1023, 0.759296875],
-      [768, 0.58],
-      [767, 0.578984375],
-      [640, 0.45],
-      [639, 0.4489375],
-      [480, 0.28],
-      [479, 0.279],
-      [390, 0.19],
-      [360, 0.16],
-    ];
-    for (const [width, expected] of cases) {
-      expect(getFanResponsiveMultiplier(width)).toBeCloseTo(expected, 5);
-    }
-    expect(getFanResponsiveMultiplier(0)).toBe(0.16);
+  it("uses five mirrored desktop positions with a dominant centre and exposed outer corners", () => {
+    const outerLeft = getFanSlotConfig(5, 0);
+    const innerLeft = getFanSlotConfig(5, 1);
+    const centre = getFanSlotConfig(5, 2);
+    const innerRight = getFanSlotConfig(5, 3);
+    const outerRight = getFanSlotConfig(5, 4);
+
+    expect(centre.x).toBe(0);
+    expect(centre.scale).toBe(1);
+    expect(centre.zIndex).toBeGreaterThan(innerLeft.zIndex);
+    expect(centre.zIndex).toBeGreaterThan(outerLeft.zIndex);
+    expect(outerLeft.zIndex).toBeGreaterThan(innerLeft.zIndex);
+    expect(outerRight.zIndex).toBeGreaterThan(innerRight.zIndex);
+    expect(outerLeft.x).toBe(-outerRight.x);
+    expect(innerLeft.x).toBe(-innerRight.x);
+    expect(outerLeft.rot).toBe(-outerRight.rot);
+    expect(outerLeft.rotateY).toBe(-outerRight.rotateY);
+    expect(outerLeft.scale).toBe(outerRight.scale);
+    expect(outerLeft.opacity).toBe(outerRight.opacity);
+  });
+
+  it("uses a separate three-position mobile fan", () => {
+    const left = getFanSlotConfig(3, 0);
+    const centre = getFanSlotConfig(3, 1);
+    const right = getFanSlotConfig(3, 2);
+
+    expect(centre.scale).toBe(1);
+    expect(centre.zIndex).toBeGreaterThan(left.zIndex);
+    expect(left.x).toBe(-right.x);
+    expect(left.rot).toBe(-right.rot);
+    expect(left.rotateY).toBe(-right.rotateY);
+    expect(left.scale).toBe(right.scale);
   });
 
   it("reduces vertical movement when the viewport height is below the design budget", () => {
@@ -161,43 +188,27 @@ describe("homepage project card fan carousel", () => {
     expect(getFanHeightMultiplier(0, 0)).toBe(1);
   });
 
-  it("uses mirrored positions around the dominant centre card", () => {
-    const left = getFanSlotConfig(7, 0);
-    const centre = getFanSlotConfig(7, 3);
-    const right = getFanSlotConfig(7, 6);
-
-    expect(centre).toEqual({ rot: 0, scale: 1, x: 0, y: 0, zIndex: 10 });
-    expect(left.rot).toBe(-right.rot);
-    expect(left.x).toBe(-right.x);
-    expect(left.y).toBe(right.y);
-    expect(left.scale).toBe(right.scale);
-    expect(left.zIndex).toBe(right.zIndex);
-  });
-
-  it("keeps every card visible when there are seven or fewer artworks", () => {
-    const cards = ["a", "b", "c", "d", "e", "f"];
-    const visible = getVisibleFanCards(cards, 3);
+  it("keeps all artworks visible when the collection fits the selected layout", () => {
+    const cards = ["a", "b", "c", "d", "e"];
+    const visible = getVisibleFanCards(cards, 3, 5);
     expect(visible.map((entry) => entry.item)).toEqual(cards);
-    expect(visible.map((entry) => entry.slot)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(visible.map((entry) => entry.slot)).toEqual([0, 1, 2, 3, 4]);
   });
 
-  it("shows seven consecutive artworks in the correct order while paging", () => {
+  it("shows five consecutive artworks on desktop and three on mobile", () => {
     const cards = Array.from({ length: 22 }, (_, index) => index);
-    expect(getVisibleFanCards(cards, 3).map((entry) => entry.index)).toEqual([0, 1, 2, 3, 4, 5, 6]);
-    expect(getVisibleFanCards(cards, 4).map((entry) => entry.index)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(getVisibleFanCards(cards, 3).map((entry) => entry.index)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(getVisibleFanCards(cards, 3, 5).map((entry) => entry.index)).toEqual([1, 2, 3, 4, 5]);
+    expect(getVisibleFanCards(cards, 4, 5).map((entry) => entry.index)).toEqual([2, 3, 4, 5, 6]);
+    expect(getVisibleFanCards(cards, 3, 3).map((entry) => entry.index)).toEqual([2, 3, 4]);
+    expect(getVisibleFanCards(cards, 4, 3).map((entry) => entry.index)).toEqual([3, 4, 5]);
   });
 
-  it("wraps the first and last pages without blank slots or duplicated cards", () => {
+  it("wraps desktop and mobile windows at both ends without blank or duplicate slots", () => {
     const cards = Array.from({ length: 22 }, (_, index) => index);
-    const first = getVisibleFanCards(cards, 0);
-    const last = getVisibleFanCards(cards, 21);
-
-    expect(first.map((entry) => entry.index)).toEqual([19, 20, 21, 0, 1, 2, 3]);
-    expect(last.map((entry) => entry.index)).toEqual([18, 19, 20, 21, 0, 1, 2]);
-    expect(new Set(first.map((entry) => entry.index)).size).toBe(7);
-    expect(new Set(last.map((entry) => entry.index)).size).toBe(7);
-    expect(first.map((entry) => entry.slot)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(getVisibleFanCards(cards, 0, 5).map((entry) => entry.index)).toEqual([20, 21, 0, 1, 2]);
+    expect(getVisibleFanCards(cards, 21, 5).map((entry) => entry.index)).toEqual([19, 20, 21, 0, 1]);
+    expect(getVisibleFanCards(cards, 0, 3).map((entry) => entry.index)).toEqual([21, 0, 1]);
+    expect(getVisibleFanCards(cards, 21, 3).map((entry) => entry.index)).toEqual([20, 21, 0]);
   });
 
   it("skips empty and null artwork entries without inventing replacement images", () => {

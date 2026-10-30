@@ -120,7 +120,7 @@ test("Admin uses the dark site palette without effects and restores a native cur
 
 
 
-test("homepage renders the seven-card fan carousel with strict 4:5 artwork at all breakpoints", async ({ page }) => {
+test("homepage renders a five-card desktop fan and a three-position mobile fan with strict 4:5 artwork", async ({ page }) => {
   test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
 
@@ -158,21 +158,24 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
     const fan = page.locator("[data-project-fan]");
     await expect(fan).toBeVisible();
     await expect(fan).toHaveAttribute("data-project-fan-count", "22");
-    await expect(fan).toHaveAttribute("data-project-fan-visible", "7");
-    await expect(fan).toHaveAttribute("data-project-fan-ratio", "4:5");
+    const visibleCount = viewport.width < 768 ? 3 : 5;
+    const centerSlot = Math.floor(visibleCount / 2);
     await expect(fan).toHaveAttribute("data-project-fan-viewport-ready", "true");
+    await expect(fan).toHaveAttribute("data-project-fan-mode", viewport.width < 768 ? "mobile" : "desktop");
+    await expect(fan).toHaveAttribute("data-project-fan-visible", String(visibleCount));
+    await expect(fan).toHaveAttribute("data-project-fan-center-slot", String(centerSlot));
+    await expect(fan).toHaveAttribute("data-project-fan-ratio", "4:5");
 
     const cards = fan.locator("[data-project-fan-card]");
-    await expect(cards).toHaveCount(7);
-    await expect.poll(
-      () => fan.locator('[data-project-card-slot="3"] img').evaluate((image) => image.naturalWidth),
-      { timeout: 15_000 },
-    ).toBeGreaterThan(0);
+    await expect(cards).toHaveCount(visibleCount);
+    const centerImage = fan.locator(`[data-project-card-slot="${centerSlot}"] img`);
+    await expect.poll(() => centerImage.evaluate((image) => image.naturalWidth), { timeout: 15_000 }).toBeGreaterThan(0);
 
     const cardMetrics = await cards.evaluateAll((elements) =>
       elements.map((card) => {
         const image = card.querySelector("img");
         const link = card.querySelector("a");
+        const rect = card.getBoundingClientRect();
         return {
           width: card.offsetWidth,
           ratio: card.offsetWidth / card.offsetHeight,
@@ -181,97 +184,78 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
           href: link?.getAttribute("href"),
           imageLoaded: Boolean(image && image.complete && image.naturalWidth > 0),
           slot: Number(card.getAttribute("data-project-card-slot")),
+          left: rect.left,
+          right: rect.right,
+          zIndex: Number(getComputedStyle(card).zIndex),
         };
       }),
     );
 
-    expect(cardMetrics.map((card) => card.slot)).toEqual([0, 1, 2, 3, 4, 5, 6]);
-    expect(cardMetrics.every((card) => card.width >= 220)).toBe(true);
+    expect(cardMetrics.map((card) => card.slot)).toEqual(Array.from({ length: visibleCount }, (_, index) => index));
+    expect(cardMetrics.every((card) => card.width >= 190)).toBe(true);
     if (viewport.width >= 1536) {
-      expect(cardMetrics.find((card) => card.slot === 3)?.width).toBeGreaterThan(350);
+      expect(cardMetrics.find((card) => card.slot === centerSlot)?.width).toBeGreaterThan(350);
     }
     expect(cardMetrics.every((card) => Math.abs(card.ratio - 0.8) < 0.02)).toBe(true);
     expect(cardMetrics.every((card) => card.declaredRatio === 0.8)).toBe(true);
-    expect(new Set(cardMetrics.map((card) => card.source)).size).toBe(7);
+    expect(new Set(cardMetrics.map((card) => card.source)).size).toBe(visibleCount);
     expect(cardMetrics.every((card) => card.href?.startsWith("/work/"))).toBe(true);
 
-    await expect.poll(() => fan.evaluate((element) => {
-      const card = element.querySelector('[data-project-card-slot="3"]');
-      if (!card) return Number.POSITIVE_INFINITY;
+    const centerCard = cardMetrics.find((card) => card.slot === centerSlot);
+    expect(centerCard?.zIndex).toBeGreaterThan(Math.max(...cardMetrics.filter((card) => card.slot !== centerSlot).map((card) => card.zIndex)));
+
+    const stageMetrics = await fan.evaluate((element, args) => {
       const stage = element.getBoundingClientRect();
-      const box = card.getBoundingClientRect();
-      const offsetX = Math.abs(box.left + box.width / 2 - (stage.left + stage.width / 2));
-      const offsetY = Math.abs(box.top + box.height / 2 - (stage.top + stage.height / 2));
-      return Math.max(offsetX, offsetY);
-    }), { timeout: 5_000 }).toBeLessThan(2);
-
-    const overflowReport = await page.evaluate(() => {
-      const width = window.innerWidth;
-      const elements = Array.from(document.querySelectorAll("body *"));
-      const offenders = elements
-        .map((element) => {
-          const rect = element.getBoundingClientRect();
-          const style = getComputedStyle(element);
-          return {
-            tag: element.tagName.toLowerCase(),
-            className: typeof element.className === "string" ? element.className : "",
-            left: Math.round(rect.left),
-            right: Math.round(rect.right),
-            width: Math.round(rect.width),
-            position: style.position,
-            overflowX: style.overflowX,
-          };
-        })
-        .filter((element) => element.width > 0 && element.right > width + 1)
-        .sort((a, b) => b.right - a.right)
-        .slice(0, 12);
-      const grainAfter = getComputedStyle(document.querySelector(".grain"), "::after");
+      const left = element.querySelector('[data-project-card-slot="0"]').getBoundingClientRect();
+      const right = element.querySelector(`[data-project-card-slot="${args.visibleCount - 1}"]`).getBoundingClientRect();
+      const center = element.querySelector(`[data-project-card-slot="${args.centerSlot}"]`).getBoundingClientRect();
+      const stageStyle = getComputedStyle(element);
       return {
-        viewport: width,
-        rootScrollWidth: document.documentElement.scrollWidth,
-        bodyScrollWidth: document.body.scrollWidth,
-        offenders,
-        grainAfter: {
-          position: grainAfter.position,
-          left: grainAfter.left,
-          right: grainAfter.right,
-          width: grainAfter.width,
-          transform: grainAfter.transform,
-        },
+        stageLeft: stage.left,
+        stageRight: stage.right,
+        stageOverflow: stageStyle.overflow,
+        leftGap: left.left - stage.left,
+        rightGap: stage.right - right.right,
+        centerOffsetX: Math.abs(center.left + center.width / 2 - (stage.left + stage.width / 2)),
+        centerOffsetY: Math.abs(center.top + center.height / 2 - (stage.top + stage.height / 2)),
       };
-    });
-    const rootOverflowX = await page.evaluate(() => getComputedStyle(document.documentElement).overflowX);
-    expect(rootOverflowX).toBe("clip");
-    const pageWidth = overflowReport.rootScrollWidth;
-    expect(
-      pageWidth,
-      `horizontal overflow at ${viewport.width}px: ${JSON.stringify(overflowReport)}`,
-    ).toBeLessThanOrEqual(viewport.width + 1);
+    }, { visibleCount, centerSlot });
+
+    expect(stageMetrics.stageOverflow).toBe("visible");
+    if (viewport.width >= 768) {
+      expect(stageMetrics.leftGap).toBeGreaterThan(0);
+      expect(stageMetrics.leftGap).toBeLessThan(45);
+      expect(stageMetrics.rightGap).toBeGreaterThan(0);
+      expect(stageMetrics.rightGap).toBeLessThan(45);
+      expect(cardMetrics[0].zIndex).toBeGreaterThan(cardMetrics[1].zIndex);
+      expect(cardMetrics[visibleCount - 1].zIndex).toBeGreaterThan(cardMetrics[visibleCount - 2].zIndex);
+    } else {
+      expect(cardMetrics[0].left).toBeGreaterThanOrEqual(-1);
+      expect(cardMetrics[visibleCount - 1].right).toBeLessThanOrEqual(viewport.width + 1);
+      expect(stageMetrics.leftGap).toBeLessThan(0);
+      expect(stageMetrics.rightGap).toBeLessThan(0);
+    }
+    expect(stageMetrics.centerOffsetX).toBeLessThan(2);
+    expect(stageMetrics.centerOffsetY).toBeLessThan(2);
+
+    const overflowReport = await page.evaluate(() => ({
+      rootScrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+    }));
+    expect(overflowReport.rootScrollWidth).toBeLessThanOrEqual(viewport.width + 1);
+    expect(overflowReport.bodyScrollWidth).toBeLessThanOrEqual(viewport.width + 1);
   }
-
-  await page.setViewportSize({ width: 1536, height: 900 });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  const fan = page.locator("[data-project-fan]");
-  const centerCard = fan.locator('[data-project-card-slot="3"]');
-  await expect(centerCard).toHaveAttribute("data-project-card-index", "3");
-
-  await page.getByRole("button", { name: "Next project" }).click();
-  await expect.poll(() => fan.locator('[data-project-card-slot="3"]').getAttribute("data-project-card-index")).toBe("4");
-  await page.getByRole("button", { name: "Previous project" }).click();
-  await expect.poll(() => fan.locator('[data-project-card-slot="3"]').getAttribute("data-project-card-index")).toBe("3");
-
-  await expect(fan.locator("[data-project-fan-card]")).toHaveCount(7);
 });
 
-test("desktop fan carousel lifts the hovered card and fans its neighbours away", async ({ page }) => {
+test("desktop fan carousel lifts the hovered card and gently separates its neighbours", async ({ page }) => {
   await page.setViewportSize({ width: 1536, height: 900 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  const centerCard = page.locator('[data-project-fan-card][data-project-card-slot="3"]');
-  const leftCard = page.locator('[data-project-fan-card][data-project-card-slot="2"]');
-  const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="4"]');
+  const centerCard = page.locator('[data-project-fan-card][data-project-card-slot="2"]');
+  const leftCard = page.locator('[data-project-fan-card][data-project-card-slot="1"]');
+  const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="3"]');
   await expect(centerCard).toBeVisible();
-  await page.waitForTimeout(2100);
+  await page.waitForTimeout(1600);
 
   const beforeCenter = await centerCard.boundingBox();
   const beforeLeft = await leftCard.boundingBox();
@@ -285,10 +269,34 @@ test("desktop fan carousel lifts the hovered card and fans its neighbours away",
     return Boolean(
       beforeCenter && beforeLeft && beforeRight &&
       afterCenter && afterLeft && afterRight &&
-      afterCenter.width > beforeCenter.width * 1.04 &&
+      afterCenter.width > beforeCenter.width * 1.01 &&
       afterCenter.y < beforeCenter.y &&
       afterLeft.x < beforeLeft.x - 10 &&
       afterRight.x > beforeRight.x + 10
     );
   }).toBe(true);
+});
+
+test("fan carousel supports arrow keys and horizontal pointer dragging without following a card link", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  const fan = page.locator("[data-project-fan]");
+  await expect(fan).toHaveAttribute("data-project-fan-mode", "mobile");
+  await expect(fan).toHaveAttribute("data-project-fan-visible", "3");
+  await expect(fan.locator('[data-project-card-slot="1"]')).toHaveAttribute("data-project-card-index", "3");
+
+  await fan.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => fan.locator('[data-project-card-slot="1"]').getAttribute("data-project-card-index")).toBe("4");
+
+  const box = await fan.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 90, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await expect.poll(() => fan.locator('[data-project-card-slot="1"]').getAttribute("data-project-card-index")).toBe("5");
+  await expect(page).toHaveURL(/\/$/);
 });

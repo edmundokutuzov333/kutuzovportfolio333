@@ -121,21 +121,27 @@
 }
 
 /*
- * Project card fan carousel.
- * Every artwork frame has one invariant 4:5 aspect ratio. Fan transforms are
- * applied to the frame, never to the image dimensions.
+ * Editorial project card fan carousel.
+ * The outer pair reaches the stage boundaries; mobile uses its own
+ * three-position composition instead of a compressed desktop layout.
  */
 .fan-layout {
-  --fan-card-width: clamp(17rem, 23vw, 23rem);
+  --fan-card-width: clamp(17rem, 28vw, 32rem);
   position: relative;
   isolation: isolate;
-  width: 100%;
-  max-width: 80rem;
+  width: 89vw;
   height: 44rem;
-  overflow: hidden;
-  perspective: 1600px;
-  perspective-origin: 50% 44%;
+  overflow: visible;
+  perspective: 1800px;
+  perspective-origin: 50% 46%;
+  transform-style: preserve-3d;
   touch-action: pan-y;
+  outline: none;
+}
+
+.fan-layout:focus-visible {
+  outline: 1px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  outline-offset: 8px;
 }
 
 .fan-card {
@@ -153,7 +159,9 @@
   backface-visibility: hidden;
   will-change: transform, opacity;
   border-radius: 3px;
-  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+  box-shadow:
+    0 24px 68px rgba(0, 0, 0, 0.42),
+    0 5px 18px rgba(0, 0, 0, 0.24);
 }
 
 .fan-card img {
@@ -162,37 +170,31 @@
   height: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
+  object-position: center;
   border-radius: 3px;
   pointer-events: none;
 }
 
 @media (max-width: 1023px) {
   .fan-layout {
-    --fan-card-width: clamp(14rem, 35vw, 17rem);
+    --fan-card-width: clamp(15rem, 27vw, 18rem);
     height: 39rem;
+    perspective: 1500px;
   }
 }
 
 @media (max-width: 767px) {
   .fan-layout {
-    --fan-card-width: clamp(14rem, 35vw, 16.5rem);
-    height: 35rem;
-    perspective: 1100px;
-    perspective-origin: 50% 46%;
-  }
-}
-
-@media (max-width: 639px) {
-  .fan-layout {
-    --fan-card-width: clamp(14rem, 35vw, 16rem);
-    height: 33rem;
-  }
-}
-
-@media (max-width: 479px) {
-  .fan-layout {
+    --fan-card-width: clamp(12.5rem, 55vw, 22rem);
+    width: calc(100vw - 24px);
     height: 31rem;
-    perspective: 900px;
+    perspective: 1100px;
+    perspective-origin: 50% 47%;
+  }
+
+  .fan-card[data-project-card-slot="3"],
+  .fan-card[data-project-card-slot="4"] {
+    display: none;
   }
 }
 
