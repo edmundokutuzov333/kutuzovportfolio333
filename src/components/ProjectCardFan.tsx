@@ -66,6 +66,12 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
 
   useEffect(() => {
     if (!totalCards) return;
+    if (reducedMotion) {
+      isAnimating.current = false;
+      hasEntered.current = true;
+      return;
+    }
+
     isAnimating.current = true;
     const firstEntry = !hasEntered.current;
     if (unlockTimer.current !== null) window.clearTimeout(unlockTimer.current);
@@ -81,7 +87,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
         unlockTimer.current = null;
       }
     };
-  }, [centerIndex, totalCards]);
+  }, [centerIndex, totalCards, reducedMotion]);
 
   useEffect(() => {
     return () => {
@@ -299,7 +305,6 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
             className={ARROW_CLASSES}
             onClick={() => cycle("right")}
             aria-label="Next project"
-            disabled={isAnimating.current}
           >
             <Chevron direction="right" />
           </button>
