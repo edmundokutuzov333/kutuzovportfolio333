@@ -98,7 +98,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
   const cycle = useCallback(
     (direction: "left" | "right") => {
       if (isAnimating.current || !needsPagination || totalCards <= MAX_VISIBLE_FAN_CARDS) return;
-      isAnimating.current = true;
+      isAnimating.current = !reducedMotion;
       directionRef.current = direction;
       setHoveredSlot(null);
       setCenterIndex((previous) =>
@@ -107,7 +107,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           : (previous - 1 + totalCards) % totalCards,
       );
     },
-    [needsPagination, totalCards],
+    [needsPagination, totalCards, reducedMotion],
   );
 
   const visibleCards = getVisibleFanCards(cards, centerIndex);
