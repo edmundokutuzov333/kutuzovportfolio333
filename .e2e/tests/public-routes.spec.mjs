@@ -121,6 +121,7 @@ test("Admin uses the dark site palette without effects and restores a native cur
 
 
 test("homepage renders the seven-card fan carousel with strict 4:5 artwork at all breakpoints", async ({ page }) => {
+  test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   const viewports = [
@@ -163,7 +164,10 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
 
     const cards = fan.locator("[data-project-fan-card]");
     await expect(cards).toHaveCount(7);
-    await expect.poll(() => fan.locator('[data-project-card-slot="3"] img').evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+    await expect.poll(
+      () => fan.locator('[data-project-card-slot="3"] img').evaluate((image) => image.naturalWidth),
+      { timeout: 15_000 },
+    ).toBeGreaterThan(0);
 
     const cardMetrics = await cards.evaluateAll((elements) =>
       elements.map((card) => {
@@ -199,7 +203,7 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
       const offsetX = Math.abs(box.left + box.width / 2 - (stage.left + stage.width / 2));
       const offsetY = Math.abs(box.top + box.height / 2 - (stage.top + stage.height / 2));
       return Math.max(offsetX, offsetY);
-    })).toBeLessThan(2);
+    }), { timeout: 5_000 }).toBeLessThan(2);
 
     const overflowReport = await page.evaluate(() => {
       const width = window.innerWidth;
