@@ -227,12 +227,14 @@ export function EKBlueprint() {
 
         constructionSegments.forEach((segment, index) => {
           const schedule = segmentSchedule[index];
+          if (!schedule) return;
           const path = root.querySelector<SVGPathElement>(`[data-monogram-segment="${index}"]`);
           animateElement(path, sequencedFrames(schedule.start, schedule.end), animations);
         });
 
         constructionPoints.forEach((point) => {
           const schedule = segmentSchedule[point.index];
+          if (!schedule) return;
           const marker = root.querySelector<SVGGElement>(`[data-construction-point="${point.index}"]`);
           animateElement(marker, pointFrames(schedule.start), animations);
         });
