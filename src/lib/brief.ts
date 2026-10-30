@@ -127,7 +127,7 @@ export const PROJECT_STAGES = [
 export function validateStep(step: number, b: Brief): string | null {
   if (step === 0) {
     if (!b.name.trim()) return "Full name is required.";
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(b.email.trim())) return "A valid email is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email.trim())) return "A valid email is required.";
   }
 
   if (step === 1) {
@@ -148,7 +148,7 @@ export function validateStep(step: number, b: Brief): string | null {
     const len = b.message.trim().length;
     if (len < 10) return "Message needs at least 10 characters.";
     if (len > 4000) return "Message can be at most 4,000 characters.";
-    const links = b.links.split(/\\s+/).filter(Boolean);
+    const links = b.links.split(/\s+/).filter(Boolean);
     if (links.length > 10) return "You can add up to 10 reference links.";
     if (links.some((link) => {
       try {
