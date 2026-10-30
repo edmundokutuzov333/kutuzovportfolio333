@@ -163,7 +163,7 @@ test("homepage renders two image-only 4:5 artwork ribbons linked to their projec
 
   for (const ribbon of await ribbons.all()) {
     await expect(ribbon).toBeVisible();
-    const links = await ribbon.locator("[data-project-ribbon-tile]").evaluateAll((anchors) =>
+    const links = await ribbon.locator("[data-project-ribbon-animated] [data-project-ribbon-tile]").evaluateAll((anchors) =>
       anchors.map((anchor) => ({
         href: anchor.getAttribute("href"),
         label: anchor.getAttribute("aria-label"),
@@ -178,7 +178,7 @@ test("homepage renders two image-only 4:5 artwork ribbons linked to their projec
     expect(links.every((link) => link.visibleText === "")).toBe(true);
   }
 
-  const firstImage = page.locator("[data-project-ribbon-tile] img").first();
+  const firstImage = page.locator("[data-project-ribbon-animated] [data-project-ribbon-tile] img").first();
   await expect.poll(() => firstImage.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
 
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
