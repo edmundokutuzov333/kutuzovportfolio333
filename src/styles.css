@@ -141,8 +141,8 @@
   display: block;
   width: var(--fan-card-width);
   aspect-ratio: 4 / 5;
-  margin-top: calc(var(--fan-card-width) * -0.625);
-  margin-left: calc(var(--fan-card-width) / -2);
+  margin: 0;
+  translate: -50% -50%;
   overflow: visible;
   transform-origin: 50% 50%;
   transform-style: preserve-3d;

@@ -178,6 +178,20 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
     expect(new Set(cardMetrics.map((card) => card.source)).size).toBe(7);
     expect(cardMetrics.every((card) => card.href?.startsWith("/work/"))).toBe(true);
 
+    const centerGeometry = await fan.evaluate((element) => {
+      const card = element.querySelector('[data-project-card-slot="3"]');
+      if (!card) return null;
+      const stage = element.getBoundingClientRect();
+      const box = card.getBoundingClientRect();
+      return {
+        offsetX: Math.abs(box.left + box.width / 2 - (stage.left + stage.width / 2)),
+        offsetY: Math.abs(box.top + box.height / 2 - (stage.top + stage.height / 2)),
+      };
+    });
+    expect(centerGeometry).not.toBeNull();
+    expect(centerGeometry.offsetX).toBeLessThan(2);
+    expect(centerGeometry.offsetY).toBeLessThan(2);
+
     const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(pageWidth, `horizontal overflow at ${viewport.width}px`).toBeLessThanOrEqual(viewport.width + 1);
   }
