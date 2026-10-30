@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AdminWorkspace } from "@/components/admin/AdminWorkspace";
 import { useEffect, useState, type FormEvent } from "react";
 
@@ -16,6 +17,9 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminEntryPage() {
+  const getAdminSession = useServerFn(getAdminSessionFn);
+  const loginAdmin = useServerFn(loginAdminFn);
+  const logoutAdmin = useServerFn(logoutAdminFn);
   const [pin, setPin] = useState("");
   const [session, setSession] = useState<AdminSession | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -24,7 +28,7 @@ function AdminEntryPage() {
 
   useEffect(() => {
     let active = true;
-    void getAdminSessionFn()
+    void getAdminSession()
       .then((result) => {
         if (active) setSession(result);
       })
@@ -45,7 +49,7 @@ function AdminEntryPage() {
     setSubmitting(true);
     setStatus(null);
     try {
-      const result = await loginAdminFn({ data: { pin } });
+      const result = await loginAdmin({ data: { pin } });
       if (!result.ok) {
         setStatus({
           tone: "error",
@@ -87,7 +91,7 @@ function AdminEntryPage() {
   async function logout() {
     setSubmitting(true);
     try {
-      await logoutAdminFn();
+      await logoutAdmin();
       setSession(null);
       setPin("");
       setStatus({ tone: "info", text: "Sessão terminada." });
