@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { getPublicPresentation, getPublishedRevision } from "@/lib/cms/queries";
 import { DEFAULT_PUBLIC_PRESENTATION, type Profile, type PublicPresentation } from "@/lib/cms/types";
+import { EKBlueprint } from "./EKBlueprint";
 import { LogoMark } from "./LogoMark";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
@@ -122,7 +123,7 @@ export function Footer({ profile, presentation }: { profile: Profile | null; pre
           </div>
         </div>
       </div>
-      <div className="mt-24 select-none overflow-hidden"><LogoMark className="w-full text-foreground/[0.06]" /></div>
+      <div className="mt-14 overflow-hidden md:mt-20"><EKBlueprint /></div>
       <div className="mt-6 flex flex-wrap justify-between gap-4 eyebrow">
         <span>© {new Date().getFullYear()} Edmundo Kutuzov</span>
         <span>{copy.signature}</span>
