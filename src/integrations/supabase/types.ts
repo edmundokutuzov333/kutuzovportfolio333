@@ -190,6 +190,7 @@ export type Database = {
           internal_notes: string | null
           links: Json
           message: string
+          metadata: Json
           name: string
           request_type: string
           source_ip_hash: string | null
@@ -206,6 +207,7 @@ export type Database = {
           internal_notes?: string | null
           links?: Json
           message: string
+          metadata?: Json
           name: string
           request_type: string
           source_ip_hash?: string | null
@@ -222,6 +224,7 @@ export type Database = {
           internal_notes?: string | null
           links?: Json
           message?: string
+          metadata?: Json
           name?: string
           request_type?: string
           source_ip_hash?: string | null
@@ -866,6 +869,30 @@ export type Database = {
           },
         ]
       }
+      public_form_rate_limits: {
+        Row: {
+          key_hash: string
+          purpose: string
+          request_count: number
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          key_hash: string
+          purpose: string
+          request_count?: number
+          updated_at?: string
+          window_started_at: string
+        }
+        Update: {
+          key_hash?: string
+          purpose?: string
+          request_count?: number
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           created_at: string
@@ -1060,6 +1087,10 @@ export type Database = {
           p_submission_id: string
         }
         Returns: Json
+      }
+      consume_public_form_rate_limit: {
+        Args: { p_key_hash: string; p_now?: string; p_purpose: string }
+        Returns: boolean
       }
       is_site_admin: { Args: never; Returns: boolean }
       register_admin_auth_attempt: {
