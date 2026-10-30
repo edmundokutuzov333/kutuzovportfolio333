@@ -1,5 +1,83 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793339973000,
+      "tag": "0000_admin_foundation_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793340023387,
+      "tag": "0001_admin_foundation_policy_tuning_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793340026378,
+      "tag": "0002_admin_auth_attempts_lockdown_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793340029341,
+      "tag": "0003_admin_private_policy_cleanup_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793340032356,
+      "tag": "0004_admin_auth_atomic_rate_limit_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793340035396,
+      "tag": "0005_admin_auth_rate_limit_returning_fix_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793340038437,
+      "tag": "0006_admin_media_visibility_constraint_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793340041416,
+      "tag": "0007_admin_auth_progressive_rate_limit_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793340044653,
+      "tag": "0008_admin_auth_progressive_interval_fix_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793340047813,
+      "tag": "0009_cms_content_domain_and_asset_inventory_20261029",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793340130045,
+      "tag": "0010_admin_editorial_mutations_20261029",
+      "breakpoints": true
+    }
+  ]
 }
