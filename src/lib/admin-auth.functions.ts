@@ -14,13 +14,11 @@ const loginInput = z.object({
 export const loginAdminFn = createServerFn({ method: "POST" })
   .validator(loginInput)
   .handler(async ({ data }) => {
-    if (process.env["NODE_ENV"] !== "production") console.info("[admin-auth] login handler entered");
     return loginAdmin(data);
   });
 
 export const getAdminSessionFn = createServerFn({ method: "GET" }).handler(
   async () => {
-    if (process.env["NODE_ENV"] !== "production") console.info("[admin-auth] session read handler entered");
     return getAdminSession();
   },
 );
