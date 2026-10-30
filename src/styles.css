@@ -129,7 +129,8 @@
   --fan-card-width: clamp(17rem, 28vw, 32rem);
   position: relative;
   isolation: isolate;
-  width: 89vw;
+  width: 94.7vw;
+  left: 0.78vw;
   height: 44rem;
   overflow: visible;
   perspective: 1800px;
@@ -187,6 +188,7 @@
   .fan-layout {
     --fan-card-width: clamp(12.5rem, 55vw, 22rem);
     width: calc(100vw - 24px);
+    left: 0;
     height: 31rem;
     perspective: 1100px;
     perspective-origin: 50% 47%;

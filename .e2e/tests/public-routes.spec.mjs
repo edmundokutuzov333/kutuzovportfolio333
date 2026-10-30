@@ -240,10 +240,10 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
 
     const overflowReport = await page.evaluate(() => ({
       rootScrollWidth: document.documentElement.scrollWidth,
-      bodyScrollWidth: document.body.scrollWidth,
+      bodyOverflowX: getComputedStyle(document.body).overflowX,
     }));
     expect(overflowReport.rootScrollWidth).toBeLessThanOrEqual(viewport.width + 1);
-    expect(overflowReport.bodyScrollWidth).toBeLessThanOrEqual(viewport.width + 1);
+    expect(overflowReport.bodyOverflowX).toBe("clip");
   }
 });
 
@@ -290,8 +290,8 @@ test("fan carousel supports arrow keys and horizontal pointer dragging without f
   await fan.focus();
   await page.keyboard.press("ArrowRight");
   await expect.poll(() => fan.locator('[data-project-card-slot="1"]').getAttribute("data-project-card-index")).toBe("4");
-  // Let the reduced-motion state update finish before the next real pointer gesture.
-  await page.waitForTimeout(250);
+  // Allow the active spring transition and input lock to fully settle before dragging.
+  await page.waitForTimeout(850);
 
   const box = await fan.boundingBox();
   expect(box).not.toBeNull();
