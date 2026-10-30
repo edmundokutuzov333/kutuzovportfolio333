@@ -69,7 +69,12 @@ function AdminEntryPage() {
       setSession(currentSession);
       setPin("");
       setStatus(null);
-    } catch {
+    } catch (error) {
+      console.warn(
+        "[admin-auth] client server-function call failed",
+        error instanceof Error ? error.name : "UnknownError",
+        error instanceof Error ? error.message.slice(0, 240) : "no-message",
+      );
       setStatus({
         tone: "error",
         text: "Não foi possível concluir o acesso. Tente novamente mais tarde.",
