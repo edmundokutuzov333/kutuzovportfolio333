@@ -94,17 +94,13 @@ test("the valid PIN opens the Admin workspace without database credentials for s
   page.on("request", (request) => {
     if (captureAdminTraffic) {
       const pathname = new URL(request.url()).pathname;
-      if (/admin|server|tsr|function/i.test(pathname) || request.method() !== "GET") {
-        adminRequests.push({ method: request.method(), url: pathname });
-      }
+      adminRequests.push({ method: request.method(), url: pathname });
     }
   });
   page.on("response", (response) => {
     if (captureAdminTraffic) {
       const pathname = new URL(response.url()).pathname;
-      if (/admin|server|tsr|function/i.test(pathname) || response.request().method() !== "GET") {
-        console.log("[E2E] Admin response:", response.request().method(), pathname, response.status());
-      }
+      console.log("[E2E] Admin response:", response.request().method(), pathname, response.status());
     }
   });
   page.on("requestfailed", (request) => {
@@ -114,6 +110,8 @@ test("the valid PIN opens the Admin workspace without database credentials for s
   await page.goto("/admin", { waitUntil: "domcontentloaded" });
   await expect(page.getByLabel("Código de acesso")).toBeVisible();
   await page.getByLabel("Código de acesso").fill("333");
+  await expect(page.getByRole("button", { name: "Entrar no Admin" })).toBeEnabled();
+  console.log("[E2E] Admin button enabled and PIN length:", await page.getByRole("button", { name: "Entrar no Admin" }).isEnabled(), await page.getByLabel("Código de acesso").inputValue().then((value) => value.length));
   captureAdminTraffic = true;
   await page.getByRole("button", { name: "Entrar no Admin" }).click();
   await page.waitForTimeout(500);
