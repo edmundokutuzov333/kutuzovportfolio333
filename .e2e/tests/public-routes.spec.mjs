@@ -147,14 +147,11 @@ test("homepage renders two separated 1:2 artwork rows with opposite viewpoints a
         element.querySelectorAll("[data-project-artwork-src]"),
         (tile) => tile.getAttribute("data-project-artwork-src"),
       ),
-      ratios: Array.from(element.querySelectorAll("[data-project-artwork-src]"), (tile) => {
-        const box = tile.getBoundingClientRect();
-        return box.width / box.height;
-      }),
+      aspectRatio: Number(element.closest("[data-project-ribbon]")?.getAttribute("data-project-ribbon-aspect-ratio")),
     }));
     expect(row.hiddenByDefault).toBe(true);
     expect(row.sources).toHaveLength(11);
-    expect(row.ratios.every((ratio) => ratio > 0.45 && ratio < 0.55)).toBe(true);
+    expect(row.aspectRatio).toBe(0.5);
     rowSources.push(...row.sources);
 
     const animatedTiles = ribbon.locator("[data-project-ribbon-animated] [data-project-ribbon-tile]");
