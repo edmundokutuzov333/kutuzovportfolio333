@@ -81,11 +81,25 @@ test("fresh and invalid Admin access never renders the protected workspace", asy
 
 test("the valid PIN opens the Admin workspace without database credentials for sign-in", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
+  const adminRequests = [];
+  page.on("request", (request) => {
+    if (request.method() !== "GET") adminRequests.push({ method: request.method(), url: new URL(request.url()).pathname });
+  });
+  page.on("response", async (response) => {
+    if (response.request().method() !== "GET") {
+      console.log("[E2E] Admin response:", response.request().method(), new URL(response.url()).pathname, response.status());
+    }
+  });
+  page.on("requestfailed", (request) => {
+    console.log("[E2E] Admin request failed:", request.method(), new URL(request.url()).pathname, request.failure()?.errorText ?? "unknown");
+  });
+
   await page.goto("/admin", { waitUntil: "domcontentloaded" });
   await expect(page.getByLabel("Código de acesso")).toBeVisible();
   await page.getByLabel("Código de acesso").fill("333");
   await page.getByRole("button", { name: "Entrar no Admin" }).click();
   await page.waitForTimeout(500);
+  console.log("[E2E] Admin non-GET requests:", JSON.stringify(adminRequests));
   const loginAlert = await page.getByRole("alert").allTextContents();
   console.log("[E2E] Admin login alert:", loginAlert.join(" | ") || "none");
   console.log("[E2E] Admin PIN field after submit:", await page.getByLabel("Código de acesso").count());
