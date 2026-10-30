@@ -1100,6 +1100,25 @@ export type Database = {
           blocked_until: string
         }[]
       }
+      submit_contact_submission: {
+        Args: {
+          p_attachment_paths: Json
+          p_budget: string
+          p_company: string
+          p_email: string
+          p_links: Json
+          p_message: string
+          p_metadata: Json
+          p_name: string
+          p_notification_outbox_id: string
+          p_notification_recipient: string
+          p_now?: string
+          p_request_type: string
+          p_source_ip_hash: string
+          p_submission_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
