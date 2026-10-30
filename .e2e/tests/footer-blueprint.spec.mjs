@@ -62,7 +62,7 @@ test("footer EK uses geometry-derived construction guides and repeats its point-
   const animationProgress = await blueprint.locator("[data-monogram-segment='0']").evaluate((element) => {
     const animation = element.getAnimations()[0];
     const before = Number(animation?.currentTime ?? 0);
-    return new Promise<number>((resolve) => {
+    return new Promise((resolve) => {
       window.setTimeout(() => resolve(Number(animation?.currentTime ?? 0) - before), 220);
     });
   });
