@@ -79,46 +79,13 @@ test("fresh and invalid Admin access never renders the protected workspace", asy
   expect(width).toBeLessThanOrEqual(391);
 });
 
-test("the valid PIN opens the Admin workspace without database credentials for sign-in", async ({ page }) => {
+test("the valid PIN opens the Admin workspace without browser JWT credentials", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  const adminRequests = [];
-  let captureAdminTraffic = false;
-  page.on("console", (message) => {
-    if (message.type() === "warning" || message.type() === "error") {
-      console.log("[E2E] Browser console:", message.type(), message.text().slice(0, 240));
-    }
-  });
-  page.on("pageerror", (error) => {
-    console.log("[E2E] Browser page error:", error.name, error.message.slice(0, 240));
-  });
-  page.on("request", (request) => {
-    if (captureAdminTraffic) {
-      const pathname = new URL(request.url()).pathname;
-      adminRequests.push({ method: request.method(), url: pathname });
-    }
-  });
-  page.on("response", (response) => {
-    if (captureAdminTraffic) {
-      const pathname = new URL(response.url()).pathname;
-      console.log("[E2E] Admin response:", response.request().method(), pathname, response.status());
-    }
-  });
-  page.on("requestfailed", (request) => {
-    console.log("[E2E] Admin request failed:", request.method(), new URL(request.url()).pathname, request.failure()?.errorText ?? "unknown");
-  });
-
   await page.goto("/admin", { waitUntil: "domcontentloaded" });
   await expect(page.getByLabel("Código de acesso")).toBeVisible();
   await page.getByLabel("Código de acesso").fill("333");
-  await expect(page.getByRole("button", { name: "Entrar no Admin" })).toBeEnabled();
-  console.log("[E2E] Admin button enabled and PIN length:", await page.getByRole("button", { name: "Entrar no Admin" }).isEnabled(), await page.getByLabel("Código de acesso").inputValue().then((value) => value.length));
-  captureAdminTraffic = true;
   await page.getByRole("button", { name: "Entrar no Admin" }).click();
-  await page.waitForTimeout(500);
-  console.log("[E2E] Admin server-function requests:", JSON.stringify(adminRequests));
-  const loginAlert = await page.getByRole("alert").allTextContents();
-  console.log("[E2E] Admin login alert:", loginAlert.join(" | ") || "none");
-  console.log("[E2E] Admin PIN field after submit:", await page.getByLabel("Código de acesso").count());
+
   await expect(page.getByText("Kutuzov Admin", { exact: true })).toBeVisible();
   await expect(page.getByText("Sessão autenticada", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Código de acesso")).toHaveCount(0);
