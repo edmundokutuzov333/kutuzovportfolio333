@@ -3,19 +3,68 @@ import path from "node:path";
 
 const root = process.cwd();
 const configPath = path.join(root, "src/lib/cms/public-config.ts");
-const config = await readFile(configPath, "utf8");
-const originMatch = config.match(/PUBLIC_PRODUCTION_ORIGIN\s*=\s*"([^"]+)"/);
+const publicClientPath = path.join(root, "src/lib/cms/public-client.ts");
+const [config, publicClient] = await Promise.all([
+  readFile(configPath, "utf8"),
+  readFile(publicClientPath, "utf8"),
+]);
 
-if (!originMatch) {
-  throw new Error("PUBLIC_PRODUCTION_ORIGIN is missing from public-config.ts.");
+function readConstant(source, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = source.match(new RegExp(`(?:const|export const) ${escaped}\\s*=\\s*"([^"]+)"`));
+  return match?.[1] ?? null;
 }
 
-const origin = new URL(originMatch[1]);
-if (origin.protocol !== "https:" || origin.pathname !== "/") {
-  throw new Error("The project asset origin must be a root HTTPS origin.");
+const supabaseUrl =
+  process.env.VITE_SUPABASE_URL?.trim() ||
+  readConstant(config, "DEFAULT_SUPABASE_URL");
+const publishableKey =
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+  readConstant(config, "DEFAULT_SUPABASE_PUBLISHABLE_KEY");
+const assetOrigin =
+  process.env.PUBLIC_ASSET_ORIGIN?.trim() ||
+  readConstant(config, "PUBLIC_PRODUCTION_ORIGIN");
+
+if (!supabaseUrl || !publishableKey || !assetOrigin) {
+  throw new Error("Public Supabase or asset-origin configuration is missing.");
 }
 
-const worksDirectory = path.join(root, "src/assets/works");
+const cmsEndpoint = new URL(
+  "/rest/v1/projects?select=slug,title,cover_path,gallery,position&status=eq.published&order=position.asc",
+  supabaseUrl,
+);
+const cmsResponse = await fetch(cmsEndpoint, {
+  headers: {
+    apikey: publishableKey,
+    Authorization: `Bearer ${publishableKey}`,
+    Accept: "application/json",
+  },
+  signal: AbortSignal.timeout(20000),
+});
+
+if (!cmsResponse.ok) {
+  throw new Error(`Could not read published project artwork from Supabase (HTTP ${cmsResponse.status}).`);
+}
+
+const projects = await cmsResponse.json();
+if (!Array.isArray(projects)) {
+  throw new Error("Supabase returned an invalid published projects response.");
+}
+
+const artwork = projects.flatMap((project) => [
+  ...(typeof project.cover_path === "string" && project.cover_path.trim()
+    ? [{ slug: project.slug, source: project.cover_path.trim() }]
+    : []),
+  ...(Array.isArray(project.gallery)
+    ? project.gallery
+        .filter((source) => typeof source === "string" && source.trim())
+        .map((source) => ({ slug: project.slug, source: source.trim() }))
+    : []),
+]);
+
+if (artwork.length === 0) {
+  throw new Error("No published cover or gallery artwork was returned by Supabase.");
+}
 
 async function findManifests(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -31,64 +80,76 @@ async function findManifests(directory) {
   return files;
 }
 
-const manifests = (await findManifests(worksDirectory)).sort();
-if (manifests.length === 0) {
-  throw new Error("No original project artwork manifests were found.");
+const manifestPaths = await findManifests(path.join(root, "src/assets/works"));
+const manifestByUrl = new Map();
+for (const manifestPath of manifestPaths) {
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  if (typeof manifest.url === "string") {
+    manifestByUrl.set(manifest.url, manifest);
+  }
+}
+
+function resolveAsset(source) {
+  try {
+    const parsed = new URL(source);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed;
+    throw new Error("Unsupported asset URL protocol.");
+  } catch (error) {
+    if (source.startsWith("/") && !source.startsWith("//")) {
+      return new URL(source, assetOrigin);
+    }
+    throw error;
+  }
 }
 
 const failures = [];
 let verified = 0;
 
-for (let start = 0; start < manifests.length; start += 4) {
-  const batch = manifests.slice(start, start + 4);
+for (let start = 0; start < artwork.length; start += 4) {
+  const batch = artwork.slice(start, start + 4);
   const results = await Promise.all(
-    batch.map(async (manifestPath) => {
-      const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-      if (
-        typeof manifest.url !== "string" ||
-        !manifest.url.startsWith("/__l5e/assets-v1/") ||
-        !Number.isSafeInteger(manifest.size) ||
-        typeof manifest.content_type !== "string" ||
-        !manifest.content_type.startsWith("image/")
-      ) {
-        throw new Error(`${path.relative(root, manifestPath)} has invalid asset metadata.`);
+    batch.map(async ({ slug, source }) => {
+      try {
+        const response = await fetch(resolveAsset(source), {
+          redirect: "follow",
+          signal: AbortSignal.timeout(20000),
+          headers: { Accept: "image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8" },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const contentType = (response.headers.get("content-type") ?? "")
+          .split(";")[0]
+          .trim();
+        if (!contentType.startsWith("image/")) {
+          throw new Error(`expected image bytes, received ${contentType || "unknown content type"}`);
+        }
+
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        const manifest = manifestByUrl.get(source);
+        if (manifest && bytes.byteLength !== manifest.size) {
+          throw new Error(`expected ${manifest.size} bytes, received ${bytes.byteLength}`);
+        }
+
+        return true;
+      } catch (error) {
+        failures.push(`${slug}: ${source} — ${error instanceof Error ? error.message : String(error)}`);
+        return false;
       }
-
-      const url = new URL(manifest.url, origin);
-      const response = await fetch(url, {
-        redirect: "follow",
-        signal: AbortSignal.timeout(20000),
-        headers: { Accept: "image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8" },
-      });
-
-      if (!response.ok) {
-        throw new Error(`${manifest.original_filename ?? manifest.url}: HTTP ${response.status}`);
-      }
-
-      const contentType = (response.headers.get("content-type") ?? "").split(";")[0].trim();
-      if (!contentType.startsWith("image/")) {
-        throw new Error(`${manifest.original_filename ?? manifest.url}: expected image bytes, received ${contentType || "unknown content type"}`);
-      }
-
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      if (bytes.byteLength !== manifest.size) {
-        throw new Error(`${manifest.original_filename ?? manifest.url}: expected ${manifest.size} bytes, received ${bytes.byteLength}`);
-      }
-
-      return manifest.original_filename ?? path.basename(manifest.url);
     }),
-  ).catch((error) => {
-    failures.push(error instanceof Error ? error.message : String(error));
-    return [];
-  });
+  );
 
-  verified += results.length;
+  verified += results.filter(Boolean).length;
 }
 
-console.log(`Verified ${verified}/${manifests.length} original project artwork files against ${origin.origin}.`);
+console.log(
+  `Verified ${verified}/${artwork.length} published project artworks across ${projects.length} projects using ${new URL(assetOrigin).origin}.`,
+);
 
 if (failures.length > 0) {
-  console.error("Project artwork source verification failed:");
+  console.error("Published project artwork source verification failed:");
   failures.forEach((failure) => console.error(` - ${failure}`));
   process.exitCode = 1;
 }
