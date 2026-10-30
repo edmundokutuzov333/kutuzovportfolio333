@@ -42,7 +42,7 @@ test("newsletter requires consent and does not claim success before a real reque
   await email.fill(validEmail);
   await expect(email).toHaveValue(validEmail);
 
-  const submit = page.getByRole("button", { name: /pedir subscrição/i });
+  const submit = page.getByRole("button", { name: /entrar na lista/i });
   await expect(submit).toBeDisabled();
 
   const consent = page.getByRole("checkbox", {
@@ -85,6 +85,10 @@ test("the valid PIN opens the Admin workspace without database credentials for s
   await expect(page.getByLabel("Código de acesso")).toBeVisible();
   await page.getByLabel("Código de acesso").fill("333");
   await page.getByRole("button", { name: "Entrar no Admin" }).click();
+  await page.waitForTimeout(500);
+  const loginAlert = await page.getByRole("alert").allTextContents();
+  console.log("[E2E] Admin login alert:", loginAlert.join(" | ") || "none");
+  console.log("[E2E] Admin PIN field after submit:", await page.getByLabel("Código de acesso").count());
   await expect(page.getByText("Kutuzov Admin", { exact: true })).toBeVisible();
   await expect(page.getByText("Sessão autenticada", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Código de acesso")).toHaveCount(0);
