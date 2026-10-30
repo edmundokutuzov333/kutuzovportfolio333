@@ -783,6 +783,7 @@ export type Database = {
           discipline: string | null
           featured: boolean
           gallery: Json
+          gallery_alt: Json
           hue: number
           id: string
           idea: string | null
@@ -810,6 +811,7 @@ export type Database = {
           discipline?: string | null
           featured?: boolean
           gallery?: Json
+          gallery_alt?: Json
           hue?: number
           id?: string
           idea?: string | null
@@ -837,6 +839,7 @@ export type Database = {
           discipline?: string | null
           featured?: boolean
           gallery?: Json
+          gallery_alt?: Json
           hue?: number
           id?: string
           idea?: string | null
@@ -1027,6 +1030,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_mutate_content: {
+        Args: {
+          p_action: string
+          p_actor_id: string
+          p_entity_id: string
+          p_entity_type: string
+          p_expected_updated_at: string
+          p_note?: string
+          p_payload: Json
+        }
+        Returns: Json
+      }
+      admin_reorder_content: {
+        Args: {
+          p_actor_id: string
+          p_entity_type: string
+          p_ids: string[]
+          p_page_id: string
+        }
+        Returns: Json
+      }
+      admin_update_contact_submission: {
+        Args: {
+          p_actor_id: string
+          p_expected_updated_at: string
+          p_internal_notes: string
+          p_status: string
+          p_submission_id: string
+        }
+        Returns: Json
+      }
       is_site_admin: { Args: never; Returns: boolean }
       register_admin_auth_attempt: {
         Args: { p_ip_hash: string; p_now: string }

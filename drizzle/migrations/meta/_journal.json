@@ -71,6 +71,13 @@
       "when": 1793340047813,
       "tag": "0009_cms_content_domain_and_asset_inventory_20261029",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793340130045,
+      "tag": "0010_admin_editorial_mutations_20261029",
+      "breakpoints": true
     }
   ]
 }
