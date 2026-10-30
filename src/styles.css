@@ -117,6 +117,89 @@
 }
 
 /*
+ * Project card fan carousel.
+ * Every artwork frame has one invariant 4:5 aspect ratio. Fan transforms are
+ * applied to the frame, never to the image dimensions.
+ */
+.fan-layout {
+  --fan-card-width: clamp(13rem, 21vw, 20rem);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 80rem;
+  height: 38rem;
+  overflow: hidden;
+  perspective: 1600px;
+  perspective-origin: 50% 44%;
+  touch-action: pan-y;
+}
+
+.fan-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: var(--fan-card-width);
+  aspect-ratio: 4 / 5;
+  margin-top: calc(var(--fan-card-width) * -0.625);
+  margin-left: calc(var(--fan-card-width) / -2);
+  overflow: visible;
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  border-radius: 3px;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+}
+
+.fan-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  .fan-layout {
+    --fan-card-width: clamp(12rem, 26vw, 17rem);
+    height: 34rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .fan-layout {
+    --fan-card-width: clamp(12rem, 27vw, 15rem);
+    height: 28rem;
+    perspective: 1100px;
+    perspective-origin: 50% 46%;
+  }
+}
+
+@media (max-width: 639px) {
+  .fan-layout {
+    --fan-card-width: clamp(12rem, 30vw, 14rem);
+    height: 26rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .fan-layout {
+    --fan-card-width: clamp(11rem, 55vw, 14rem);
+    height: 22rem;
+    perspective: 900px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fan-card {
+    will-change: auto;
+  }
+}
+
+/*
  * Admin-only presentation overrides.
  * Public pages keep the original global cursor, gradient, and visual effects.
  */
