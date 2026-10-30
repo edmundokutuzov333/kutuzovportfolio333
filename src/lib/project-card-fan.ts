@@ -21,11 +21,12 @@ const FAN_POSITIONS: readonly FanSlotConfig[] = [
 ];
 
 export function getFanResponsiveMultiplier(width: number): number {
-  if (!Number.isFinite(width) || width <= 0) return 0.28;
-  if (width < 480) return 0.28;
-  if (width < 640) return 0.38;
-  if (width < 768) return 0.5;
-  if (width < 1024) return 0.75;
+  if (!Number.isFinite(width) || width <= 0) return 0.16;
+  if (width < 480) return 0.16 + ((Math.max(360, width) - 360) / 120) * 0.12;
+  if (width < 640) return 0.28 + ((width - 480) / 160) * 0.17;
+  if (width < 768) return 0.45 + ((width - 640) / 128) * 0.13;
+  if (width < 1024) return 0.58 + ((width - 768) / 256) * 0.18;
+  if (width < 1280) return 0.76 + ((width - 1024) / 256) * 0.24;
   return 1;
 }
 
@@ -34,11 +35,11 @@ export function getFanHeightMultiplier(width: number, height: number): number {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return 1;
 
   let idealHeight: number;
-  if (width < 480) idealHeight = 22 * 16;
-  else if (width < 640) idealHeight = 26 * 16;
-  else if (width < 768) idealHeight = 28 * 16;
-  else if (width < 1024) idealHeight = 34 * 16;
-  else idealHeight = 38 * 16;
+  if (width < 480) idealHeight = 31 * 16;
+  else if (width < 640) idealHeight = 33 * 16;
+  else if (width < 768) idealHeight = 35 * 16;
+  else if (width < 1024) idealHeight = 39 * 16;
+  else idealHeight = 44 * 16;
 
   return Math.min(1, (height * 0.7) / idealHeight);
 }

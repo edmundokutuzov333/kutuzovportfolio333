@@ -143,9 +143,11 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
     const glassMaterial = await menuButton.evaluate((button) => ({
       backdropFilter: getComputedStyle(button).backdropFilter,
       borderTopColor: getComputedStyle(button).borderTopColor,
+      backgroundColor: getComputedStyle(button).backgroundColor,
     }));
     expect(glassMaterial.backdropFilter).toContain("blur");
     expect(glassMaterial.borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
+    expect(glassMaterial.backgroundColor).toBe("rgba(8, 11, 18, 0.68)");
 
     const clientMarquee = page.locator(".clients-marquee");
     await expect(clientMarquee).toHaveCSS("overflow-x", "clip");
@@ -168,6 +170,7 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
         const image = card.querySelector("img");
         const link = card.querySelector("a");
         return {
+          width: card.offsetWidth,
           ratio: card.offsetWidth / card.offsetHeight,
           declaredRatio: Number(card.getAttribute("data-card-aspect-ratio")),
           source: card.getAttribute("data-project-artwork-src"),
@@ -179,6 +182,10 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
     );
 
     expect(cardMetrics.map((card) => card.slot)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(cardMetrics.every((card) => card.width >= 220)).toBe(true);
+    if (viewport.width >= 1536) {
+      expect(cardMetrics.find((card) => card.slot === 3)?.width).toBeGreaterThan(350);
+    }
     expect(cardMetrics.every((card) => Math.abs(card.ratio - 0.8) < 0.02)).toBe(true);
     expect(cardMetrics.every((card) => card.declaredRatio === 0.8)).toBe(true);
     expect(new Set(cardMetrics.map((card) => card.source)).size).toBe(7);

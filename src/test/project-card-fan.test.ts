@@ -135,27 +135,29 @@ describe("homepage project card fan carousel", () => {
       [1920, 1],
       [1536, 1],
       [1280, 1],
-      [1024, 1],
-      [768, 0.75],
-      [767, 0.5],
-      [640, 0.5],
-      [639, 0.38],
-      [480, 0.38],
-      [479, 0.28],
-      [390, 0.28],
-      [360, 0.28],
+      [1279, 0.9990625],
+      [1024, 0.76],
+      [1023, 0.759296875],
+      [768, 0.58],
+      [767, 0.578984375],
+      [640, 0.45],
+      [639, 0.4489375],
+      [480, 0.28],
+      [479, 0.279],
+      [390, 0.19],
+      [360, 0.16],
     ];
     for (const [width, expected] of cases) {
-      expect(getFanResponsiveMultiplier(width)).toBe(expected);
+      expect(getFanResponsiveMultiplier(width)).toBeCloseTo(expected, 5);
     }
-    expect(getFanResponsiveMultiplier(0)).toBe(0.28);
+    expect(getFanResponsiveMultiplier(0)).toBe(0.16);
   });
 
   it("reduces vertical movement when the viewport height is below the design budget", () => {
     expect(getFanHeightMultiplier(1536, 1080)).toBe(1);
-    expect(getFanHeightMultiplier(1536, 400)).toBeCloseTo((400 * 0.7) / (38 * 16), 5);
+    expect(getFanHeightMultiplier(1536, 400)).toBeCloseTo((400 * 0.7) / (44 * 16), 5);
     expect(getFanHeightMultiplier(390, 844)).toBe(1);
-    expect(getFanHeightMultiplier(390, 200)).toBeCloseTo((200 * 0.7) / (22 * 16), 5);
+    expect(getFanHeightMultiplier(390, 200)).toBeCloseTo((200 * 0.7) / (31 * 16), 5);
     expect(getFanHeightMultiplier(0, 0)).toBe(1);
   });
 
