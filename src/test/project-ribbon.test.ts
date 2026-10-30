@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { Project } from "@/lib/cms/types";
 import {
-  buildProjectRibbonRows,
-  PROJECT_RIBBON_ASPECT_RATIO,
+  buildProjectArtwork,
+  PROJECT_FAN_ASPECT_RATIO,
   resolveProjectArtworkUrl,
-} from "@/lib/project-ribbon";
-import { measureProjectRibbon } from "@/components/TiltedProjectRibbon";
+} from "@/lib/project-artwork";
+import {
+  FAN_CENTER_SLOT,
+  getFanHeightMultiplier,
+  getFanResponsiveMultiplier,
+  getFanSlotConfig,
+  getVisibleFanCards,
+  MAX_VISIBLE_FAN_CARDS,
+} from "@/lib/project-card-fan";
 import { PUBLIC_PRODUCTION_ORIGIN } from "@/lib/cms/public-config";
 
 function project(
@@ -50,9 +57,11 @@ function currentPublishedProjects(): Project[] {
   );
 }
 
-describe("homepage dual-perspective project ribbons", () => {
-  it("uses narrow 1:2 portrait geometry matching the cinematic reference", () => {
-    expect(PROJECT_RIBBON_ASPECT_RATIO).toBe(0.5);
+describe("homepage project card fan carousel", () => {
+  it("locks every artwork frame to the non-negotiable 4:5 ratio", () => {
+    expect(PROJECT_FAN_ASPECT_RATIO).toBe(0.8);
+    expect(MAX_VISIBLE_FAN_CARDS).toBe(7);
+    expect(FAN_CENTER_SLOT).toBe(3);
   });
 
   it("resolves legacy root-relative artwork paths against the configured asset origin", () => {
@@ -67,7 +76,7 @@ describe("homepage dual-perspective project ribbons", () => {
     expect(resolveProjectArtworkUrl(source)).toBe(source);
   });
 
-  it("orders published projects by CMS position, with each cover before its gallery", () => {
+  it("keeps editorial order: project position, cover first, then gallery order", () => {
     const projects = [
       project({
         slug: "second",
@@ -92,17 +101,12 @@ describe("homepage dual-perspective project ribbons", () => {
         gallery: ["/middle-a.webp"],
       }),
     ];
-    const rows = buildProjectRibbonRows(projects);
-    const all = [...rows.upper, ...rows.lower].sort((a, b) => {
-      const order = ["first", "middle", "second"];
-      const projectOrder = order.indexOf(a.slug) - order.indexOf(b.slug);
-      return projectOrder || a.artworkIndex - b.artworkIndex;
-    });
 
-    expect(all.map((image) => image.slug)).toEqual([
+    const artwork = buildProjectArtwork(projects);
+    expect(artwork.map((image) => image.slug)).toEqual([
       "first", "first", "middle", "middle", "second", "second", "second",
     ]);
-    expect(all.map((image) => new URL(image.src).pathname)).toEqual([
+    expect(artwork.map((image) => new URL(image.src).pathname)).toEqual([
       "/first-cover.webp",
       "/first-a.webp",
       "/middle-cover.webp",
@@ -111,52 +115,88 @@ describe("homepage dual-perspective project ribbons", () => {
       "/second-a.webp",
       "/second-b.webp",
     ]);
-    expect(all[1]?.alt).toBe("First campaign artwork");
-    expect(all[0]?.artworkIndex).toBe(1);
-    expect(all[1]?.artworkIndex).toBe(2);
+    expect(artwork[1]?.alt).toBe("First campaign artwork");
+    expect(artwork[0]?.artworkIndex).toBe(1);
+    expect(artwork[1]?.artworkIndex).toBe(2);
   });
 
-  it("splits all 22 current artworks into 11 unique items per row without duplicates", () => {
-    const rows = buildProjectRibbonRows(currentPublishedProjects());
-    const upperSources = rows.upper.map((image) => image.src);
-    const lowerSources = rows.lower.map((image) => image.src);
-    const combined = [...upperSources, ...lowerSources];
-
-    expect(rows.total).toBe(22);
-    expect(rows.upper).toHaveLength(11);
-    expect(rows.lower).toHaveLength(11);
-    expect(new Set(combined).size).toBe(22);
-    expect(upperSources.some((source) => lowerSources.includes(source))).toBe(false);
+  it("preserves all 22 published artworks exactly once in one continuous carousel", () => {
+    const artwork = buildProjectArtwork(currentPublishedProjects());
+    expect(artwork).toHaveLength(22);
+    expect(new Set(artwork.map((image) => image.src)).size).toBe(22);
+    expect(artwork.filter((image) => image.slug === "project-0")).toHaveLength(7);
+    expect(artwork.filter((image) => image.slug === "project-1")).toHaveLength(3);
+    expect(artwork.filter((image) => image.slug === "project-2")).toHaveLength(8);
+    expect(artwork.filter((image) => image.slug === "project-3")).toHaveLength(4);
   });
 
-  it("alternates artworks from each project so neither row is dominated by one case study", () => {
-    const rows = buildProjectRibbonRows(currentPublishedProjects());
-    for (const slug of ["project-0", "project-1", "project-2", "project-3"]) {
-      expect(rows.upper.some((image) => image.slug === slug)).toBe(true);
-      expect(rows.lower.some((image) => image.slug === slug)).toBe(true);
+  it("uses the reference responsive position multipliers at each breakpoint", () => {
+    const cases: Array<[number, number]> = [
+      [1920, 1],
+      [1536, 1],
+      [1280, 1],
+      [1024, 1],
+      [768, 0.5],
+      [640, 0.38],
+      [480, 0.38],
+      [390, 0.28],
+      [360, 0.28],
+    ];
+    for (const [width, expected] of cases) {
+      expect(getFanResponsiveMultiplier(width)).toBe(expected);
     }
+    expect(getFanResponsiveMultiplier(0)).toBe(0.28);
   });
 
-  it("measures a wide desktop row for 10-11 narrow posters, capped by unique artwork", () => {
-    const upper = measureProjectRibbon(1536, 320, 90, 0.5, 5, 55 * Math.PI / 180, 11);
-    const wide = measureProjectRibbon(2048, 320, 90, 0.5, 5, 55 * Math.PI / 180, 11);
-    expect(upper.columns).toBe(10);
-    expect(wide.columns).toBe(11);
-    expect(upper.limit).toBeGreaterThan(0);
-    expect(upper.sweep).toBeGreaterThan(0);
+  it("reduces vertical movement when the viewport height is below the design budget", () => {
+    expect(getFanHeightMultiplier(1536, 1080)).toBe(1);
+    expect(getFanHeightMultiplier(1536, 400)).toBeCloseTo((400 * 0.7) / (38 * 16), 5);
+    expect(getFanHeightMultiplier(390, 844)).toBe(1);
+    expect(getFanHeightMultiplier(390, 200)).toBeCloseTo((200 * 0.7) / (22 * 16), 5);
+    expect(getFanHeightMultiplier(0, 0)).toBe(1);
   });
 
-  it("returns an empty layout when the row has no measurable dimensions", () => {
-    expect(measureProjectRibbon(0, 0, 90, 0.5, 5, Math.PI / 3, 11)).toEqual({
-      columns: 0,
-      sweep: 0,
-      unit: 0,
-      limit: 0,
-    });
+  it("uses mirrored positions around the dominant centre card", () => {
+    const left = getFanSlotConfig(7, 0);
+    const centre = getFanSlotConfig(7, 3);
+    const right = getFanSlotConfig(7, 6);
+
+    expect(centre).toEqual({ rot: 0, scale: 1, x: 0, y: 0, zIndex: 10 });
+    expect(left.rot).toBe(-right.rot);
+    expect(left.x).toBe(-right.x);
+    expect(left.y).toBe(right.y);
+    expect(left.scale).toBe(right.scale);
+    expect(left.zIndex).toBe(right.zIndex);
+  });
+
+  it("keeps every card visible when there are seven or fewer artworks", () => {
+    const cards = ["a", "b", "c", "d", "e", "f"];
+    const visible = getVisibleFanCards(cards, 3);
+    expect(visible.map((entry) => entry.item)).toEqual(cards);
+    expect(visible.map((entry) => entry.slot)).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("shows seven consecutive artworks in the correct order while paging", () => {
+    const cards = Array.from({ length: 22 }, (_, index) => index);
+    expect(getVisibleFanCards(cards, 3).map((entry) => entry.index)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(getVisibleFanCards(cards, 4).map((entry) => entry.index)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(getVisibleFanCards(cards, 3).map((entry) => entry.index)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  });
+
+  it("wraps the first and last pages without blank slots or duplicated cards", () => {
+    const cards = Array.from({ length: 22 }, (_, index) => index);
+    const first = getVisibleFanCards(cards, 0);
+    const last = getVisibleFanCards(cards, 21);
+
+    expect(first.map((entry) => entry.index)).toEqual([19, 20, 21, 0, 1, 2, 3]);
+    expect(last.map((entry) => entry.index)).toEqual([18, 19, 20, 21, 0, 1, 2]);
+    expect(new Set(first.map((entry) => entry.index)).size).toBe(7);
+    expect(new Set(last.map((entry) => entry.index)).size).toBe(7);
+    expect(first.map((entry) => entry.slot)).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 
   it("skips empty and null artwork entries without inventing replacement images", () => {
-    const rows = buildProjectRibbonRows([
+    const artwork = buildProjectArtwork([
       project({
         slug: "no-cover",
         title: "No cover",
@@ -165,8 +205,7 @@ describe("homepage dual-perspective project ribbons", () => {
         gallery: ["", "/real.webp"],
       }),
     ]);
-
-    expect(rows.total).toBe(1);
-    expect([...rows.upper, ...rows.lower][0]?.src).toContain("/real.webp");
+    expect(artwork).toHaveLength(1);
+    expect(artwork[0]?.src).toContain("/real.webp");
   });
 });
