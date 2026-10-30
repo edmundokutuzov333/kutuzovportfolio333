@@ -62,7 +62,7 @@ function AdminEntryPage() {
         });
         return;
       }
-      const currentSession = await getAdminSessionFn();
+      const currentSession = await getAdminSession();
       if (!currentSession) {
         setStatus({
           tone: "error",
