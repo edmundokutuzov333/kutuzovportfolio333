@@ -152,6 +152,7 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
     await expect(fan).toHaveAttribute("data-project-fan-count", "22");
     await expect(fan).toHaveAttribute("data-project-fan-visible", "7");
     await expect(fan).toHaveAttribute("data-project-fan-ratio", "4:5");
+    await expect(fan).toHaveAttribute("data-project-fan-viewport-ready", "true");
 
     const cards = fan.locator("[data-project-fan-card]");
     await expect(cards).toHaveCount(7);

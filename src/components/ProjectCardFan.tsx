@@ -45,7 +45,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
   const hasEntered = useRef(false);
   const directionRef = useRef<"left" | "right">("right");
   const unlockTimer = useRef<number | null>(null);
-  const [viewport, setViewport] = useState<Viewport>({ width: 1280, height: 900 });
+  const [viewport, setViewport] = useState<Viewport>({ width: 0, height: 0 });
   const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
 
   const totalCards = cards.length;
@@ -167,7 +167,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
   if (totalCards === 0) return null;
 
   return (
-    <section className="relative z-20 flex w-full flex-col items-center px-4 py-4 md:px-8 lg:py-8">
+    <section className="relative z-20 flex w-full flex-col items-center overflow-x-clip px-4 py-4 md:px-8 lg:py-8">
       <div className="flex w-full items-center justify-center">
         <div
           ref={containerRef}
@@ -179,6 +179,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           data-project-fan-count={totalCards}
           data-project-fan-visible={visibleCards.length}
           data-project-fan-ratio="4:5"
+          data-project-fan-viewport-ready={viewport.width > 0 ? "true" : "false"}
         >
           <AnimatePresence custom={directionRef.current} mode="sync">
             {visibleCards.map(({ item, index, slot }) => {
