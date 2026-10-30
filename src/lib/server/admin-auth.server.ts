@@ -276,11 +276,9 @@ export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResu
   const databaseConfig = readDatabaseConfig();
   let clientKey = "unknown";
   let databaseIpHash: string | null = null;
-  let stage = "client_fingerprint";
 
   try {
     clientKey = await hashClientAddress();
-    stage = "local_attempt_check";
     const localAttempt = registerLocalAttempt(clientKey);
     if (isAdminAttemptLocked(localAttempt.attempt_count, localAttempt.blocked_until, Date.now())) {
       if (databaseConfig) await recordAuthAudit(databaseConfig, "admin_login_rate_limited", false, "code-only").catch(() => undefined);
@@ -290,8 +288,7 @@ export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResu
     // Persistent throttling is used when Supabase is reachable, but its availability is not a login requirement.
     if (databaseConfig) {
       try {
-        stage = "persistent_rate_limit";
-        databaseIpHash = await hashDatabaseIpKey(databaseConfig);
+            databaseIpHash = await hashDatabaseIpKey(databaseConfig);
         const persistentAttempt = await registerAttempt(databaseConfig, databaseIpHash);
         if (isAdminAttemptLocked(persistentAttempt.attempt_count, persistentAttempt.blocked_until, Date.now())) {
           await recordAuthAudit(databaseConfig, "admin_login_rate_limited", false, "code-only").catch(() => undefined);
@@ -302,7 +299,6 @@ export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResu
       }
     }
 
-    stage = "pin_validation";
     if (!isAdminPinValid(input.pin, ADMIN_ACCESS_CODE)) {
       if (databaseConfig) await recordAuthAudit(databaseConfig, "admin_login_rejected", false, "code-only").catch(() => undefined);
       return { ok: false, error: "invalid_credentials" };
@@ -315,7 +311,6 @@ export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResu
       expiresAt: now + SESSION_MAX_AGE_SECONDS * 1000,
       signature: "",
     };
-    stage = "session_signing";
     session.signature = await signSession(session);
 
     clearLocalAttempt(clientKey);
@@ -323,11 +318,9 @@ export async function loginAdmin(input: { pin: string }): Promise<AdminLoginResu
       await deleteAttempt(databaseConfig, databaseIpHash).catch(() => undefined);
       await recordAuthAudit(databaseConfig, "admin_login_succeeded", true, "code-only").catch(() => undefined);
     }
-    stage = "session_cookie_write";
     writeSessionCookie(session);
     return { ok: true, email: "Admin (código)" };
-  } catch (error) {
-    console.error("[admin-auth] login unavailable at", stage, error instanceof Error ? error.name : "UnknownError");
+  } catch {
     clearSessionCookie();
     return { ok: false, error: "unavailable" };
   }
