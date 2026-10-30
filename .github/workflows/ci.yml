@@ -134,8 +134,10 @@ jobs:
           const manifest = JSON.parse(readFileSync("package.json", "utf8"));
           manifest.dependencies.zod = "^4.6.7";
           manifest.devDependencies.vite = "8.1.6";
+          manifest.overrides ??= {};
+          delete manifest.overrides["brace-expansion@<1.1.17"];
           manifest.overrides = {
-            ...(manifest.overrides ?? {}),
+            ...manifest.overrides,
             "zod": "4.6.7",
             "shell-quote@<1.11.0": "1.12.0",
             "launch-editor@<=2.14.1": "2.14.2",
