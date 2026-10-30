@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 import { Logo3D } from "@/components/Logo3D";
 import { Reveal } from "@/components/Reveal";
 import { ClientsMarquee } from "@/components/Clients";
-import { ProjectCard } from "@/components/ProjectCard";
+import { TiltedProjectRibbon } from "@/components/TiltedProjectRibbon";
+import { buildProjectRibbonImages, PROJECT_RIBBON_ASPECT_RATIO } from "@/lib/project-ribbon";
 import { loadHomeContent } from "@/lib/cms/loaders";
 import type { Profile } from "@/lib/cms/types";
 import { seoFromPage } from "@/lib/seo";
@@ -85,6 +86,7 @@ function Word({
 function Home() {
   const data = Route.useLoaderData();
   const { profile, sections, projects, services, metrics, clients, principles } = data;
+  const ribbonImages = useMemo(() => buildProjectRibbonImages(projects), [projects]);
   const numberedSectionTypes = new Set(["manifesto", "featured_work", "services", "clients"]);
 
   return (
@@ -113,17 +115,38 @@ function Home() {
                       ))}
                     </h2>
                   </div>
-                  <Link to="/work" className="eyebrow hidden hover:text-primary md:block">
+                  <Link to="/work" className="eyebrow shrink-0 whitespace-nowrap hover:text-primary">
                     {section.config.link_label} →
                   </Link>
                 </div>
-                <div className="grid gap-x-8 gap-y-20 md:grid-cols-2">
-                  {projects.filter((project) => project.featured).map((project, projectIndex) => (
-                    <Reveal key={project.slug} delay={(projectIndex % 2) * 0.08} className={projectIndex % 2 ? "md:mt-40" : ""}>
-                      <ProjectCard project={project} index={projectIndex} />
-                    </Reveal>
-                  ))}
-                </div>
+                {ribbonImages.length > 0 && (
+                  <div className="-mx-6 flex flex-col gap-3 md:-mx-12 md:gap-6">
+                    <TiltedProjectRibbon
+                      images={ribbonImages}
+                      direction="left"
+                      speed={4.8}
+                      tileHeight={86}
+                      aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
+                      gap={7}
+                      axis={50}
+                      curve={78}
+                      fade={13}
+                      className="h-[clamp(16rem,28vw,24rem)] w-full"
+                    />
+                    <TiltedProjectRibbon
+                      images={ribbonImages}
+                      direction="right"
+                      speed={5.6}
+                      tileHeight={86}
+                      aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
+                      gap={7}
+                      axis={50}
+                      curve={78}
+                      fade={13}
+                      className="h-[clamp(16rem,28vw,24rem)] w-full"
+                    />
+                  </div>
+                )}
               </section>
             );
 
