@@ -189,8 +189,46 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
       return Math.max(offsetX, offsetY);
     })).toBeLessThan(2);
 
-    const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-    expect(pageWidth, `horizontal overflow at ${viewport.width}px`).toBeLessThanOrEqual(viewport.width + 1);
+    const overflowReport = await page.evaluate(() => {
+      const width = window.innerWidth;
+      const elements = Array.from(document.querySelectorAll<HTMLElement>("body *"));
+      const offenders = elements
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return {
+            tag: element.tagName.toLowerCase(),
+            className: typeof element.className === "string" ? element.className : "",
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width),
+            position: style.position,
+            overflowX: style.overflowX,
+          };
+        })
+        .filter((element) => element.width > 0 && element.right > width + 1)
+        .sort((a, b) => b.right - a.right)
+        .slice(0, 12);
+      const grainAfter = getComputedStyle(document.querySelector(".grain"), "::after");
+      return {
+        viewport: width,
+        rootScrollWidth: document.documentElement.scrollWidth,
+        bodyScrollWidth: document.body.scrollWidth,
+        offenders,
+        grainAfter: {
+          position: grainAfter.position,
+          left: grainAfter.left,
+          right: grainAfter.right,
+          width: grainAfter.width,
+          transform: grainAfter.transform,
+        },
+      };
+    });
+    const pageWidth = overflowReport.rootScrollWidth;
+    expect(
+      pageWidth,
+      `horizontal overflow at ${viewport.width}px: ${JSON.stringify(overflowReport)}`,
+    ).toBeLessThanOrEqual(viewport.width + 1);
   }
 
   await page.setViewportSize({ width: 1536, height: 900 });

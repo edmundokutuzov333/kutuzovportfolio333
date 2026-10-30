@@ -106,10 +106,10 @@ function Home() {
           case "featured_work":
             return (
               <section key={section.id} className="px-6 py-32 md:px-12">
-                <div className="mb-16 flex items-end justify-between gap-6">
-                  <div>
+                <div className="mb-16 flex items-end justify-between gap-4 lg:gap-6">
+                  <div className="min-w-0 flex-1">
                     <p className="eyebrow mb-4">{`(${number}) ${section.config.label}`}</p>
-                    <h2 className="font-display text-5xl font-bold md:text-7xl">
+                    <h2 className="font-display min-w-0 text-5xl font-bold md:text-6xl lg:text-7xl">
                       {section.config.title_lines.map((line, lineIndex) => (
                         <span key={line}>{lineIndex > 0 && <br />}{line}</span>
                       ))}
