@@ -290,6 +290,8 @@ test("fan carousel supports arrow keys and horizontal pointer dragging without f
   await fan.focus();
   await page.keyboard.press("ArrowRight");
   await expect.poll(() => fan.locator('[data-project-card-slot="1"]').getAttribute("data-project-card-index")).toBe("4");
+  // Let the reduced-motion state update finish before the next real pointer gesture.
+  await page.waitForTimeout(250);
 
   const box = await fan.boundingBox();
   expect(box).not.toBeNull();

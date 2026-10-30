@@ -182,7 +182,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
       0.5 *
       (Math.cos(rotationRadians) * Math.cos(rotateYRadians) +
         PROJECT_FAN_ASPECT_RATIO ** -1 * Math.sin(rotationRadians));
-    const desktopOuterOffset = Math.max(0, stageWidth * 0.5 - projectedHalfWidth - 14);
+    const desktopOuterOffset = Math.max(0, stageWidth * 0.5 - projectedHalfWidth - 22);
     const horizontalOffset = slotCount === 3 ? stageWidth * 0.22 : desktopOuterOffset;
     let x = base.x * horizontalOffset;
     let y = base.y * 16 * heightMultiplier;
