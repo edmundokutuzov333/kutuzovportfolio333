@@ -179,6 +179,7 @@ export function TiltedProjectRibbon({
 
       <div
         className={`absolute inset-0 ${animatedClass}`}
+        data-project-ribbon-animated
         style={{
           opacity: layout ? 1 : 0,
           transition: "opacity 450ms ease",
