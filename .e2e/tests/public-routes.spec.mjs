@@ -244,9 +244,9 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
   const centerCard = fan.locator('[data-project-card-slot="3"]');
   await expect(centerCard).toHaveAttribute("data-project-card-index", "3");
 
-  await fan.getByRole("button", { name: "Next project" }).click();
+  await page.getByRole("button", { name: "Next project" }).click();
   await expect.poll(() => fan.locator('[data-project-card-slot="3"]').getAttribute("data-project-card-index")).toBe("4");
-  await fan.getByRole("button", { name: "Previous project" }).click();
+  await page.getByRole("button", { name: "Previous project" }).click();
   await expect.poll(() => fan.locator('[data-project-card-slot="3"]').getAttribute("data-project-card-index")).toBe("3");
 
   await expect(fan.locator("[data-project-fan-card]")).toHaveCount(7);
