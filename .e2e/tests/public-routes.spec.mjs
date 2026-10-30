@@ -116,3 +116,37 @@ test("Admin uses the dark site palette without effects and restores a native cur
   expect(publicStyles.cursor).toBe("none");
   expect(publicStyles.pageBackgroundImage).not.toBe("none");
 });
+
+
+test("homepage renders two image-only 4:5 artwork ribbons linked to their projects", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  const ribbons = page.locator("[data-project-ribbon]");
+  await expect(ribbons).toHaveCount(2);
+  await expect(ribbons.nth(0)).toHaveAttribute("data-project-artwork-count", "22");
+  await expect(ribbons.nth(1)).toHaveAttribute("data-project-artwork-count", "22");
+
+  for (const ribbon of await ribbons.all()) {
+    await expect(ribbon).toBeVisible();
+    const links = await ribbon.locator("[data-project-ribbon-tile]").evaluateAll((anchors) =>
+      anchors.map((anchor) => ({
+        href: anchor.getAttribute("href"),
+        label: anchor.getAttribute("aria-label"),
+        imageCount: anchor.querySelectorAll("img").length,
+        visibleText: anchor.textContent?.trim() ?? "",
+      })),
+    );
+    expect(links.length).toBeGreaterThan(1);
+    expect(links.every((link) => link.href?.startsWith("/work/"))).toBe(true);
+    expect(links.every((link) => Boolean(link.label))).toBe(true);
+    expect(links.every((link) => link.imageCount === 16)).toBe(true);
+    expect(links.every((link) => link.visibleText === "")).toBe(true);
+  }
+
+  const firstImage = page.locator("[data-project-ribbon-tile] img").first();
+  await expect.poll(() => firstImage.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+
+  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(pageWidth).toBeLessThanOrEqual(391);
+});
