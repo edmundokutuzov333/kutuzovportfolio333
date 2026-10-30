@@ -183,6 +183,7 @@ export function TiltedProjectRibbon({
       aria-label={viewpoint === "below" ? "Upper project artwork ribbon, perspective from below" : "Lower project artwork ribbon, perspective from above"}
       data-project-ribbon
       data-project-ribbon-viewpoint={viewpoint}
+      data-project-ribbon-aspect-ratio={aspectRatio}
       data-project-artwork-count={images.length}
     >
       <style>{css}</style>
