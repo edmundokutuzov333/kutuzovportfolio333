@@ -192,12 +192,27 @@ test("desktop fan carousel lifts the hovered card and fans its neighbours away",
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
   const centerCard = page.locator('[data-project-fan-card][data-project-card-slot="3"]');
+  const leftCard = page.locator('[data-project-fan-card][data-project-card-slot="2"]');
+  const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="4"]');
   await expect(centerCard).toBeVisible();
   await page.waitForTimeout(1900);
-  const before = await centerCard.boundingBox();
+
+  const beforeCenter = await centerCard.boundingBox();
+  const beforeLeft = await leftCard.boundingBox();
+  const beforeRight = await rightCard.boundingBox();
   await centerCard.hover();
+
   await expect.poll(async () => {
-    const after = await centerCard.boundingBox();
-    return Boolean(before && after && after.width > before.width * 1.04 && after.y < before.y);
+    const afterCenter = await centerCard.boundingBox();
+    const afterLeft = await leftCard.boundingBox();
+    const afterRight = await rightCard.boundingBox();
+    return Boolean(
+      beforeCenter && beforeLeft && beforeRight &&
+      afterCenter && afterLeft && afterRight &&
+      afterCenter.width > beforeCenter.width * 1.04 &&
+      afterCenter.y < beforeCenter.y &&
+      afterLeft.x < beforeLeft.x - 10 &&
+      afterRight.x > beforeRight.x + 10
+    );
   }).toBe(true);
 });
