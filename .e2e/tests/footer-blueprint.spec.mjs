@@ -6,7 +6,18 @@ test("footer EK is constructed from its source vectors and an exact 32/160-unit 
 
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
-  await page.mouse.wheel(0, 12000);
+
+  // Confirm client hydration before driving the same scroll path used by the public shell.
+  const menuToggle = page.locator('header button[aria-expanded]');
+  await menuToggle.click();
+  await expect(menuToggle).toHaveAttribute("aria-expanded", "true");
+  await menuToggle.click();
+  await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
+
+  await page.evaluate(() => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   await expect(blueprint).toHaveAttribute("data-animation-state", "visible");
 
   const geometry = await blueprint.evaluate((root) => {
