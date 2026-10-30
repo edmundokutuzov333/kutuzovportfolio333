@@ -41,7 +41,7 @@ function buildSegments(): Segment[] {
 }
 
 function buildDiagonalGuides(segments: readonly Segment[]) {
-  const directions: number[] = [];
+  const placements: { angle: number; normalOffset: number }[] = [];
   const guides: { d: string; index: number }[] = [];
 
   for (const segment of segments) {
@@ -50,12 +50,21 @@ function buildDiagonalGuides(segments: readonly Segment[]) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const length = Math.hypot(dx, dy);
-    if (length < 180 || Math.abs(dx) < 1 || Math.abs(dy) < 1) continue;
+    if (length < 120 || Math.abs(dx) < 1 || Math.abs(dy) < 1) continue;
 
     let angle = Math.atan2(dy, dx) % Math.PI;
     if (angle < 0) angle += Math.PI;
-    if (directions.some((known) => Math.abs(known - angle) < 0.055)) continue;
-    directions.push(angle);
+
+    // Parallel guides are distinct when their perpendicular offsets differ.
+    // Only collapse coincident lines, never an entire family of construction axes.
+    const normalOffset = -Math.sin(angle) * x1 + Math.cos(angle) * y1;
+    const duplicate = placements.some((known) => {
+      const rawAngleDifference = Math.abs(known.angle - angle);
+      const angleDifference = Math.min(rawAngleDifference, Math.PI - rawAngleDifference);
+      return angleDifference < 0.025 && Math.abs(known.normalOffset - normalOffset) < 24;
+    });
+    if (duplicate) continue;
+    placements.push({ angle, normalOffset });
 
     const ux = dx / length;
     const uy = dy / length;
@@ -83,6 +92,26 @@ const horizontalAxes = uniqueCoordinates(allPoints, 1).map((value): GuideLine =>
 const constructionGuides = [...verticalAxes, ...horizontalAxes];
 const constructionSegments = buildSegments();
 const diagonalGuides = buildDiagonalGuides(constructionSegments);
+const totalContourLength = constructionSegments.reduce(
+  (total, segment) => total + Math.hypot(
+    segment.to[0] - segment.from[0],
+    segment.to[1] - segment.from[1],
+  ),
+  0,
+);
+const segmentSchedule = (() => {
+  let traversedLength = 0;
+  return constructionSegments.map((segment) => {
+    const length = Math.hypot(
+      segment.to[0] - segment.from[0],
+      segment.to[1] - segment.from[1],
+    );
+    const start = 0.355 + (traversedLength / totalContourLength) * 0.4;
+    traversedLength += length;
+    const end = 0.355 + (traversedLength / totalContourLength) * 0.4;
+    return { start, end, length };
+  });
+})();
 const blueprintShapes = logoPolygons.map((points, index) => ({
   name: SHAPE_NAMES[index] ?? `shape-${index}`,
   path: polygonToPath(points),
@@ -102,7 +131,7 @@ function sequencedFrames(start: number, end: number) {
     { strokeDashoffset: 1, offset: 0 },
     { strokeDashoffset: 1, offset: start },
     { strokeDashoffset: 0, offset: end },
-    { strokeDashoffset: 0, offset: 0.91 },
+    { strokeDashoffset: 0, offset: 0.985 },
     { strokeDashoffset: 1, offset: 1 },
   ];
 }
@@ -113,7 +142,7 @@ function pointFrames(start: number) {
     { opacity: 0, transform: "scale(0.2)", offset: start },
     { opacity: 1, transform: "scale(1.2)", offset: Math.min(start + 0.006, 0.84) },
     { opacity: 0.28, transform: "scale(1)", offset: 0.86 },
-    { opacity: 0.28, transform: "scale(1)", offset: 0.91 },
+    { opacity: 0.28, transform: "scale(1)", offset: 0.985 },
     { opacity: 0, transform: "scale(0.2)", offset: 1 },
   ];
 }
@@ -192,20 +221,20 @@ export function EKBlueprint() {
 
         const diagonalElements = [...root.querySelectorAll<SVGPathElement>("[data-diagonal-guide]")];
         diagonalElements.forEach((element, index) => {
-          const start = 0.19 + (index / Math.max(1, diagonalElements.length)) * 0.16;
-          animateElement(element, sequencedFrames(start, start + 0.035), animations);
+          const start = 0.22 + (index / Math.max(1, diagonalElements.length)) * 0.105;
+          animateElement(element, sequencedFrames(start, start + 0.024), animations);
         });
 
         constructionSegments.forEach((segment, index) => {
-          const start = 0.345 + (index / constructionSegments.length) * 0.365;
+          const schedule = segmentSchedule[index];
           const path = root.querySelector<SVGPathElement>(`[data-monogram-segment="${index}"]`);
-          animateElement(path, sequencedFrames(start, start + 0.013), animations);
+          animateElement(path, sequencedFrames(schedule.start, schedule.end), animations);
         });
 
         constructionPoints.forEach((point) => {
-          const start = 0.345 + (point.index / constructionSegments.length) * 0.365 + 0.012;
+          const schedule = segmentSchedule[point.index];
           const marker = root.querySelector<SVGGElement>(`[data-construction-point="${point.index}"]`);
-          animateElement(marker, pointFrames(start), animations);
+          animateElement(marker, pointFrames(schedule.start), animations);
         });
 
         root.querySelectorAll<SVGPathElement>("[data-monogram-fill]").forEach((element) => {
@@ -386,6 +415,7 @@ export function EKBlueprint() {
               data-segment-shape={segment.shape}
               data-segment-from={segment.from.join(",")}
               data-segment-to={segment.to.join(",")}
+              data-segment-length={segmentSchedule[segment.index]?.length ?? 0}
             />
           ))}
         </g>

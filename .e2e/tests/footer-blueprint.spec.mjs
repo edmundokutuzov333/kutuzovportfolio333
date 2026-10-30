@@ -48,7 +48,7 @@ test("footer EK uses geometry-derived construction guides and repeats its point-
   expect(geometry.vectorHeight).toBe(815);
   expect(geometry.verticalGuides).toBeGreaterThanOrEqual(14);
   expect(geometry.horizontalGuides).toBeGreaterThanOrEqual(12);
-  expect(geometry.diagonalGuides).toBeGreaterThanOrEqual(5);
+  expect(geometry.diagonalGuides).toBeGreaterThanOrEqual(10);
   expect(geometry.segments).toBe(29);
   expect(geometry.points).toBe(29);
   expect(geometry.hatches).toBeGreaterThanOrEqual(20);
