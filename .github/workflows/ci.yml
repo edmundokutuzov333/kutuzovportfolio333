@@ -158,6 +158,7 @@ jobs:
           bun run test:contracts 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/contracts.txt"
           bun run build 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/build.txt"
           bun run assets:inventory 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/assets-inventory.txt"
+          bun run assets:verify 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/assets-verify.txt"
           npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/playwright-install.txt"
           .e2e/node_modules/.bin/playwright install --with-deps chromium 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/chromium-install.txt"
           .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/playwright.txt"
