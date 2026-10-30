@@ -185,4 +185,15 @@ test("homepage renders two image-only 4:5 artwork ribbons linked to their projec
 
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(pageWidth).toBeLessThanOrEqual(391);
+
+  for (const ribbon of await ribbons.all()) {
+    await expect(ribbon.locator("[data-project-ribbon-static]")).toBeHidden();
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const ribbon of await ribbons.all()) {
+    const staticGallery = ribbon.locator("[data-project-ribbon-static]");
+    await expect(staticGallery).toBeVisible();
+    await expect(staticGallery.locator("[data-project-ribbon-tile]")).toHaveCount(22);
+    await expect(staticGallery.locator("[data-project-ribbon-tile]").first()).toBeVisible();
+  }
 });
