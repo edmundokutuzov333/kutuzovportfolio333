@@ -143,7 +143,7 @@ function Home() {
                       aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
                       gap={5}
                       axis={50}
-                      curve={60}
+                      curve={55}
                       fade={8}
                       className="h-[clamp(18rem,23vw,20rem)] w-full"
                     />
