@@ -199,6 +199,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                 <motion.div
                   key={`${item.slug}-${item.artworkIndex}-${index}`}
                   className="fan-card"
+                  style={{ aspectRatio: PROJECT_FAN_ASPECT_RATIO }}
                   initial={reducedMotion ? false : initial}
                   animate={{
                     x: target.x,
