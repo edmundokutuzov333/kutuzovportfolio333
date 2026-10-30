@@ -119,18 +119,46 @@ test("Admin uses the dark site palette without effects and restores a native cur
 });
 
 
-test("homepage renders two image-only 4:5 artwork ribbons linked to their projects", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test("homepage renders two separated 1:2 artwork rows with opposite viewpoints and no cross-row duplicates", async ({ page }) => {
+  await page.setViewportSize({ width: 1536, height: 1000 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
   const ribbons = page.locator("[data-project-ribbon]");
   await expect(ribbons).toHaveCount(2);
-  await expect(ribbons.nth(0)).toHaveAttribute("data-project-artwork-count", "22");
-  await expect(ribbons.nth(1)).toHaveAttribute("data-project-artwork-count", "22");
+  await expect(ribbons.nth(0)).toHaveAttribute("data-project-artwork-count", "11");
+  await expect(ribbons.nth(1)).toHaveAttribute("data-project-artwork-count", "11");
+  await expect(ribbons.nth(0)).toHaveAttribute("data-project-ribbon-viewpoint", "below");
+  await expect(ribbons.nth(1)).toHaveAttribute("data-project-ribbon-viewpoint", "above");
 
+  const boxes = await ribbons.evaluateAll((rows) =>
+    rows.map((row) => {
+      const box = row.getBoundingClientRect();
+      return { top: box.top, bottom: box.bottom, height: box.height };
+    }),
+  );
+  expect(boxes[1].top - boxes[0].bottom).toBeGreaterThanOrEqual(40);
+
+  const rowSources = [];
   for (const ribbon of await ribbons.all()) {
     await expect(ribbon).toBeVisible();
-    const links = await ribbon.locator("[data-project-ribbon-animated] [data-project-ribbon-tile]").evaluateAll((anchors) =>
+    const row = await ribbon.locator("[data-project-ribbon-static]").evaluate((element) => ({
+      hiddenByDefault: getComputedStyle(element).display === "none",
+      sources: Array.from(
+        element.querySelectorAll("[data-project-artwork-src]"),
+        (tile) => tile.getAttribute("data-project-artwork-src"),
+      ),
+      ratios: Array.from(element.querySelectorAll("[data-project-artwork-src]"), (tile) => {
+        const box = tile.getBoundingClientRect();
+        return box.width / box.height;
+      }),
+    }));
+    expect(row.hiddenByDefault).toBe(true);
+    expect(row.sources).toHaveLength(11);
+    expect(row.ratios.every((ratio) => ratio > 0.45 && ratio < 0.55)).toBe(true);
+    rowSources.push(...row.sources);
+
+    const animatedTiles = ribbon.locator("[data-project-ribbon-animated] [data-project-ribbon-tile]");
+    const links = await animatedTiles.evaluateAll((anchors) =>
       anchors.map((anchor) => ({
         href: anchor.getAttribute("href"),
         label: anchor.getAttribute("aria-label"),
@@ -138,27 +166,37 @@ test("homepage renders two image-only 4:5 artwork ribbons linked to their projec
         visibleText: anchor.textContent?.trim() ?? "",
       })),
     );
-    expect(links.length).toBeGreaterThan(1);
+    expect(links.length).toBeGreaterThanOrEqual(8);
+    expect(links.length).toBeLessThanOrEqual(11);
     expect(links.every((link) => link.href?.startsWith("/work/"))).toBe(true);
     expect(links.every((link) => Boolean(link.label))).toBe(true);
     expect(links.every((link) => link.imageCount === 16)).toBe(true);
     expect(links.every((link) => link.visibleText === "")).toBe(true);
   }
 
+  expect(rowSources).toHaveLength(22);
+  expect(new Set(rowSources).size).toBe(22);
+
   const firstImage = page.locator("[data-project-ribbon-animated] [data-project-ribbon-tile] img").first();
   await expect.poll(() => firstImage.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
 
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  expect(pageWidth).toBeLessThanOrEqual(391);
+  expect(pageWidth).toBeLessThanOrEqual(1537);
 
-  for (const ribbon of await ribbons.all()) {
-    await expect(ribbon.locator("[data-project-ribbon-static]")).toBeHidden();
-  }
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const ribbon of await ribbons.all()) {
+    const animated = ribbon.locator("[data-project-ribbon-animated]");
     const staticGallery = ribbon.locator("[data-project-ribbon-static]");
+    await expect(animated).toBeHidden();
     await expect(staticGallery).toBeVisible();
-    await expect(staticGallery.locator("[data-project-ribbon-tile]")).toHaveCount(22);
+    await expect(staticGallery.locator("[data-project-ribbon-tile]")).toHaveCount(11);
     await expect(staticGallery.locator("[data-project-ribbon-tile]").first()).toBeVisible();
   }
+
+  const mobile = await page.context().newPage();
+  await mobile.setViewportSize({ width: 390, height: 844 });
+  await mobile.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(mobile.locator("[data-project-ribbon]")).toHaveCount(2);
+  expect(await mobile.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
+  await mobile.close();
 });
