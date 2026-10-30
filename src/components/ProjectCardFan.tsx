@@ -210,16 +210,18 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                   }}
                   custom={directionRef.current}
                   variants={{
-                    exit: (direction: "left" | "right") =>
-                      reducedMotion
+                    exit: (direction: unknown) => {
+                      const isRight = direction === "right";
+                      return reducedMotion
                         ? { opacity: 0 }
                         : {
-                            x: (direction === "right" ? -40 : 40) * 16,
-                            rotate: direction === "right" ? -30 : 30,
+                            x: (isRight ? -40 : 40) * 16,
+                            rotate: isRight ? -30 : 30,
                             scale: 0.5,
                             opacity: 0,
                             zIndex: 0,
-                          },
+                          };
+                    },
                   }}
                   exit="exit"
                   transition={
@@ -265,7 +267,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                     <img
                       src={item.src}
                       alt={item.alt}
-                      loading={slot === FAN_CENTER_SLOT ? "eager" : "lazy"}
+                      loading={slot === centerSlot ? "eager" : "lazy"}
                       decoding="async"
                       draggable={false}
                       className="block h-full w-full select-none object-cover"
