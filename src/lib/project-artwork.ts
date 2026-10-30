@@ -1,8 +1,6 @@
 import type { Project } from "@/lib/cms/types";
 import { PUBLIC_PRODUCTION_ORIGIN } from "@/lib/cms/public-config";
 
-export const PROJECT_FAN_ASPECT_RATIO = 4 / 5;
-
 export type ProjectArtwork = {
   src: string;
   alt: string;
