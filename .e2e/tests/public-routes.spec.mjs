@@ -46,7 +46,7 @@ test("newsletter requires consent and does not claim success before a real reque
   await expect(submit).toBeDisabled();
 
   const consent = page.getByRole("checkbox", {
-    name: /Consinto receber comunicações por email/i,
+    name: /Consinto receber actualizações ocasionais por email/i,
   });
   await consent.check();
   await expect(consent).toBeChecked();
