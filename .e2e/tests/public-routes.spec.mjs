@@ -146,6 +146,7 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
 
     const cards = fan.locator("[data-project-fan-card]");
     await expect(cards).toHaveCount(7);
+    await expect.poll(() => fan.locator('[data-project-card-slot="3"] img').evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
 
     const cardMetrics = await cards.evaluateAll((elements) =>
       elements.map((card) => {
