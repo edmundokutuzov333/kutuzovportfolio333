@@ -191,7 +191,7 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
 
     const overflowReport = await page.evaluate(() => {
       const width = window.innerWidth;
-      const elements = Array.from(document.querySelectorAll<HTMLElement>("body *"));
+      const elements = Array.from(document.querySelectorAll("body *"));
       const offenders = elements
         .map((element) => {
           const rect = element.getBoundingClientRect();
