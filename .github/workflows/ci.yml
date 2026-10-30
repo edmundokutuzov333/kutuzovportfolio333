@@ -77,6 +77,9 @@ jobs:
         env:
           PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
 
+      - name: Verify original project artwork is publicly reachable
+        run: bun run assets:verify
+
       - name: Upload asset inventory report
         if: always()
         uses: actions/upload-artifact@v4
