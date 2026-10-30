@@ -120,7 +120,7 @@ function Home() {
                   </Link>
                 </div>
                 {ribbonRows.total > 0 && (
-                  <div className="-mx-6 flex flex-col gap-14 md:-mx-12 md:gap-16">
+                  <div className="-mx-6 flex flex-col gap-10 md:-mx-12 md:gap-12">
                     <TiltedProjectRibbon
                       images={ribbonRows.upper}
                       direction="left"
@@ -130,7 +130,7 @@ function Home() {
                       aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
                       gap={5}
                       axis={50}
-                      curve={60}
+                      curve={55}
                       fade={8}
                       className="h-[clamp(18rem,23vw,20rem)] w-full"
                     />
