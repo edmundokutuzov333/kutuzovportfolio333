@@ -16,7 +16,8 @@
     "assets:inventory": "node scripts/inventory-assets.mjs",
     "import:cms": "bun run scripts/import-static-content.ts",
     "test:contracts": "bun run scripts/verify-public-contracts.ts",
-    "test:e2e": "playwright test --config .e2e/playwright.config.mjs"
+    "test:e2e": "playwright test --config .e2e/playwright.config.mjs",
+    "assets:verify": "node scripts/verify-project-artwork.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1",
