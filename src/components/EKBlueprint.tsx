@@ -409,13 +409,15 @@ export function EKBlueprint() {
         </g>
 
         <g className="ek-blueprint__registration-marks" aria-hidden="true">
-          {[
-            [0, 0],
-            [LOGO_W, 0],
-            [0, LOGO_H],
-            [LOGO_W, LOGO_H],
-            [LOGO_W / 2, LOGO_H / 2],
-          ].map(([x, y]) => (
+          {(
+            [
+              [0, 0],
+              [LOGO_W, 0],
+              [0, LOGO_H],
+              [LOGO_W, LOGO_H],
+              [LOGO_W / 2, LOGO_H / 2],
+            ] as Point[]
+          ).map(([x, y]) => (
             <g key={`registration-${x}-${y}`} className="ek-blueprint__registration">
               <circle cx={x} cy={y} r="15" />
               <circle cx={x} cy={y} r="4" />
