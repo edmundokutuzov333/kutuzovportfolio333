@@ -69,6 +69,10 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  html, body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
   html { background-image: radial-gradient(ellipse 80% 60% at 50% -10%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%); background-attachment: fixed; }
   ::selection { background: var(--ember); color: var(--background); }
   @media (pointer: fine) { body, a, button { cursor: none; } }

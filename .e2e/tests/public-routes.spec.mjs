@@ -229,6 +229,8 @@ test("homepage renders the seven-card fan carousel with strict 4:5 artwork at al
         },
       };
     });
+    const rootOverflowX = await page.evaluate(() => getComputedStyle(document.documentElement).overflowX);
+    expect(rootOverflowX).toBe("clip");
     const pageWidth = overflowReport.rootScrollWidth;
     expect(
       pageWidth,
