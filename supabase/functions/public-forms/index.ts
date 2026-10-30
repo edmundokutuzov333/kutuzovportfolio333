@@ -496,7 +496,7 @@ async function attemptEmailOutbox(id: string): Promise<{ sent: boolean; reason: 
   let subject = "";
   let text = "";
   let html = "";
-  let attachments: EmailAttachment[] = [];
+  const attachments: EmailAttachment[] = [];
 
   try {
     if (row["message_type"] === "contact_submission") {
