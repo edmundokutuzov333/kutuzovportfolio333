@@ -86,7 +86,7 @@ export function TiltedProjectRibbon({
   aspectRatio = 1 / 2,
   gap = 5,
   axis = 50,
-  curve = 60,
+  curve = 55,
   fade = 8,
   className,
 }: TiltedProjectRibbonProps) {
@@ -233,6 +233,7 @@ export function TiltedProjectRibbon({
               }}
               aria-label={`Open project: ${image.projectTitle}. ${image.alt}`}
               data-project-ribbon-tile
+              data-project-artwork-src={image.src}
               data-project-slug={image.slug}
             >
               {Array.from({ length: SLICES }, (_, sliceIndex) => (
@@ -284,6 +285,7 @@ export function TiltedProjectRibbon({
             style={{ width: "auto", aspectRatio }}
             aria-label={`Open project: ${image.projectTitle}. ${image.alt}`}
             data-project-ribbon-tile
+            data-project-artwork-src={image.src}
             data-project-slug={image.slug}
           >
             <img
