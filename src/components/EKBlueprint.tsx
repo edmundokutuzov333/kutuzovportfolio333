@@ -2,119 +2,308 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { LOGO_H, LOGO_W, logoPolygons } from "./logo-paths";
 
-const GRID_UNIT = 32;
-const MAJOR_GRID_UNIT = 160;
+const LOOP_DURATION = 15_000;
 const SHAPE_NAMES = ["e", "k", "period"] as const;
+const VIEWBOX = { left: -180, top: -160, right: LOGO_W + 180, bottom: LOGO_H + 160 };
 
-function polygonToPath(points: readonly (readonly [number, number])[]): string {
+type Point = readonly [number, number];
+type Segment = {
+  index: number;
+  shape: string;
+  from: Point;
+  to: Point;
+};
+type GuideLine = {
+  axis: "x" | "y";
+  value: number;
+  d: string;
+};
+
+function polygonToPath(points: readonly Point[]): string {
   return `M${points.map(([x, y]) => `${x} ${y}`).join(" L")} Z`;
 }
 
+function uniqueCoordinates(points: readonly Point[], axis: 0 | 1): number[] {
+  return [...new Set(points.map((point) => point[axis]))].sort((a, b) => a - b);
+}
+
+function buildSegments(): Segment[] {
+  return logoPolygons.flatMap((points, shapeIndex) =>
+    points.map((from, pointIndex) => ({
+      index: logoPolygons
+        .slice(0, shapeIndex)
+        .reduce((total, shape) => total + shape.length, 0) + pointIndex,
+      shape: SHAPE_NAMES[shapeIndex] ?? `shape-${shapeIndex}`,
+      from,
+      to: points[(pointIndex + 1) % points.length] ?? from,
+    })),
+  );
+}
+
+function buildDiagonalGuides(segments: readonly Segment[]) {
+  const directions: number[] = [];
+  const guides: { d: string; index: number }[] = [];
+
+  for (const segment of segments) {
+    const [x1, y1] = segment.from;
+    const [x2, y2] = segment.to;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.hypot(dx, dy);
+    if (length < 180 || Math.abs(dx) < 1 || Math.abs(dy) < 1) continue;
+
+    let angle = Math.atan2(dy, dx) % Math.PI;
+    if (angle < 0) angle += Math.PI;
+    if (directions.some((known) => Math.abs(known - angle) < 0.055)) continue;
+    directions.push(angle);
+
+    const ux = dx / length;
+    const uy = dy / length;
+    const extension = 260;
+    guides.push({
+      index: guides.length,
+      d: `M${x1 - ux * extension} ${y1 - uy * extension} L${x2 + ux * extension} ${y2 + uy * extension}`,
+    });
+  }
+
+  return guides;
+}
+
+const allPoints = logoPolygons.flat();
+const verticalAxes = uniqueCoordinates(allPoints, 0).map((value): GuideLine => ({
+  axis: "x",
+  value,
+  d: `M${value} ${VIEWBOX.top} V${VIEWBOX.bottom}`,
+}));
+const horizontalAxes = uniqueCoordinates(allPoints, 1).map((value): GuideLine => ({
+  axis: "y",
+  value,
+  d: `M${VIEWBOX.left} ${value} H${VIEWBOX.right}`,
+}));
+const constructionGuides = [...verticalAxes, ...horizontalAxes];
+const constructionSegments = buildSegments();
+const diagonalGuides = buildDiagonalGuides(constructionSegments);
 const blueprintShapes = logoPolygons.map((points, index) => ({
   name: SHAPE_NAMES[index] ?? `shape-${index}`,
-  points,
   path: polygonToPath(points),
 }));
-
-const constructionNodes = blueprintShapes.flatMap((shape) =>
-  shape.points.map(([x, y], index) => ({ x, y, key: `${shape.name}-${index}` })),
+const constructionPoints = logoPolygons.flatMap((points, shapeIndex) =>
+  points.map(([x, y], pointIndex) => ({
+    x,
+    y,
+    index: logoPolygons
+      .slice(0, shapeIndex)
+      .reduce((total, shape) => total + shape.length, 0) + pointIndex,
+  })),
 );
 
-const horizontalMajorTicks = Array.from(
-  { length: Math.floor(LOGO_W / MAJOR_GRID_UNIT) + 1 },
-  (_, index) => index * MAJOR_GRID_UNIT,
-);
-const verticalMajorTicks = Array.from(
-  { length: Math.floor(LOGO_H / MAJOR_GRID_UNIT) + 1 },
-  (_, index) => index * MAJOR_GRID_UNIT,
-);
+function sequencedFrames(start: number, end: number) {
+  return [
+    { strokeDashoffset: 1, offset: 0 },
+    { strokeDashoffset: 1, offset: start },
+    { strokeDashoffset: 0, offset: end },
+    { strokeDashoffset: 0, offset: 0.91 },
+    { strokeDashoffset: 1, offset: 1 },
+  ];
+}
+
+function pointFrames(start: number) {
+  return [
+    { opacity: 0, transform: "scale(0.2)", offset: 0 },
+    { opacity: 0, transform: "scale(0.2)", offset: start },
+    { opacity: 1, transform: "scale(1.2)", offset: Math.min(start + 0.006, 0.84) },
+    { opacity: 0.28, transform: "scale(1)", offset: 0.86 },
+    { opacity: 0.28, transform: "scale(1)", offset: 0.91 },
+    { opacity: 0, transform: "scale(0.2)", offset: 1 },
+  ];
+}
+
+function animateElement(
+  element: SVGElement | null,
+  keyframes: Keyframe[],
+  animations: Animation[],
+) {
+  if (!element) return;
+  const animation = element.animate(keyframes, {
+    duration: LOOP_DURATION,
+    iterations: Number.POSITIVE_INFINITY,
+    easing: "linear",
+    fill: "both",
+  });
+  animations.push(animation);
+}
 
 export function EKBlueprint() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [animationState, setAnimationState] = useState<"waiting" | "looping" | "paused" | "static">("waiting");
   const reactId = useId().replace(/:/g, "");
-  const minorGridId = `ek-blueprint-${reactId}-minor`;
-  const majorGridId = `ek-blueprint-${reactId}-major`;
-  const silhouetteId = `ek-blueprint-${reactId}-silhouette`;
-  const revealId = `ek-blueprint-${reactId}-reveal`;
-  const scanGradientId = `ek-blueprint-${reactId}-scan`;
+  const hatchId = `ek-blueprint-${reactId}-hatch`;
 
   useEffect(() => {
-    const element = rootRef.current;
-    if (!element) return;
+    const root = rootRef.current;
+    if (!root) return;
 
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const animations: Animation[] = [];
     let observer: IntersectionObserver | null = null;
-    let frame = 0;
-    let active = true;
+    let isInViewport = false;
+    let destroyed = false;
 
-    const reveal = () => {
-      if (!active) return;
-      active = false;
-      setIsVisible(true);
-      observer?.disconnect();
-      window.removeEventListener("scroll", checkVisibility);
-      window.removeEventListener("resize", checkVisibility);
-      if (frame) window.cancelAnimationFrame(frame);
-      frame = 0;
+    const cancelAnimations = () => {
+      animations.forEach((animation) => animation.cancel());
+      animations.length = 0;
     };
 
-    const checkVisibility = () => {
-      if (!active || frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        if (!active) return;
-        const bounds = element.getBoundingClientRect();
-        if (bounds.top < window.innerHeight * 0.96 && bounds.bottom > 0) reveal();
-      });
+    const setStatic = () => {
+      cancelAnimations();
+      root.classList.remove("is-looping", "is-paused");
+      root.classList.add("is-static");
+      setAnimationState("static");
     };
 
-    if (
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      typeof IntersectionObserver === "undefined"
-    ) {
-      reveal();
-      return () => {
-        active = false;
-        if (frame) window.cancelAnimationFrame(frame);
-      };
+    const pauseLoop = () => {
+      animations.forEach((animation) => animation.pause());
+      root.classList.remove("is-looping");
+      root.classList.add("is-paused");
+      setAnimationState("paused");
+    };
+
+    const playLoop = () => {
+      if (destroyed || !isInViewport || document.visibilityState === "hidden") return;
+      if (motionPreference.matches) {
+        setStatic();
+        return;
+      }
+
+      if (typeof SVGElement.prototype.animate !== "function") {
+        setStatic();
+        return;
+      }
+
+      if (animations.length === 0) {
+        root.classList.remove("is-static", "is-paused");
+        root.classList.add("is-looping");
+
+        const axisGuides = [...root.querySelectorAll<SVGPathElement>("[data-alignment-guide]")];
+        axisGuides.forEach((element, index) => {
+          const start = 0.025 + (index / Math.max(1, axisGuides.length)) * 0.19;
+          animateElement(element, sequencedFrames(start, start + 0.027), animations);
+        });
+
+        const diagonalElements = [...root.querySelectorAll<SVGPathElement>("[data-diagonal-guide]")];
+        diagonalElements.forEach((element, index) => {
+          const start = 0.19 + (index / Math.max(1, diagonalElements.length)) * 0.16;
+          animateElement(element, sequencedFrames(start, start + 0.035), animations);
+        });
+
+        constructionSegments.forEach((segment, index) => {
+          const start = 0.345 + (index / constructionSegments.length) * 0.365;
+          const path = root.querySelector<SVGPathElement>(`[data-monogram-segment="${index}"]`);
+          animateElement(path, sequencedFrames(start, start + 0.013), animations);
+        });
+
+        constructionPoints.forEach((point) => {
+          const start = 0.345 + (point.index / constructionSegments.length) * 0.365 + 0.012;
+          const marker = root.querySelector<SVGGElement>(`[data-construction-point="${point.index}"]`);
+          animateElement(marker, pointFrames(start), animations);
+        });
+
+        root.querySelectorAll<SVGPathElement>("[data-monogram-fill]").forEach((element) => {
+          animateElement(
+            element,
+            [
+              { opacity: 0, offset: 0 },
+              { opacity: 0, offset: 0.7 },
+              { opacity: 0.1, offset: 0.79 },
+              { opacity: 0.035, offset: 0.91 },
+              { opacity: 0, offset: 1 },
+            ],
+            animations,
+          );
+        });
+
+        root.querySelectorAll<SVGRectElement>("[data-hatch]").forEach((element, index) => {
+          const start = 0.15 + index * 0.012;
+          animateElement(
+            element,
+            [
+              { opacity: 0.12, offset: 0 },
+              { opacity: 0.12, offset: start },
+              { opacity: 0.78, offset: Math.min(start + 0.06, 0.8) },
+              { opacity: 0.24, offset: 0.87 },
+              { opacity: 0.12, offset: 1 },
+            ],
+            animations,
+          );
+        });
+      } else {
+        animations.forEach((animation) => animation.play());
+      }
+
+      root.classList.remove("is-paused");
+      root.classList.add("is-looping");
+      setAnimationState("looping");
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") pauseLoop();
+      else if (isInViewport) playLoop();
+    };
+
+    const onMotionPreferenceChange = () => {
+      if (motionPreference.matches) setStatic();
+      else if (isInViewport) playLoop();
+      else {
+        root.classList.remove("is-static");
+        setAnimationState("waiting");
+      }
+    };
+
+    if (motionPreference.matches) {
+      setStatic();
+    } else if (typeof IntersectionObserver === "undefined") {
+      isInViewport = true;
+      playLoop();
+    } else {
+      observer = new IntersectionObserver(
+        (entries) => {
+          isInViewport = entries.some((entry) => entry.isIntersecting);
+          if (isInViewport) playLoop();
+          else if (animations.length > 0) pauseLoop();
+        },
+        { threshold: 0.025, rootMargin: "80px 0px" },
+      );
+      observer.observe(root);
     }
 
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) reveal();
-      },
-      { threshold: 0.01, rootMargin: "0px" },
-    );
-
-    observer.observe(element);
-    window.addEventListener("scroll", checkVisibility, { passive: true });
-    window.addEventListener("resize", checkVisibility, { passive: true });
-    checkVisibility();
+    motionPreference.addEventListener("change", onMotionPreferenceChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      active = false;
+      destroyed = true;
       observer?.disconnect();
-      window.removeEventListener("scroll", checkVisibility);
-      window.removeEventListener("resize", checkVisibility);
-      if (frame) window.cancelAnimationFrame(frame);
+      motionPreference.removeEventListener("change", onMotionPreferenceChange);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      cancelAnimations();
     };
   }, []);
 
   return (
     <div
       ref={rootRef}
-      className={`ek-blueprint${isVisible ? " is-visible" : ""}`}
+      className={`ek-blueprint ${animationState === "static" ? "is-static" : ""}`}
       role="img"
-      aria-label="The Edmundo Kutuzov EK monogram being constructed from a precise 32-unit technical grid"
+      aria-label="Technical construction drawing of the Edmundo Kutuzov monogram, continuously traced point by point with geometric alignment guides"
       data-ek-blueprint
-      data-grid-unit={GRID_UNIT}
-      data-major-grid-unit={MAJOR_GRID_UNIT}
-      data-animation-state={isVisible ? "visible" : "waiting"}
+      data-animation-state={animationState}
       data-vector-width={LOGO_W}
       data-vector-height={LOGO_H}
+      data-guide-count={constructionGuides.length}
+      data-diagonal-guide-count={diagonalGuides.length}
+      data-segment-count={constructionSegments.length}
     >
       <svg
-        viewBox="-52 -82 2024 979"
+        viewBox="-180 -160 2280 1135"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
@@ -122,181 +311,117 @@ export function EKBlueprint() {
       >
         <defs>
           <pattern
-            id={minorGridId}
-            data-grid-minor
-            width={GRID_UNIT}
-            height={GRID_UNIT}
+            id={hatchId}
+            data-hatch-pattern
+            width="8"
+            height="8"
             patternUnits="userSpaceOnUse"
+            patternTransform="rotate(42)"
           >
-            <path
-              d={`M${GRID_UNIT} 0 H0 V${GRID_UNIT}`}
-              fill="none"
-              stroke="#8fb9eb"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            />
+            <path d="M0 0 V8" fill="none" stroke="#a8c6ed" strokeWidth="2.4" />
           </pattern>
-
-          <pattern
-            id={majorGridId}
-            data-grid-major
-            width={MAJOR_GRID_UNIT}
-            height={MAJOR_GRID_UNIT}
-            patternUnits="userSpaceOnUse"
-          >
-            <path
-              d={`M${MAJOR_GRID_UNIT} 0 H0 V${MAJOR_GRID_UNIT}`}
-              fill="none"
-              stroke="#b4d0f3"
-              strokeWidth="1.6"
-              vectorEffect="non-scaling-stroke"
-            />
-          </pattern>
-
-          <clipPath id={silhouetteId} clipPathUnits="userSpaceOnUse">
-            {blueprintShapes.map((shape) => (
-              <path key={shape.name} d={shape.path} />
-            ))}
-          </clipPath>
-
-          <clipPath id={revealId} clipPathUnits="userSpaceOnUse">
-            <rect
-              x="0"
-              y="0"
-              width="0"
-              height={LOGO_H}
-              className="ek-blueprint__reveal-window"
-              data-grid-reveal
-            />
-          </clipPath>
-
-          <linearGradient id={scanGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#a8d3ff" stopOpacity="0" />
-            <stop offset="45%" stopColor="#c7e3ff" stopOpacity="0.18" />
-            <stop offset="50%" stopColor="#e6f3ff" stopOpacity="0.95" />
-            <stop offset="55%" stopColor="#c7e3ff" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#a8d3ff" stopOpacity="0" />
-          </linearGradient>
         </defs>
 
-        <g className="ek-blueprint__field" aria-hidden="true">
-          <rect
-            x="0"
-            y="0"
-            width={LOGO_W}
-            height={LOGO_H}
-            fill={`url(#${minorGridId})`}
-            className="ek-blueprint__field-minor"
-          />
-          <rect
-            x="0"
-            y="0"
-            width={LOGO_W}
-            height={LOGO_H}
-            fill={`url(#${majorGridId})`}
-            className="ek-blueprint__field-major"
-          />
-        </g>
-
-        <g clipPath={`url(#${silhouetteId})`} className="ek-blueprint__silhouette">
-          {blueprintShapes.map((shape) => (
-            <path key={shape.name} d={shape.path} className="ek-blueprint__silhouette-fill" />
-          ))}
-
-          <g clipPath={`url(#${revealId})`} className="ek-blueprint__grid-formation">
-            <rect
-              x="0"
-              y="0"
-              width={LOGO_W}
-              height={LOGO_H}
-              fill={`url(#${minorGridId})`}
-              className="ek-blueprint__inner-minor"
-            />
-            <rect
-              x="0"
-              y="0"
-              width={LOGO_W}
-              height={LOGO_H}
-              fill={`url(#${majorGridId})`}
-              className="ek-blueprint__inner-major"
-            />
-          </g>
-
-          <rect
-            x="-24"
-            y="0"
-            width="24"
-            height={LOGO_H}
-            fill={`url(#${scanGradientId})`}
-            className="ek-blueprint__scan"
-            data-blueprint-scan
-          />
-        </g>
-
-        <g className="ek-blueprint__outlines">
-          {blueprintShapes.map((shape) => (
+        <g className="ek-blueprint__alignment-grid" data-alignment-grid>
+          {constructionGuides.map((guide) => (
             <path
-              key={shape.name}
-              d={shape.path}
+              key={`${guide.axis}-${guide.value}`}
+              d={guide.d}
               pathLength="1"
-              className={`ek-blueprint__outline ek-blueprint__outline--${shape.name}`}
-              data-outline-part={shape.name}
+              className={`ek-blueprint__guide ek-blueprint__guide--${guide.axis}`}
+              data-alignment-guide
+              data-guide-axis={guide.axis}
+              data-guide-value={guide.value}
             />
           ))}
         </g>
 
-        <g className="ek-blueprint__nodes">
-          {constructionNodes.map((point, index) => (
-            <g
-              key={point.key}
-              className="ek-blueprint__node"
-              style={{ animationDelay: `${1.48 + index * 0.018}s` }}
-              data-grid-node
-            >
-              <path
-                d={`M${point.x - 11} ${point.y} h22 M${point.x} ${point.y - 11} v22`}
-                className="ek-blueprint__node-cross"
-              />
-              <circle cx={point.x} cy={point.y} r="5.5" className="ek-blueprint__node-point" />
-              <circle cx={point.x} cy={point.y} r="1.8" className="ek-blueprint__node-core" />
+        <g className="ek-blueprint__diagonal-grid" data-diagonal-grid>
+          {diagonalGuides.map((guide) => (
+            <path
+              key={guide.index}
+              d={guide.d}
+              pathLength="1"
+              className="ek-blueprint__guide ek-blueprint__guide--diagonal"
+              data-diagonal-guide
+              data-guide-index={guide.index}
+            />
+          ))}
+        </g>
+
+        <g className="ek-blueprint__hatches" data-hatch-group>
+          {[0, 182, 318, 497, 632, LOGO_H].map((y) => (
+            <g key={`hatch-y-${y}`}>
+              <rect x="-148" y={y - 8} width="38" height="16" fill={`url(#${hatchId})`} data-hatch />
+              <rect x={LOGO_W + 110} y={y - 8} width="38" height="16" fill={`url(#${hatchId})`} data-hatch />
+            </g>
+          ))}
+          {[145, 925, 1278].map((x) => (
+            <g key={`hatch-x-${x}`}>
+              <rect x={x - 8} y="-146" width="16" height="38" fill={`url(#${hatchId})`} data-hatch />
+              <rect x={x - 8} y={LOGO_H + 108} width="16" height="38" fill={`url(#${hatchId})`} data-hatch />
             </g>
           ))}
         </g>
 
-        <g className="ek-blueprint__dimensions" aria-hidden="true">
-          <path
-            d={`M0 -24 H${LOGO_W} M0 ${LOGO_H + 24} H${LOGO_W} M-24 0 V${LOGO_H} M${LOGO_W + 24} 0 V${LOGO_H}`}
-            className="ek-blueprint__dimension-frame"
-          />
-
-          {horizontalMajorTicks.map((x) => (
+        <g className="ek-blueprint__monogram-fill">
+          {blueprintShapes.map((shape) => (
             <path
-              key={`x-${x}`}
-              d={`M${x} -24 v12 M${x} ${LOGO_H + 12} v12`}
-              className="ek-blueprint__dimension-tick"
+              key={shape.name}
+              d={shape.path}
+              className="ek-blueprint__fill"
+              data-monogram-fill
             />
           ))}
+        </g>
 
-          {verticalMajorTicks.map((y) => (
+        <g className="ek-blueprint__point-drawing" data-point-drawing>
+          {constructionSegments.map((segment) => (
             <path
-              key={`y-${y}`}
-              d={`M-24 ${y} h12 M${LOGO_W + 12} ${y} h12`}
-              className="ek-blueprint__dimension-tick"
+              key={segment.index}
+              d={`M${segment.from[0]} ${segment.from[1]} L${segment.to[0]} ${segment.to[1]}`}
+              pathLength="1"
+              className={`ek-blueprint__segment ek-blueprint__segment--${segment.shape}`}
+              data-monogram-segment={segment.index}
+              data-segment-shape={segment.shape}
+              data-segment-from={segment.from.join(",")}
+              data-segment-to={segment.to.join(",")}
             />
           ))}
+        </g>
 
-          <text x="0" y="-44" className="ek-blueprint__annotation">
-            EK / VECTOR CONSTRUCTION
-          </text>
-          <text x={LOGO_W} y="-44" textAnchor="end" className="ek-blueprint__annotation">
-            GRID 32U / MAJOR 160U
-          </text>
-          <text x="0" y={LOGO_H + 58} className="ek-blueprint__annotation">
-            X 0000 — 1920
-          </text>
-          <text x={LOGO_W} y={LOGO_H + 58} textAnchor="end" className="ek-blueprint__annotation">
-            VECTOR GEOMETRY / 1:1 UNIT SYSTEM
-          </text>
+        <g className="ek-blueprint__construction-points" data-construction-points>
+          {constructionPoints.map((point) => (
+            <g
+              key={point.index}
+              className="ek-blueprint__point"
+              data-construction-point={point.index}
+              data-point-coordinate={`${point.x},${point.y}`}
+            >
+              <path
+                d={`M${point.x - 10} ${point.y} h20 M${point.x} ${point.y - 10} v20`}
+                className="ek-blueprint__point-cross"
+              />
+              <circle cx={point.x} cy={point.y} r="5.2" className="ek-blueprint__point-ring" />
+              <circle cx={point.x} cy={point.y} r="1.8" className="ek-blueprint__point-core" />
+            </g>
+          ))}
+        </g>
+
+        <g className="ek-blueprint__registration-marks" aria-hidden="true">
+          {[
+            [0, 0],
+            [LOGO_W, 0],
+            [0, LOGO_H],
+            [LOGO_W, LOGO_H],
+            [LOGO_W / 2, LOGO_H / 2],
+          ].map(([x, y]) => (
+            <g key={`registration-${x}-${y}`} className="ek-blueprint__registration">
+              <circle cx={x} cy={y} r="15" />
+              <circle cx={x} cy={y} r="4" />
+              <path d={`M${x - 24} ${y} h48 M${x} ${y - 24} v48`} />
+            </g>
+          ))}
         </g>
       </svg>
     </div>

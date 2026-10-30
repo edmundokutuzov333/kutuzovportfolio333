@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test("footer EK is constructed from its source vectors and an exact 32/160-unit grid", async ({ page }) => {
+test("footer EK uses geometry-derived construction guides and repeats its point-by-point drawing forever", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
 
-  // Confirm client hydration before driving the same scroll path used by the public shell.
+  // Confirm client hydration before moving the page to the footer.
   const menuToggle = page.locator('header button[aria-expanded]');
   await menuToggle.click();
   await expect(menuToggle).toHaveAttribute("aria-expanded", "true");
@@ -18,82 +18,86 @@ test("footer EK is constructed from its source vectors and an exact 32/160-unit 
     window.scrollTo(0, document.documentElement.scrollHeight);
   });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  await expect(blueprint).toHaveAttribute("data-animation-state", "visible");
+  await expect(blueprint).toHaveAttribute("data-animation-state", "looping");
 
   const geometry = await blueprint.evaluate((root) => {
     const svg = root.querySelector("svg");
-    const minor = svg?.querySelector("[data-grid-minor]");
-    const major = svg?.querySelector("[data-grid-major]");
-    const reveal = svg?.querySelector("[data-grid-reveal]");
+    const segments = Array.from(svg?.querySelectorAll("[data-monogram-segment]") ?? []);
+    const firstSegment = segments[0];
+    const segmentAnimation = firstSegment?.getAnimations()[0];
+    const timing = segmentAnimation?.effect?.getTiming();
     return {
-      gridUnit: Number(root.getAttribute("data-grid-unit")),
-      majorGridUnit: Number(root.getAttribute("data-major-grid-unit")),
       vectorWidth: Number(root.getAttribute("data-vector-width")),
       vectorHeight: Number(root.getAttribute("data-vector-height")),
-      minorWidth: Number(minor?.getAttribute("width")),
-      minorHeight: Number(minor?.getAttribute("height")),
-      majorWidth: Number(major?.getAttribute("width")),
-      majorHeight: Number(major?.getAttribute("height")),
-      outlineParts: Array.from(svg?.querySelectorAll("[data-outline-part]") ?? []).map((path) =>
-        path.getAttribute("data-outline-part"),
-      ),
-      constructionNodes: svg?.querySelectorAll("[data-grid-node]").length ?? 0,
-      hasScanPass: Boolean(svg?.querySelector("[data-blueprint-scan]")),
-      revealAnimation: reveal ? getComputedStyle(reveal).animationName : "missing",
+      verticalGuides: svg?.querySelectorAll('[data-guide-axis="x"]').length ?? 0,
+      horizontalGuides: svg?.querySelectorAll('[data-guide-axis="y"]').length ?? 0,
+      diagonalGuides: svg?.querySelectorAll("[data-diagonal-guide]").length ?? 0,
+      segments: segments.length,
+      points: svg?.querySelectorAll("[data-construction-point]").length ?? 0,
+      hatches: svg?.querySelectorAll("[data-hatch]").length ?? 0,
+      labels: svg?.querySelectorAll("text").length ?? 0,
+      legacySquareGrid: svg?.querySelectorAll("[data-grid-minor], [data-grid-major]").length ?? 0,
+      segmentPathLength: firstSegment?.getAttribute("pathLength"),
+      loopIterations: timing?.iterations ?? 0,
+      loopDuration: timing?.duration ?? 0,
+      playState: segmentAnimation?.playState ?? "missing",
     };
   });
 
-  expect(geometry).toMatchObject({
-    gridUnit: 32,
-    majorGridUnit: 160,
-    vectorWidth: 1920,
-    vectorHeight: 815,
-    minorWidth: 32,
-    minorHeight: 32,
-    majorWidth: 160,
-    majorHeight: 160,
-    outlineParts: ["e", "k", "period"],
-    hasScanPass: true,
-  });
-  expect(geometry.constructionNodes).toBeGreaterThanOrEqual(25);
-  expect(geometry.revealAnimation).toBe("ek-blueprint-reveal");
+  expect(geometry.vectorWidth).toBe(1920);
+  expect(geometry.vectorHeight).toBe(815);
+  expect(geometry.verticalGuides).toBeGreaterThanOrEqual(14);
+  expect(geometry.horizontalGuides).toBeGreaterThanOrEqual(12);
+  expect(geometry.diagonalGuides).toBeGreaterThanOrEqual(5);
+  expect(geometry.segments).toBe(29);
+  expect(geometry.points).toBe(29);
+  expect(geometry.hatches).toBeGreaterThanOrEqual(20);
+  expect(geometry.labels).toBe(0);
+  expect(geometry.legacySquareGrid).toBe(0);
+  expect(geometry.segmentPathLength).toBe("1");
+  expect(geometry.loopIterations).toBe(Number.POSITIVE_INFINITY);
+  expect(geometry.loopDuration).toBe(15_000);
+  expect(geometry.playState).toBe("running");
 
-  const revealWindow = blueprint.locator("[data-grid-reveal]");
-  await expect.poll(
-    () => revealWindow.evaluate((element) => Number.parseFloat(getComputedStyle(element).width)),
-    { timeout: 5_000 },
-  ).toBeGreaterThan(0);
-  await expect.poll(
-    () => revealWindow.evaluate((element) => Number.parseFloat(getComputedStyle(element).width)),
-    { timeout: 5_000 },
-  ).toBeGreaterThanOrEqual(1919);
+  const animationProgress = await blueprint.locator("[data-monogram-segment='0']").evaluate((element) => {
+    const animation = element.getAnimations()[0];
+    const before = Number(animation?.currentTime ?? 0);
+    return new Promise<number>((resolve) => {
+      window.setTimeout(() => resolve(Number(animation?.currentTime ?? 0) - before), 220);
+    });
+  });
+  expect(animationProgress).toBeGreaterThan(100);
 });
 
-test("footer EK blueprint is fully formed without motion when reduced motion is requested", async ({ page }) => {
+test("footer EK remains fully constructed and motion-free when reduced motion is requested", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
   const blueprint = page.locator("[data-ek-blueprint]");
   await blueprint.scrollIntoViewIfNeeded();
-  await expect(blueprint).toHaveAttribute("data-animation-state", "visible");
+  await expect(blueprint).toHaveAttribute("data-animation-state", "static");
 
-  const reducedMotionState = await blueprint.evaluate((root) => {
+  const staticState = await blueprint.evaluate((root) => {
     const svg = root.querySelector("svg");
-    const outline = svg?.querySelector("[data-outline-part]");
-    const reveal = svg?.querySelector("[data-grid-reveal]");
-    const scan = svg?.querySelector("[data-blueprint-scan]");
+    const guide = svg?.querySelector("[data-alignment-guide]");
+    const segment = svg?.querySelector("[data-monogram-segment]");
+    const point = svg?.querySelector("[data-construction-point]");
     return {
-      outlineAnimation: outline ? getComputedStyle(outline).animationName : "missing",
-      outlineDashOffset: outline ? Number.parseFloat(getComputedStyle(outline).strokeDashoffset) : Number.NaN,
-      revealAnimation: reveal ? getComputedStyle(reveal).animationName : "missing",
-      revealWidth: reveal ? Number.parseFloat(getComputedStyle(reveal).width) : 0,
-      scanDisplay: scan ? getComputedStyle(scan).display : "missing",
+      guideOffset: guide ? Number.parseFloat(getComputedStyle(guide).strokeDashoffset) : Number.NaN,
+      segmentOffset: segment ? Number.parseFloat(getComputedStyle(segment).strokeDashoffset) : Number.NaN,
+      guideOpacity: guide ? Number.parseFloat(getComputedStyle(guide).opacity) : 0,
+      segmentAnimationCount: segment?.getAnimations().length ?? 0,
+      pointOpacity: point ? Number.parseFloat(getComputedStyle(point).opacity) : 0,
+      hasStaticClass: root.classList.contains("is-static"),
+      textNodes: svg?.querySelectorAll("text").length ?? 0,
     };
   });
 
-  expect(reducedMotionState.outlineAnimation).toBe("none");
-  expect(reducedMotionState.outlineDashOffset).toBe(0);
-  expect(reducedMotionState.revealAnimation).toBe("none");
-  expect(reducedMotionState.revealWidth).toBeGreaterThanOrEqual(1919);
-  expect(reducedMotionState.scanDisplay).toBe("none");
+  expect(staticState.guideOffset).toBe(0);
+  expect(staticState.segmentOffset).toBe(0);
+  expect(staticState.guideOpacity).toBeGreaterThan(0);
+  expect(staticState.segmentAnimationCount).toBe(0);
+  expect(staticState.pointOpacity).toBeGreaterThan(0);
+  expect(staticState.hasStaticClass).toBe(true);
+  expect(staticState.textNodes).toBe(0);
 });

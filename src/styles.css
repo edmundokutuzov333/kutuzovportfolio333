@@ -481,11 +481,12 @@ body:has([data-admin-root]) button:disabled {
 }
 
 
+
 /*
- * EK Digital Blueprint
- * All construction geometry is drawn from the original 1920 × 815 vector.
- * The 32-unit minor grid and 160-unit major grid share the logo's origin.
- * Motion is one-shot, intersection-triggered and entirely CSS/SVG driven.
+ * EK Digital Blueprint, geometry-led construction drawing.
+ * Every axis passes through an actual source-vector vertex coordinate.
+ * Every diagonal guide follows a real monogram edge direction.
+ * The 15-second Web Animations timeline loops indefinitely, point by point.
  */
 .ek-blueprint {
   width: min(100%, 65rem);
@@ -502,167 +503,130 @@ body:has([data-admin-root]) button:disabled {
   overflow: visible;
 }
 
-.ek-blueprint__field {
-  opacity: 0;
-}
-
-.ek-blueprint__field-minor {
-  opacity: 0.11;
-}
-
-.ek-blueprint__field-major {
-  opacity: 0.2;
-}
-
-.ek-blueprint__silhouette-fill {
-  fill: rgba(139, 183, 238, 0.018);
-}
-
-.ek-blueprint__inner-minor {
-  opacity: 0.56;
-}
-
-.ek-blueprint__inner-major {
-  opacity: 0.86;
-}
-
-.ek-blueprint__reveal-window {
-  width: 0;
-}
-
-.ek-blueprint__outline {
+.ek-blueprint__guide,
+.ek-blueprint__segment {
   fill: none;
-  stroke: rgba(180, 211, 248, 0.78);
-  stroke-width: 2.2;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
+  stroke-dashoffset: 0;
   vector-effect: non-scaling-stroke;
 }
 
-.ek-blueprint__node {
-  opacity: 0;
-  transform: scale(0.55);
+.ek-blueprint__guide {
+  stroke: rgba(153, 181, 219, 0.32);
+  stroke-width: 1.05;
+}
+
+.ek-blueprint__guide--x,
+.ek-blueprint__guide--y {
+  opacity: 0.23;
+}
+
+.ek-blueprint__guide--diagonal {
+  stroke: rgba(162, 190, 226, 0.24);
+  stroke-width: 1;
+  opacity: 0.16;
+}
+
+.ek-blueprint__segment {
+  stroke: rgba(190, 215, 247, 0.9);
+  stroke-width: 2.2;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.ek-blueprint__segment--k {
+  stroke: rgba(176, 207, 244, 0.94);
+}
+
+.ek-blueprint__segment--period {
+  stroke: rgba(208, 225, 248, 0.92);
+}
+
+.ek-blueprint__fill {
+  fill: rgba(126, 165, 218, 0.035);
+  opacity: 0.035;
+}
+
+.ek-blueprint__point {
+  opacity: 0.24;
+  transform: scale(1);
   transform-box: fill-box;
   transform-origin: center;
 }
 
-.ek-blueprint__node-cross {
+.ek-blueprint__point-cross {
   fill: none;
-  stroke: rgba(151, 193, 244, 0.72);
-  stroke-width: 1.5;
+  stroke: rgba(166, 199, 241, 0.78);
+  stroke-width: 1.35;
   vector-effect: non-scaling-stroke;
 }
 
-.ek-blueprint__node-point {
-  fill: #101a2b;
-  stroke: rgba(190, 220, 255, 0.92);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-}
-
-.ek-blueprint__node-core {
-  fill: #d6eaff;
-}
-
-.ek-blueprint__scan {
-  opacity: 0;
-}
-
-.ek-blueprint__dimensions {
-  opacity: 0;
-}
-
-.ek-blueprint__dimension-frame,
-.ek-blueprint__dimension-tick {
-  fill: none;
-  stroke: rgba(143, 177, 221, 0.42);
+.ek-blueprint__point-ring {
+  fill: #101725;
+  stroke: rgba(205, 225, 251, 0.95);
   stroke-width: 1.4;
   vector-effect: non-scaling-stroke;
 }
 
-.ek-blueprint__annotation {
-  fill: rgba(157, 183, 220, 0.58);
-  font-family: var(--font-mono);
-  font-size: 20px;
-  font-weight: 400;
-  letter-spacing: 4px;
+.ek-blueprint__point-core {
+  fill: #e0edff;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__field {
-  animation: ek-blueprint-field-in 700ms ease-out 80ms forwards;
+.ek-blueprint__hatches rect {
+  opacity: 0.2;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__reveal-window {
-  animation: ek-blueprint-reveal 2.35s cubic-bezier(0.72, 0, 0.22, 1) 100ms forwards;
+.ek-blueprint__registration {
+  fill: none;
+  stroke: rgba(157, 190, 232, 0.38);
+  stroke-width: 1.15;
+  opacity: 0.42;
+  vector-effect: non-scaling-stroke;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__outline--e {
-  animation: ek-blueprint-outline 1.12s cubic-bezier(0.65, 0, 0.25, 1) 120ms forwards;
+.ek-blueprint.is-looping .ek-blueprint__guide,
+.ek-blueprint.is-looping .ek-blueprint__segment {
+  stroke-dashoffset: 1;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__outline--k {
-  animation: ek-blueprint-outline 1.18s cubic-bezier(0.65, 0, 0.25, 1) 570ms forwards;
+.ek-blueprint.is-looping .ek-blueprint__point {
+  opacity: 0;
+  transform: scale(0.2);
 }
 
-.ek-blueprint.is-visible .ek-blueprint__outline--period {
-  animation: ek-blueprint-outline 280ms cubic-bezier(0.2, 0.8, 0.2, 1) 1.48s forwards;
+.ek-blueprint.is-looping .ek-blueprint__fill {
+  opacity: 0;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__node {
-  animation: ek-blueprint-node 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.ek-blueprint.is-paused .ek-blueprint__guide,
+.ek-blueprint.is-paused .ek-blueprint__segment {
+  stroke-dashoffset: 1;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__scan {
-  animation: ek-blueprint-scan 2.2s cubic-bezier(0.65, 0, 0.25, 1) 100ms forwards;
+.ek-blueprint.is-static .ek-blueprint__guide {
+  stroke-dashoffset: 0;
+  opacity: 0.23;
 }
 
-.ek-blueprint.is-visible .ek-blueprint__dimensions {
-  animation: ek-blueprint-field-in 680ms ease-out 1.15s forwards;
+.ek-blueprint.is-static .ek-blueprint__guide--diagonal {
+  opacity: 0.16;
 }
 
-@keyframes ek-blueprint-field-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.ek-blueprint.is-static .ek-blueprint__segment {
+  stroke-dashoffset: 0;
 }
 
-@keyframes ek-blueprint-reveal {
-  from { width: 0px; }
-  to { width: 1920px; }
+.ek-blueprint.is-static .ek-blueprint__point {
+  opacity: 0.34;
+  transform: none;
 }
 
-@keyframes ek-blueprint-outline {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
+.ek-blueprint.is-static .ek-blueprint__fill {
+  opacity: 0.035;
 }
 
-@keyframes ek-blueprint-node {
-  0% {
-    opacity: 0;
-    transform: scale(0.55);
-  }
-  55% {
-    opacity: 0.92;
-    transform: scale(1.18);
-  }
-  100% {
-    opacity: 0.32;
-    transform: scale(1);
-  }
-}
-
-@keyframes ek-blueprint-scan {
-  0% {
-    x: -24px;
-    opacity: 0;
-  }
-  9% { opacity: 0.9; }
-  88% { opacity: 0.52; }
-  100% {
-    x: 1920px;
-    opacity: 0;
-  }
+.ek-blueprint.is-static .ek-blueprint__hatches rect {
+  opacity: 0.42;
 }
 
 @media (max-width: 767px) {
@@ -670,42 +634,26 @@ body:has([data-admin-root]) button:disabled {
     width: 100%;
   }
 
-  .ek-blueprint__annotation {
-    font-size: 28px;
-    letter-spacing: 3px;
+  .ek-blueprint__guide {
+    stroke-width: 1.25;
   }
 
-  .ek-blueprint__dimension-frame,
-  .ek-blueprint__dimension-tick {
-    stroke-width: 1.8;
+  .ek-blueprint__segment {
+    stroke-width: 2.6;
+  }
+
+  .ek-blueprint__point-cross {
+    stroke-width: 1.6;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ek-blueprint__field,
-  .ek-blueprint__dimensions {
-    opacity: 1 !important;
+  .ek-blueprint__guide,
+  .ek-blueprint__segment,
+  .ek-blueprint__point,
+  .ek-blueprint__fill,
+  .ek-blueprint__hatches rect {
     animation: none !important;
-  }
-
-  .ek-blueprint__reveal-window {
-    width: 1920px !important;
-    animation: none !important;
-  }
-
-  .ek-blueprint__outline {
-    stroke-dashoffset: 0 !important;
-    animation: none !important;
-  }
-
-  .ek-blueprint__node {
-    opacity: 0.32 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-
-  .ek-blueprint__scan {
-    display: none !important;
-    animation: none !important;
+    transition: none !important;
   }
 }
