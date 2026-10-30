@@ -50,6 +50,7 @@ export type Database = {
           blocked_until: string | null
           ip_hash: string
           last_attempt_at: string
+          lockout_level: number
           window_started_at: string
         }
         Insert: {
@@ -57,6 +58,7 @@ export type Database = {
           blocked_until?: string | null
           ip_hash: string
           last_attempt_at?: string
+          lockout_level?: number
           window_started_at?: string
         }
         Update: {
@@ -64,7 +66,65 @@ export type Database = {
           blocked_until?: string | null
           ip_hash?: string
           last_attempt_at?: string
+          lockout_level?: number
           window_started_at?: string
+        }
+        Relationships: []
+      }
+      asset_migration_inventory: {
+        Row: {
+          actual_mime: string | null
+          actual_size: number | null
+          asset_id: string
+          declared_size: number | null
+          expected_mime: string
+          failure_reason: string | null
+          height: number | null
+          manifest_path: string
+          migration_status: string
+          original_filename: string | null
+          sha256: string | null
+          source_origin: string
+          source_url: string
+          storage_key: string | null
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          actual_mime?: string | null
+          actual_size?: number | null
+          asset_id: string
+          declared_size?: number | null
+          expected_mime: string
+          failure_reason?: string | null
+          height?: number | null
+          manifest_path: string
+          migration_status?: string
+          original_filename?: string | null
+          sha256?: string | null
+          source_origin: string
+          source_url: string
+          storage_key?: string | null
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          actual_mime?: string | null
+          actual_size?: number | null
+          asset_id?: string
+          declared_size?: number | null
+          expected_mime?: string
+          failure_reason?: string | null
+          height?: number | null
+          manifest_path?: string
+          migration_status?: string
+          original_filename?: string | null
+          sha256?: string | null
+          source_origin?: string
+          source_url?: string
+          storage_key?: string | null
+          updated_at?: string
+          width?: number | null
         }
         Relationships: []
       }
@@ -215,6 +275,7 @@ export type Database = {
           description: string | null
           id: string
           is_published: boolean
+          items: Json
           name: string
           position: number
           updated_at: string
@@ -224,6 +285,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          items?: Json
           name: string
           position?: number
           updated_at?: string
@@ -233,6 +295,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          items?: Json
           name?: string
           position?: number
           updated_at?: string
@@ -374,6 +437,7 @@ export type Database = {
           id: string
           is_published: boolean
           label: string
+          note: string | null
           position: number
           updated_at: string
           value: string
@@ -383,6 +447,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           label: string
+          note?: string | null
           position?: number
           updated_at?: string
           value: string
@@ -392,6 +457,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           label?: string
+          note?: string | null
           position?: number
           updated_at?: string
           value?: string
@@ -528,6 +594,7 @@ export type Database = {
           locale: string
           og_image_path: string | null
           published_at: string | null
+          route_path: string | null
           seo_description: string | null
           seo_title: string | null
           slug: string
@@ -544,6 +611,7 @@ export type Database = {
           locale?: string
           og_image_path?: string | null
           published_at?: string | null
+          route_path?: string | null
           seo_description?: string | null
           seo_title?: string | null
           slug: string
@@ -560,6 +628,7 @@ export type Database = {
           locale?: string
           og_image_path?: string | null
           published_at?: string | null
+          route_path?: string | null
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
@@ -606,6 +675,7 @@ export type Database = {
           description: string
           id: string
           is_published: boolean
+          number_label: string | null
           position: number
           step_key: string
           title: string
@@ -616,6 +686,7 @@ export type Database = {
           description?: string
           id?: string
           is_published?: boolean
+          number_label?: string | null
           position?: number
           step_key: string
           title: string
@@ -626,6 +697,7 @@ export type Database = {
           description?: string
           id?: string
           is_published?: boolean
+          number_label?: string | null
           position?: number
           step_key?: string
           title?: string
@@ -635,49 +707,67 @@ export type Database = {
       }
       profile_content: {
         Row: {
+          address: string | null
           biography: string | null
           created_at: string
+          headline: string | null
           id: string
+          intro: string | null
           is_published: boolean
           location: string | null
           name: string
+          phone: string | null
           portrait_path: string | null
           public_email: string | null
           role: string | null
+          roles: string[]
           singleton_key: string
           socials: Json
           updated_at: string
           updated_by: string | null
+          whatsapp: string | null
         }
         Insert: {
+          address?: string | null
           biography?: string | null
           created_at?: string
+          headline?: string | null
           id?: string
+          intro?: string | null
           is_published?: boolean
           location?: string | null
           name?: string
+          phone?: string | null
           portrait_path?: string | null
           public_email?: string | null
           role?: string | null
+          roles?: string[]
           singleton_key?: string
           socials?: Json
           updated_at?: string
           updated_by?: string | null
+          whatsapp?: string | null
         }
         Update: {
+          address?: string | null
           biography?: string | null
           created_at?: string
+          headline?: string | null
           id?: string
+          intro?: string | null
           is_published?: boolean
           location?: string | null
           name?: string
+          phone?: string | null
           portrait_path?: string | null
           public_email?: string | null
           role?: string | null
+          roles?: string[]
           singleton_key?: string
           socials?: Json
           updated_at?: string
           updated_by?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -693,8 +783,10 @@ export type Database = {
           discipline: string | null
           featured: boolean
           gallery: Json
+          hue: number
           id: string
           idea: string | null
+          locale: string
           outcome: string | null
           position: number
           project_type: string | null
@@ -718,8 +810,10 @@ export type Database = {
           discipline?: string | null
           featured?: boolean
           gallery?: Json
+          hue?: number
           id?: string
           idea?: string | null
+          locale?: string
           outcome?: string | null
           position?: number
           project_type?: string | null
@@ -743,8 +837,10 @@ export type Database = {
           discipline?: string | null
           featured?: boolean
           gallery?: Json
+          hue?: number
           id?: string
           idea?: string | null
+          locale?: string
           outcome?: string | null
           position?: number
           project_type?: string | null
@@ -774,6 +870,8 @@ export type Database = {
           details: Json
           id: string
           is_published: boolean
+          line: string | null
+          number_label: string | null
           position: number
           slug: string
           title: string
@@ -785,6 +883,8 @@ export type Database = {
           details?: Json
           id?: string
           is_published?: boolean
+          line?: string | null
+          number_label?: string | null
           position?: number
           slug: string
           title: string
@@ -796,6 +896,8 @@ export type Database = {
           details?: Json
           id?: string
           is_published?: boolean
+          line?: string | null
+          number_label?: string | null
           position?: number
           slug?: string
           title?: string
@@ -863,7 +965,9 @@ export type Database = {
           level: string | null
           name: string
           position: number
+          tier: string | null
           updated_at: string
+          value: number | null
         }
         Insert: {
           category?: string | null
@@ -873,7 +977,9 @@ export type Database = {
           level?: string | null
           name: string
           position?: number
+          tier?: string | null
           updated_at?: string
+          value?: number | null
         }
         Update: {
           category?: string | null
@@ -883,7 +989,9 @@ export type Database = {
           level?: string | null
           name?: string
           position?: number
+          tier?: string | null
           updated_at?: string
+          value?: number | null
         }
         Relationships: []
       }
@@ -920,6 +1028,13 @@ export type Database = {
     }
     Functions: {
       is_site_admin: { Args: never; Returns: boolean }
+      register_admin_auth_attempt: {
+        Args: { p_ip_hash: string; p_now: string }
+        Returns: {
+          attempt_count: number
+          blocked_until: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
