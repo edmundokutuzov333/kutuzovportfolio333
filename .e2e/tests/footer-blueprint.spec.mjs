@@ -6,7 +6,7 @@ test("footer EK is constructed from its source vectors and an exact 32/160-unit 
 
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
-  await blueprint.scrollIntoViewIfNeeded();
+  await page.mouse.wheel(0, 12000);
   await expect(blueprint).toHaveAttribute("data-animation-state", "visible");
 
   const geometry = await blueprint.evaluate((root) => {
@@ -73,7 +73,7 @@ test("footer EK blueprint is fully formed without motion when reduced motion is 
     const scan = svg?.querySelector("[data-blueprint-scan]");
     return {
       outlineAnimation: outline ? getComputedStyle(outline).animationName : "missing",
-      outlineDashOffset: outline ? getComputedStyle(outline).strokeDashoffset : "missing",
+      outlineDashOffset: outline ? Number.parseFloat(getComputedStyle(outline).strokeDashoffset) : Number.NaN,
       revealAnimation: reveal ? getComputedStyle(reveal).animationName : "missing",
       revealWidth: reveal ? Number.parseFloat(getComputedStyle(reveal).width) : 0,
       scanDisplay: scan ? getComputedStyle(scan).display : "missing",
@@ -81,7 +81,7 @@ test("footer EK blueprint is fully formed without motion when reduced motion is 
   });
 
   expect(reducedMotionState.outlineAnimation).toBe("none");
-  expect(reducedMotionState.outlineDashOffset).toBe("0");
+  expect(reducedMotionState.outlineDashOffset).toBe(0);
   expect(reducedMotionState.revealAnimation).toBe("none");
   expect(reducedMotionState.revealWidth).toBeGreaterThanOrEqual(1919);
   expect(reducedMotionState.scanDisplay).toBe("none");

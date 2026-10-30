@@ -43,26 +43,61 @@ export function EKBlueprint() {
     const element = rootRef.current;
     if (!element) return;
 
+    let observer: IntersectionObserver | null = null;
+    let frame = 0;
+    let active = true;
+
+    const reveal = () => {
+      if (!active) return;
+      active = false;
+      setIsVisible(true);
+      observer?.disconnect();
+      window.removeEventListener("scroll", checkVisibility);
+      window.removeEventListener("resize", checkVisibility);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    const checkVisibility = () => {
+      if (!active || frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        if (!active) return;
+        const bounds = element.getBoundingClientRect();
+        if (bounds.top < window.innerHeight * 0.96 && bounds.bottom > 0) reveal();
+      });
+    };
+
     if (
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
       typeof IntersectionObserver === "undefined"
     ) {
-      setIsVisible(true);
-      return;
+      reveal();
+      return () => {
+        active = false;
+        if (frame) window.cancelAnimationFrame(frame);
+      };
     }
 
-    const observer = new IntersectionObserver(
+    observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
+        if (entries.some((entry) => entry.isIntersecting)) reveal();
       },
-      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+      { threshold: 0.01, rootMargin: "0px" },
     );
 
     observer.observe(element);
-    return () => observer.disconnect();
+    window.addEventListener("scroll", checkVisibility, { passive: true });
+    window.addEventListener("resize", checkVisibility, { passive: true });
+    checkVisibility();
+
+    return () => {
+      active = false;
+      observer?.disconnect();
+      window.removeEventListener("scroll", checkVisibility);
+      window.removeEventListener("resize", checkVisibility);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
