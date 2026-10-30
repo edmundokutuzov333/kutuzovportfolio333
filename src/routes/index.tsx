@@ -5,8 +5,8 @@ import { useMemo, useRef } from "react";
 import { Logo3D } from "@/components/Logo3D";
 import { Reveal } from "@/components/Reveal";
 import { ClientsMarquee } from "@/components/Clients";
-import { TiltedProjectRibbon } from "@/components/TiltedProjectRibbon";
-import { buildProjectRibbonRows, PROJECT_RIBBON_ASPECT_RATIO } from "@/lib/project-ribbon";
+import { ProjectCardFan } from "@/components/ProjectCardFan";
+import { buildProjectArtwork } from "@/lib/project-artwork";
 import { loadHomeContent } from "@/lib/cms/loaders";
 import type { Profile } from "@/lib/cms/types";
 import { seoFromPage } from "@/lib/seo";
@@ -86,7 +86,7 @@ function Word({
 function Home() {
   const data = Route.useLoaderData();
   const { profile, sections, projects, services, metrics, clients, principles } = data;
-  const ribbonRows = useMemo(() => buildProjectRibbonRows(projects), [projects]);
+  const artwork = useMemo(() => buildProjectArtwork(projects), [projects]);
   const numberedSectionTypes = new Set(["manifesto", "featured_work", "services", "clients"]);
 
   return (
@@ -119,34 +119,9 @@ function Home() {
                     {section.config.link_label} →
                   </Link>
                 </div>
-                {ribbonRows.total > 0 && (
-                  <div className="-mx-6 flex flex-col gap-10 md:-mx-12 md:gap-12">
-                    <TiltedProjectRibbon
-                      images={ribbonRows.upper}
-                      direction="left"
-                      viewpoint="below"
-                      speed={4.6}
-                      tileHeight={90}
-                      aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
-                      gap={5}
-                      axis={50}
-                      curve={55}
-                      fade={8}
-                      className="h-[clamp(18rem,23vw,20rem)] w-full"
-                    />
-                    <TiltedProjectRibbon
-                      images={ribbonRows.lower}
-                      direction="right"
-                      viewpoint="above"
-                      speed={5.2}
-                      tileHeight={90}
-                      aspectRatio={PROJECT_RIBBON_ASPECT_RATIO}
-                      gap={5}
-                      axis={50}
-                      curve={55}
-                      fade={8}
-                      className="h-[clamp(18rem,23vw,20rem)] w-full"
-                    />
+                {artwork.length > 0 && (
+                  <div className="-mx-6 md:-mx-12">
+                    <ProjectCardFan cards={artwork} />
                   </div>
                 )}
               </section>
