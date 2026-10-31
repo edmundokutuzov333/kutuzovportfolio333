@@ -92,6 +92,27 @@
       "when": 1793340487977,
       "tag": "0012_phase4_submit_contact_submission",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793427821883,
+      "tag": "0013_phase4_request_newsletter_subscription",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793427826932,
+      "tag": "0014_phase4_newsletter_tokens_and_outbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793427829168,
+      "tag": "0015_phase5_private_operational_permissions",
+      "breakpoints": true
     }
   ]
 }
