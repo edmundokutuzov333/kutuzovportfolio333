@@ -1088,6 +1088,14 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_email_outbox: {
+        Args: { p_now?: string; p_outbox_id: string }
+        Returns: Json
+      }
+      consume_newsletter_token: {
+        Args: { p_now?: string; p_token_hash: string }
+        Returns: Json
+      }
       consume_public_form_rate_limit: {
         Args: { p_key_hash: string; p_now?: string; p_purpose: string }
         Returns: boolean
@@ -1099,6 +1107,20 @@ export type Database = {
           attempt_count: number
           blocked_until: string
         }[]
+      }
+      request_newsletter_subscription: {
+        Args: {
+          p_confirm_expires_at: string
+          p_confirm_token_hash: string
+          p_consent_text_version: string
+          p_email: string
+          p_now?: string
+          p_outbox_id: string
+          p_outbox_payload: Json
+          p_unsubscribe_expires_at: string
+          p_unsubscribe_token_hash: string
+        }
+        Returns: Json
       }
       submit_contact_submission: {
         Args: {
