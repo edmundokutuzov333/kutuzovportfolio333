@@ -127,6 +127,13 @@
       "when": 1793502034535,
       "tag": "0017_admin_pin_only_reorder_content",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793502050004,
+      "tag": "0018_admin_pin_only_contact_submission_and_grants",
+      "breakpoints": true
     }
   ]
 }
