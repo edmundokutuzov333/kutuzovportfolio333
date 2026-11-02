@@ -98,11 +98,11 @@ export async function getPageSections(pageId: string): Promise<PageSection[]> {
 export async function getPublishedProfile(): Promise<Profile> {
   const row = await firstRow(
     "profile_content",
-    { select: "name,role,roles,location,address,public_email,phone,whatsapp,socials,headline,intro", is_published: "eq.true" },
+    { select: "name,role,roles,location,address,public_email,phone,whatsapp,socials,headline,intro,biography,portrait_path", is_published: "eq.true" },
     {
       parse(value: unknown) {
         const raw = value as Record<string, unknown>;
-        return ProfileSchema.parse({ ...raw, title: raw["role"], email: raw["public_email"] });
+        return ProfileSchema.parse({ ...raw, title: raw["role"], email: raw["public_email"], biography: raw["biography"] ?? null, portraitPath: raw["portrait_path"] ?? null });
       },
     },
     "profile",

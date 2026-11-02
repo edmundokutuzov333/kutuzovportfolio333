@@ -657,3 +657,50 @@ body:has([data-admin-root]) button:disabled {
     transition: none !important;
   }
 }
+
+
+/* Editorial fallback for the profile portrait until a real photograph is assigned in the CMS. */
+.about-portrait {
+  background: var(--card);
+}
+.about-portrait__fallback {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #111827;
+  background-image:
+    linear-gradient(135deg, rgb(49 91 250 / 18%), transparent 48%),
+    radial-gradient(ellipse at 74% 34%, rgb(49 91 250 / 22%), transparent 47%),
+    linear-gradient(0deg, rgb(4 8 18 / 40%), transparent 68%);
+}
+.about-portrait__fallback::before {
+  position: absolute;
+  z-index: 1;
+  inset: 18px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  content: "";
+  pointer-events: none;
+}
+.about-portrait__fallback::after {
+  position: absolute;
+  z-index: 1;
+  top: 18%;
+  right: 8%;
+  width: 66%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 11%);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+.about-portrait__fallback > * {
+  position: relative;
+  z-index: 2;
+}
+.about-portrait__monogram {
+  display: block;
+  color: transparent;
+  font-size: clamp(8rem, 19vw, 15rem);
+  line-height: 0.72;
+  -webkit-text-stroke: 1px rgb(225 232 255 / 78%);
+}

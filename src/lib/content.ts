@@ -17,8 +17,14 @@ export const profile = {
     "I'm Edmundo Kutuzov, an art director from Maputo operating globally, building brand systems that earn attention rather than beg for it. 30+ brands. One obsession: work that refuses to be ignored.",
 };
 
+export const aboutBiography = [
+  "I’m Edmundo Kutuzov, a Maputo-based Art Director working across brand identity, campaign direction and digital communication. I translate business and cultural context into visual systems built to earn attention, remain recognisable and move people to act.",
+  "My professional path began in graphic design in 2020 and developed through marketing and agency roles at Agência Creer, Imperial Seguros, Ikigai Moçambique and SPOT Comunicação. At WEBMASTERS, I lead art direction and content production for corporate accounts, extending ideas across campaigns, motion and digital channels.",
+  "I work from strategy to detail: understand the brief, identify the central idea, define a clear visual point of view, build the system and guide its execution. I use AI as a creative instrument for exploration and production, while keeping direction, taste and final judgement human.",
+];
+
 export const metrics = [
-  { value: "7+", label: "Years", note: "Directing visual communication & strategy" },
+  { value: "6+", label: "Years", note: "Creative practice since 2020" },
   { value: "150+", label: "Projects", note: "Delivered across branding, digital & print" },
   { value: "30+", label: "Brands", note: "National & international collaborations" },
   { value: "3", label: "Continents", note: "Global creative exposure & delivery" },

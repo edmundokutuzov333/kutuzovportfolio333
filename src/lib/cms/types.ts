@@ -80,6 +80,8 @@ export const ProfileSchema = z.object({
   socials: z.array(SocialLinkSchema),
   headline: z.string().min(1).max(600),
   intro: z.string().min(1).max(2400),
+  biography: z.string().nullable(),
+  portraitPath: z.string().nullable(),
 });
 export type Profile = z.infer<typeof ProfileSchema>;
 

@@ -75,14 +75,16 @@ export async function loadProjectDetailContent(slug: string) {
 
 export async function loadAboutContent() {
   const base = await loadPage("/about");
-  const [metrics, experience, skills, disciplines, principles] = await Promise.all([
+  const [metrics, experience, skills, disciplines, principles, projects, clients] = await Promise.all([
     getMetrics(),
     getExperience(),
     getSkills(),
     getDisciplines(),
     getPrinciples(),
+    getProjects(true),
+    getClients("clients"),
   ]);
-  return { ...base, metrics, experience, skills, disciplines, principles };
+  return { ...base, metrics, experience, skills, disciplines, principles, projects, clients };
 }
 
 export async function loadServicesContent() {
