@@ -47,3 +47,9 @@ export function buildProjectArtwork(
     return images;
   });
 }
+
+
+/** Backwards-compatible name retained for existing project artwork callers. */
+export function resolveProjectArtworkUrl(source: string | null | undefined): string {
+  return resolvePublicAssetUrl(source);
+}
