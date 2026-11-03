@@ -4,6 +4,9 @@ import { SafeAssetImage } from "./SafeAssetImage";
 
 export function ArtSlot({ project, className }: { project: Project; className?: string }) {
   if (project.cover) {
+    if (project.projectType === "video") {
+      return <video src={project.cover} className={`h-full w-full object-cover ${className ?? ""}`} controls={false} muted playsInline preload="metadata" aria-label={project.coverAlt} />;
+    }
     return (
       <SafeAssetImage
         src={project.cover}
