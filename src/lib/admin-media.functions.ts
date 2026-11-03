@@ -10,11 +10,11 @@ import {
   retryEmailOutbox,
 } from "@/lib/server/admin-media.server";
 
-const imageType = z.enum(["image/png", "image/jpeg", "image/webp"]);
+const imageType = z.enum(["image/png", "image/jpeg", "image/webp", "video/mp4"]);
 const createUploadInput = z.object({
   originalName: z.string().trim().min(1).max(180),
   contentType: imageType,
-  byteSize: z.number().int().positive().max(15 * 1024 * 1024),
+  byteSize: z.number().int().positive().max(500 * 1024 * 1024),
 }).strict();
 const completeUploadInput = createUploadInput.extend({
   path: z.string().min(1).max(1024),
