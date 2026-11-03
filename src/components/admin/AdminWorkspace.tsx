@@ -12,6 +12,7 @@ import {
   reorderAdminContentFn,
   updateContactSubmissionFn,
 } from "@/lib/admin-cms.functions";
+import { cancelMediaUploadFn, completeMediaUploadFn, createMediaUploadFn } from "@/lib/admin-media.functions";
 import type { AdminEntity } from "@/lib/admin-cms.schema";
 import { getRestorableSnapshot } from "@/lib/admin-revisions";
 import { ContactInboxView as InboxView, EmailOutboxView, MediaLibraryView as MediaView, NewsletterManagementView as NewsletterView } from "@/components/admin/Phase4Modules";
@@ -67,6 +68,17 @@ const statusOptions = [
   { value: "draft", label: "Rascunho" },
   { value: "published", label: "Publicado" },
 ];
+const portfolioCategories = [
+  { value: "Social Media", label: "Social Media" },
+  { value: "Campaign design", label: "Campaign design" },
+  { value: "Manipulation", label: "Manipulation" },
+  { value: "Some dezaines*", label: "Some dezaines*" },
+  { value: "Video", label: "Video" },
+];
+const mediaKindOptions = [
+  { value: "image", label: "Imagem" },
+  { value: "video", label: "Vídeo" },
+];
 
 const MODULES: ModuleDef[] = [
   { id: "overview", label: "Visão geral", description: "Estado real do site e actividade editorial.", icon: LayoutDashboard },
@@ -89,27 +101,19 @@ const MODULES: ModuleDef[] = [
     { key: "is_visible", label: "Visível", type: "checkbox" },
     { key: "config", label: "Configuração tipada (JSON)", type: "json", required: true, help: "JSON estruturado de acordo com o tipo. Não é permitido HTML, CSS ou JavaScript arbitrário." },
   ] },
-  { id: "projects", label: "Projectos", description: "Casos de estudo, publicação, destaque, capa e galeria ordenada com texto alternativo.", table: "projects", entity: "projects", create: true, reorder: true, icon: BriefcaseBusiness, fields: [
-    { key: "title", label: "Título", required: true },
-    { key: "slug", label: "Slug", required: true, help: "Minúsculas, números e hífen. Alterar um slug publicado cria redireccionamento permanente." },
-    { key: "client_id", label: "Cliente associado", type: "select", nullable: true },
-    { key: "client_label", label: "Cliente apresentado", nullable: true },
+  { id: "projects", label: "Projectos", description: "Trabalhos do portfolio. Carregue os ficheiros originais, escolha a categoria e organize a ordem.", table: "projects", entity: "projects", create: true, reorder: true, icon: BriefcaseBusiness, fields: [
+    { key: "title", label: "Nome do trabalho", required: true },
+    { key: "slug", label: "Slug", required: true, help: "Gerado a partir do nome; use apenas minúsculas, números e hífen." },
+    { key: "client_label", label: "Cliente / campanha", nullable: true },
     { key: "year_label", label: "Ano", nullable: true },
-    { key: "discipline", label: "Disciplina", nullable: true },
-    { key: "project_type", label: "Tipo de projecto", nullable: true },
-    { key: "summary", label: "Resumo", type: "textarea", nullable: true },
-    { key: "challenge", label: "Desafio", type: "textarea", nullable: true },
-    { key: "idea", label: "Ideia", type: "textarea", nullable: true },
-    { key: "outcome", label: "Resultado", type: "textarea", nullable: true },
-    { key: "cover_path", label: "Caminho da capa", nullable: true },
-    { key: "cover_alt", label: "Texto alternativo da capa", nullable: true },
-    { key: "gallery", label: "Galeria ordenada (JSON de caminhos)", type: "json", required: true, help: "Lista JSON de caminhos de imagem. A ordem do array é a ordem pública." },
-    { key: "gallery_alt", label: "Texto alternativo da galeria (JSON)", type: "json", required: true, help: "Lista JSON de textos alternativos na mesma ordem da galeria. Se ainda não houver descrição, usar string vazia." },
-    { key: "featured", label: "Destacar na Home", type: "checkbox" },
+    { key: "discipline", label: "Categoria", type: "select", required: true, options: portfolioCategories },
+    { key: "project_type", label: "Formato", type: "select", required: true, options: mediaKindOptions },
+    { key: "gallery", label: "Ficheiros do trabalho (JSON)", type: "json", required: true, help: "Ordem dos ficheiros apresentados. Use o botão de upload abaixo para preencher sem copiar caminhos." },
+    { key: "gallery_alt", label: "Textos alternativos (JSON)", type: "json", required: true, help: "Uma descrição curta por ficheiro, na mesma ordem." },
+    { key: "featured", label: "Fixar na Home", type: "checkbox" },
     { key: "position", label: "Posição", type: "number", required: true },
-    { key: "status", label: "Estado antes da publicação", type: "select", options: statusOptions },
-    { key: "hue", label: "Matiz visual (0 a 360)", type: "number" },
-    { key: "locale", label: "Idioma do caso", required: true },
+    { key: "status", label: "Estado", type: "select", options: statusOptions },
+    { key: "locale", label: "Idioma", required: true },
   ] },
   { id: "clients", label: "Clientes", description: "Logótipos, texto alternativo e visibilidade por contexto.", table: "clients", entity: "clients", create: true, reorder: true, icon: Users, fields: [
     { key: "name", label: "Nome", required: true },
@@ -309,6 +313,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [projectFiles, setProjectFiles] = useState<File[]>([]);
   const [notice, setNotice] = useState<{ tone: "success" | "error" | "info"; text: string } | null>(null);
   const [search, setSearch] = useState("");
   const [sectionPageId, setSectionPageId] = useState("");
@@ -353,6 +358,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setCreating(false);
     setSearch("");
     setNotice(null);
+    setProjectFiles([]);
   };
 
   function startEdit(row: Row) {
@@ -362,6 +368,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setEditing(true);
     setCreating(false);
     setNotice(null);
+    setProjectFiles([]);
   }
   function startCreate() {
     if (!active.entity || !active.create) return;
@@ -373,6 +380,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setEditing(true);
     setCreating(true);
     setNotice(null);
+    setProjectFiles([]);
   }
   function cancelEdit() {
     setEditing(false);
@@ -381,6 +389,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setBaseline(null);
     setDraft({});
     setNotice(null);
+    setProjectFiles([]);
   }
   function updateDraft(key: string, value: unknown) {
     setDraft((current) => {
@@ -421,6 +430,33 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       return;
     }
     let payload = parsed.payload;
+    if (activeId === "projects" && projectFiles.length > 0) {
+      setSaving(true);
+      setNotice({ tone: "info", text: `A carregar ${projectFiles.length} ficheiro(s) original(is)...` });
+      const uploadedPaths: string[] = [];
+      try {
+        for (const file of projectFiles) {
+          const contentType = file.type === "video/mp4" ? "video/mp4" : file.type as "image/png" | "image/jpeg" | "image/webp";
+          const intent = await createMediaUploadFn({ data: { originalName: file.name, contentType, byteSize: file.size } }) as { path: string; uploadUrl: string };
+          try {
+            const response = await fetch(intent.uploadUrl, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
+            if (!response.ok) throw new Error(`O upload de ${file.name} falhou.`);
+            const completed = await completeMediaUploadFn({ data: { path: intent.path, originalName: file.name, contentType, byteSize: file.size, altText: file.name, caption: "" } }) as { publicUrl: string };
+            uploadedPaths.push(completed.publicUrl);
+          } catch (error) {
+            await cancelMediaUploadFn({ data: { path: intent.path } }).catch(() => undefined);
+            throw error;
+          }
+        }
+        const previous = Array.isArray(parsed.payload.gallery) ? parsed.payload.gallery.filter((value): value is string => typeof value === "string" && value.length > 0) : [];
+        payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload.gallery_alt) ? parsed.payload.gallery_alt : []), ...projectFiles.map((file) => file.name)] };
+      } catch (error) {
+        setSaving(false);
+        setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível carregar o trabalho." });
+        return;
+      }
+      setProjectFiles([]);
+    }
     if (!creating && baseline) {
       const changed: Row = {};
       for (const [key, value] of Object.entries(payload)) {
@@ -707,6 +743,12 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                     {baseline?.["status"] ? stateBadge(baseline["status"]) : null}
                   </div>
                   {activeId === "pages" ? <div className="mb-4 rounded-lg border border-[#eadcb4] bg-[#fff9e9] p-3 text-xs leading-5 text-[#6f5317]">Só estão disponíveis as oito rotas suportadas pelo router. Criar uma rota nova exige implementar e testar um renderer no código; o CMS não inventa páginas nem componentes.</div> : null}
+                  {activeId === "projects" ? <div className="mb-5 rounded-lg border border-[#dfe4f2] bg-[#f7f9ff] p-4">
+                    <p className="text-sm font-semibold">Adicionar ficheiros do trabalho</p>
+                    <p className="mt-1 text-xs leading-5 text-[#626774]">Imagens e MP4 são guardados no tamanho e qualidade originais. Pode seleccionar vários ficheiros para uma campanha ou agrupamento.</p>
+                    <input type="file" multiple accept="image/png,image/jpeg,image/webp,video/mp4" onChange={(event) => setProjectFiles(Array.from(event.target.files ?? []))} disabled={saving} className="mt-3 block w-full text-xs" />
+                    {projectFiles.length > 0 ? <p className="mt-2 text-xs text-[#4f5665]">{projectFiles.length} ficheiro(s) seleccionado(s): {projectFiles.map((file) => file.name).join(", ")}</p> : null}
+                  </div> : null}
                   <div className="grid gap-4 sm:grid-cols-2">
                     {fields.map((field) => {
                       if (field.key === "setting_key") {
