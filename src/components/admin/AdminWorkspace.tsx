@@ -234,7 +234,7 @@ function createDefaults(module: ModuleDef, rows: Row[], pages: Row[]): Row {
     draft["config"] = JSON.stringify({ label: "Nova secção" }, null, 2);
   }
   if (module.id === "projects") {
-    Object.assign(draft, { featured: false, status: "draft", hue: "215", locale: "pt-MZ", gallery: "[]", gallery_alt: "[]" });
+    Object.assign(draft, { featured: false, status: "draft", discipline: "Social Media", project_type: "image", locale: "pt-MZ", gallery: "[]", gallery_alt: "[]" });
   }
   if (module.id === "clients") {
     Object.assign(draft, { logo_path: "", logo_alt: "", show_on_home: true, show_on_clients_page: true, is_visible: true, display_as_text: false });
