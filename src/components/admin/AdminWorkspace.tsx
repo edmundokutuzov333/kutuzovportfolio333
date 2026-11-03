@@ -301,6 +301,12 @@ function statusLabel(value: unknown): string {
   const labels: Record<string, string> = { published: "Publicado", draft: "Rascunho", archived: "Arquivado", new: "Novo", in_review: "Em análise", replied: "Respondido", confirmed: "Confirmado", pending: "Pendente", unsubscribed: "Cancelado" };
   return labels[String(value)] ?? (value ? String(value) : "Sem estado");
 }
+function humanizeAssetName(value: string): string {
+  return value.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function slugifyAssetName(value: string): string {
+  return humanizeAssetName(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 220);
+}
 
 export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: () => void }) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -430,7 +436,9 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       return;
     }
     let payload = parsed.payload;
+    let bulkProjectPayloads: Row[] | null = null;
     if (activeId === "projects" && projectFiles.length > 0) {
+      const selectedProjectFiles = [...projectFiles];
       setSaving(true);
       setNotice({ tone: "info", text: `A carregar ${projectFiles.length} ficheiro(s) original(is)...` });
       const uploadedPaths: string[] = [];
@@ -449,7 +457,19 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
           }
         }
         const previous = Array.isArray(parsed.payload.gallery) ? parsed.payload.gallery.filter((value): value is string => typeof value === "string" && value.length > 0) : [];
-        payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload.gallery_alt) ? parsed.payload.gallery_alt : []), ...projectFiles.map((file) => file.name)] };
+        payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload.gallery_alt) ? parsed.payload.gallery_alt : []), ...selectedProjectFiles.map((file) => file.name)] };
+        if (creating && asText(payload.discipline) !== "Campaign design" && selectedProjectFiles.length > 1) {
+          const startPosition = asNumber(payload.position, 0);
+          bulkProjectPayloads = selectedProjectFiles.map((file, index) => ({
+            ...payload,
+            title: humanizeAssetName(file.name),
+            slug: slugifyAssetName(file.name),
+            project_type: file.type === "video/mp4" ? "video" : "image",
+            gallery: [uploadedPaths[index]],
+            gallery_alt: [file.name],
+            position: startPosition + index,
+          }));
+        }
       } catch (error) {
         setSaving(false);
         setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível carregar o trabalho." });
@@ -475,14 +495,24 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setSaving(true);
     setNotice(null);
     try {
-      const result = await mutateAdminContentFn({ data: {
-        entity: active.entity,
-        action: "publish",
-        id: creating ? null : selectedId,
-        payload,
-        expectedUpdatedAt: creating ? null : asText(baseline?.["updated_at"]) || null,
-        note: creating ? "Criado no Kutuzov Admin" : "Guardado e publicado no Kutuzov Admin",
-      } }) as { record: Row; published_revision: number };
+      let result: { record: Row; published_revision: number } | null = null;
+      for (const item of bulkProjectPayloads ?? [payload]) {
+        result = await mutateAdminContentFn({ data: {
+          entity: active.entity,
+          action: "publish",
+          id: creating ? null : selectedId,
+          payload: item,
+          expectedUpdatedAt: creating ? null : asText(baseline?.["updated_at"]) || null,
+          note: creating ? (bulkProjectPayloads ? "Importação em lote no Kutuzov Admin" : "Criado no Kutuzov Admin") : "Guardado e publicado no Kutuzov Admin",
+        } }) as { record: Row; published_revision: number };
+      }
+      if (!result) throw new Error("A base de dados não confirmou a gravação.");
+      if (bulkProjectPayloads) {
+        setNotice({ tone: "success", text: `${bulkProjectPayloads.length} trabalhos foram guardados e publicados.` });
+        await refresh();
+        cancelEdit();
+        return;
+      }
       setNotice({ tone: "success", text: `Base de dados confirmou a revisão ${result.published_revision}. O conteúdo foi guardado e publicado.` });
       await refresh();
       setSelectedId(asText(result.record["id"]));
