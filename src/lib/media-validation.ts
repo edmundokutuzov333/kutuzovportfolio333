@@ -1,4 +1,5 @@
 export type SupportedImageMime = "image/png" | "image/jpeg" | "image/webp";
+export type SupportedMediaMime = SupportedImageMime | "video/mp4";
 export type InspectedImage = { mime: SupportedImageMime; extension: "png" | "jpg" | "webp"; width: number; height: number };
 
 const MAX_DIMENSION = 14_000;
