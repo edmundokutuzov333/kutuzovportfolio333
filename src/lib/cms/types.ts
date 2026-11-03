@@ -256,8 +256,8 @@ export function toProject(row: ProjectRow): Project {
     challenge: row.challenge ?? "",
     idea: row.idea ?? "",
     outcome: row.outcome ?? "",
-    cover: row.cover_path,
-    coverAlt: row.cover_alt ?? row.title,
+    cover: row.cover_path ?? row.gallery[0] ?? null,
+    coverAlt: row.cover_alt ?? row.gallery_alt?.[0] ?? row.title,
     gallery: row.gallery,
     galleryAlt: row.gallery_alt ?? [],
     featured: row.featured,
@@ -428,15 +428,3 @@ export function toPrinciple(row: z.infer<typeof PrincipleSchema>): Principle {
 
 export const PublicationStateSchema = z.object({
   published_revision: z.coerce.number().int().nonnegative(),
-});
-export type PublicationState = z.infer<typeof PublicationStateSchema>;
-
-export const BudgetsSchema = z.record(z.string(), z.array(z.string()));
-export const ProjectTypesSchema = z.array(z.string().min(1).max(180));
-export const CapabilitiesSchema = z.array(z.string().min(1).max(180));
-export const ContactStepsSchema = z.array(z.object({
-  k: z.string().min(1).max(80),
-  t: z.string().min(1).max(240),
-  d: z.string().min(1).max(600),
-}));
-export type ContactStep = z.infer<typeof ContactStepsSchema>[number];
