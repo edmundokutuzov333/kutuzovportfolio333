@@ -42,7 +42,10 @@ function readDatabaseConfig(): AdminDatabaseConfig | null {
     process.env["NEXT_PUBLIC_SUPABASE_URL"] ??
     ""
   ).trim().replace(/\/+$/, "");
-  const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
+  const serviceRoleKey = (
+    process.env["SUPABASE_SERVICE_ROLE_KEY"] ??
+    process.env["SUPABASE_SECRET_KEY"]
+  )?.trim();
   if (!url || !serviceRoleKey) return null;
 
   try {
@@ -60,6 +63,7 @@ function sessionSigningKey(): string {
   return (
     process.env["ADMIN_SESSION_SECRET"]?.trim() ||
     process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim() ||
+    process.env["SUPABASE_SECRET_KEY"]?.trim() ||
     "kutuzov-admin-session-v1:" + ADMIN_ACCESS_CODE
   );
 }
