@@ -18,7 +18,7 @@ function Work() {
   const hero = data.sections.find((section): section is HeroSection => section.section_type === "hero");
   if (!hero) throw new Error("The published Work page is missing its hero section.");
 
-  const filters = ["All", ...Array.from(new Set(data.projects.map((project) => project.discipline)))];
+  const filters = ["All", "Social Media", "Campaign design", "Manipulation", "Some dezaines*", "Video"];
   const [filter, setFilter] = useState("All");
   const projects = data.projects.filter((project) => filter === "All" || project.discipline === filter);
 
