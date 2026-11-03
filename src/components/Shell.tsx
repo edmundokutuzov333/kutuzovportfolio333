@@ -9,6 +9,7 @@ import { EKBlueprint } from "./EKBlueprint";
 import { LogoMark } from "./LogoMark";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
+import { JarvisLauncher } from "./JarvisLauncher";
 
 function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
@@ -219,6 +220,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <motion.div key={pathname + "-curtain"} className="pointer-events-none fixed inset-0 z-[45] bg-[linear-gradient(180deg,var(--primary),var(--background))]" initial={{ scaleY: 1 }} animate={{ scaleY: 0 }} style={{ originY: 0 }} transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }} />
       <main>{children}</main>
       <Footer profile={profile} presentation={presentation} />
+      <JarvisLauncher />
     </div>
   );
 }
