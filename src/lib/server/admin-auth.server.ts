@@ -39,6 +39,7 @@ function readDatabaseConfig(): AdminDatabaseConfig | null {
   const url = (
     process.env["SUPABASE_URL"] ??
     process.env["VITE_SUPABASE_URL"] ??
+    process.env["NEXT_PUBLIC_SUPABASE_URL"] ??
     ""
   ).trim().replace(/\/+$/, "");
   const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
