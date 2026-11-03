@@ -129,28 +129,35 @@ export async function completeMediaUpload(input: {
   }
   if (input.altText.length > 300 || input.caption.length > 500) throw new AdminMediaError("Texto alternativo ou legenda demasiado longos.", "invalid");
   const resource = `/storage/v1/object/${PUBLIC_BUCKET}/${encodePath(path)}`;
-  let bytes: Uint8Array;
+  const isVideo = input.contentType === "video/mp4";
+  let bytes = new Uint8Array();
   let observedMime: string;
   try {
     const key = context.supabase.serviceRoleKey;
     const response = await fetch(new URL(resource, context.supabase.url), {
+      method: isVideo ? "HEAD" : "GET",
       headers: { apikey: key, Authorization: "Bearer " + key },
       cache: "no-store",
     });
     if (!response.ok) throw new AdminMediaError("O objecto carregado não pôde ser verificado. Volte a carregar o ficheiro.", response.status === 404 ? "not_found" : "unavailable");
     observedMime = (response.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
-    bytes = new Uint8Array(await response.arrayBuffer());
+    if (!isVideo) bytes = new Uint8Array(await response.arrayBuffer());
+    const observedSize = Number(response.headers.get("content-length") ?? "");
+    if (isVideo && Number.isFinite(observedSize) && observedSize > 0 && observedSize !== input.byteSize) {
+      await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
+      throw new AdminMediaError("O tamanho real do vídeo não corresponde ao anunciado.", "invalid");
+    }
   } catch (error) {
     if (error instanceof AdminMediaError) throw error;
     throw new AdminMediaError("Não foi possível verificar os bytes do ficheiro carregado.", "unavailable");
   }
 
-  if (bytes.byteLength !== input.byteSize || bytes.byteLength <= 0 || bytes.byteLength > MAX_UPLOAD_BYTES) {
+  if ((!isVideo && (bytes.byteLength !== input.byteSize || bytes.byteLength <= 0)) || input.byteSize <= 0 || input.byteSize > MAX_UPLOAD_BYTES) {
     await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
     throw new AdminMediaError("O tamanho real do ficheiro não corresponde ao anunciado ou excede 500 MB.", "invalid");
   }
-  const inspected = input.contentType === "video/mp4" ? null : inspectImageBytes(bytes);
-  if (input.contentType === "video/mp4") {
+  const inspected = isVideo ? null : inspectImageBytes(bytes);
+  if (isVideo) {
     if (observedMime !== "video/mp4" && observedMime !== "application/octet-stream") {
       await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
       throw new AdminMediaError("O conteúdo real não corresponde a um vídeo MP4 válido.", "invalid");
@@ -174,16 +181,13 @@ export async function completeMediaUpload(input: {
     }
   }
 
-  const digestInput = new Uint8Array(bytes.byteLength);
-  digestInput.set(bytes);
-  const sha = await crypto.subtle.digest("SHA-256", digestInput.buffer);
-  const sha256 = Array.from(new Uint8Array(sha), (value) => value.toString(16).padStart(2, "0")).join("");
+  const sha256 = isVideo ? null : Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes.buffer)), (value) => value.toString(16).padStart(2, "0")).join("");
   const mediaRecord = {
     bucket_id: PUBLIC_BUCKET,
     object_path: path,
     original_name: safeOriginalName(input.originalName),
     content_type: input.contentType,
-    byte_size: bytes.byteLength,
+    byte_size: isVideo ? input.byteSize : bytes.byteLength,
     width: inspected?.width ?? null,
     height: inspected?.height ?? null,
     sha256,
@@ -194,7 +198,7 @@ export async function completeMediaUpload(input: {
   };
   let record: Row | null = null;
   try {
-    const rows = await request<Row[]>(context, "/rest/v1/media_assets?select=*", {
+      const rows = await request<Row[]>(context, "/rest/v1/media_assets?select=*", {
       method: "POST",
       headers: { Prefer: "return=representation" },
       body: JSON.stringify(mediaRecord),
@@ -217,7 +221,7 @@ export async function completeMediaUpload(input: {
         event_type: "media_uploaded",
         success: true,
         subject: path,
-        metadata: { media_asset_id: record["id"], content_type: input.contentType, byte_size: bytes.byteLength, sha256 },
+        metadata: { media_asset_id: record["id"], content_type: input.contentType, byte_size: isVideo ? input.byteSize : bytes.byteLength, sha256 },
       }),
     });
   } catch {
