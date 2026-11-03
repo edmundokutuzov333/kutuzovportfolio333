@@ -302,7 +302,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [activeId, setActiveId] = useState<ModuleId>("overview");
+  const [activeId, setActiveId] = useState<ModuleId>("projects");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Row>({});
   const [baseline, setBaseline] = useState<Row | null>(null);
@@ -612,11 +612,9 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     );
   }
 
+  // Focus mode: only works management for now (user request). Other modules stay in code.
   const sidebarGroups: Array<{ label: string; ids: ModuleId[] }> = [
-    { label: "Painel", ids: ["overview"] },
-    { label: "Conteúdo", ids: ["pages", "sections", "projects", "clients"] },
-    { label: "Identidade", ids: ["profile", "experience", "metrics", "skills", "disciplines", "principles"] },
-    { label: "Sistema", ids: ["services", "process", "settings", "history", "inbox", "mail", "media", "newsletter"] },
+    { label: "Trabalhos", ids: ["projects"] },
   ];
 
   const stateBadge = (value: unknown) => <span className="inline-flex rounded-full border border-[#d8dbe2] bg-[#f6f7f9] px-2.5 py-1 text-[11px] font-medium text-[#555a65]">{statusLabel(value)}</span>;

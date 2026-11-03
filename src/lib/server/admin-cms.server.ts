@@ -62,6 +62,7 @@ function headers(context: AdminContext, prefer?: string): HeadersInit {
 }
 
 function publicError(status: number, message: string): never {
+  console.error("[admin-cms] database error", status, message.slice(0, 500));
   if (/gallery_alt/.test(message) && /does not exist|schema cache|42703|PGRST/i.test(message)) {
     throw new AdminCmsError("O campo de texto alternativo da galeria ainda não foi instalado pela migração da Fase 3. A gravação está bloqueada até a migração ser validada e aplicada.", "unavailable");
   }
@@ -268,7 +269,7 @@ export async function mutateAdminContent(input: {
         p_entity_id: input.id,
         p_payload: payload,
         p_expected_updated_at: input.expectedUpdatedAt,
-        p_actor_id: context.actor.id,
+        p_actor_id: null, // PIN-only session: no auth.users row; DB authorises service_role calls with null actor
         p_note: input.note ?? null,
       }),
     },
@@ -295,7 +296,7 @@ export async function reorderAdminContent(input: {
         p_entity_type: entity,
         p_ids: input.ids,
         p_page_id: input.pageId,
-        p_actor_id: context.actor.id,
+        p_actor_id: null, // PIN-only session: no auth.users row; DB authorises service_role calls with null actor
       }),
     },
   );
@@ -332,7 +333,7 @@ export async function updateContactSubmission(input: {
         p_status: input.status,
         p_internal_notes: input.internalNotes,
         p_expected_updated_at: input.expectedUpdatedAt,
-        p_actor_id: context.actor.id,
+        p_actor_id: null, // PIN-only session: no auth.users row; DB authorises service_role calls with null actor
       }),
     },
   );
