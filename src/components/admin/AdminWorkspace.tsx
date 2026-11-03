@@ -458,7 +458,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
         }
         const previous = Array.isArray(parsed.payload.gallery) ? parsed.payload.gallery.filter((value): value is string => typeof value === "string" && value.length > 0) : [];
         payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload.gallery_alt) ? parsed.payload.gallery_alt : []), ...selectedProjectFiles.map((file) => file.name)] };
-        if (creating && asText(payload.discipline) !== "Campaign design" && selectedProjectFiles.length > 1) {
+        const groupedImport = creating && /^Group:\s*/i.test(asText(payload.title));
+        if (creating && asText(payload.discipline) !== "Campaign design" && selectedProjectFiles.length > 1 && !groupedImport) {
           const startPosition = asNumber(payload.position, 0);
           bulkProjectPayloads = selectedProjectFiles.map((file, index) => ({
             ...payload,
@@ -469,6 +470,10 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
             gallery_alt: [file.name],
             position: startPosition + index,
           }));
+        }
+        if (groupedImport) {
+          const groupedTitle = asText(payload.title).replace(/^Group:\s*/i, "").trim();
+          payload = { ...payload, title: groupedTitle || payload.title, slug: slugifyAssetName(groupedTitle || asText(payload.slug)) };
         }
       } catch (error) {
         setSaving(false);
