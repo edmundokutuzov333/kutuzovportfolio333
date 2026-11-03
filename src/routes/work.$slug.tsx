@@ -50,7 +50,7 @@ function CaseStudy() {
 
   return (
     <>
-      <PageHero eyebrow={`Case ${String(index + 1).padStart(2, "0")}`} lines={project.title.split(" ")} />
+      <PageHero eyebrow={project.discipline} lines={project.title.split(" ")} />
       <div className="px-6 md:px-12">
         <div className="aspect-[16/9] overflow-hidden rounded-sm"><ArtSlot project={project} /></div>
       </div>
@@ -64,22 +64,22 @@ function CaseStudy() {
           ))}
         </dl>
         <div className="space-y-8 text-lg leading-relaxed text-muted-foreground md:col-span-2">
-          <Reveal><p><span className="text-foreground">The challenge.</span> {project.challenge}</p></Reveal>
-          <Reveal><p><span className="text-foreground">The idea.</span> {project.idea}</p></Reveal>
-          <Reveal><p><span className="text-foreground">The outcome.</span> {project.outcome}</p></Reveal>
+          {project.challenge ? <Reveal><p><span className="text-foreground">The challenge.</span> {project.challenge}</p></Reveal> : null}
+          {project.idea ? <Reveal><p><span className="text-foreground">The idea.</span> {project.idea}</p></Reveal> : null}
+          {project.outcome ? <Reveal><p><span className="text-foreground">The outcome.</span> {project.outcome}</p></Reveal> : null}
         </div>
       </section>
       <section className="grid gap-6 px-6 md:grid-cols-2 md:px-12">
         {project.gallery.map((source, imageIndex) => (
           <Reveal key={source} className={imageIndex % 3 === 2 ? "md:col-span-2" : ""}>
             <div className={`overflow-hidden rounded-sm ${imageIndex % 3 === 2 ? "aspect-[21/9]" : "aspect-square"}`}>
-              <SafeAssetImage
+              {project.projectType === "video" ? <video src={source} className="h-full w-full object-cover" controls playsInline preload="metadata" aria-label={project.galleryAlt[imageIndex] || project.title} /> : <SafeAssetImage
                 src={source}
                 alt={project.galleryAlt[imageIndex] || `${project.title}, image ${imageIndex + 1}`}
                 className="h-full w-full object-cover"
                 fallbackClassName="flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center"
                 fallbackLabel="Image unavailable"
-              />
+              />}
             </div>
           </Reveal>
         ))}
