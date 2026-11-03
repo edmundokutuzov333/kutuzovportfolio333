@@ -36,16 +36,15 @@ export class AdminBackendUnavailableError extends Error {
 
 // The access gate is intentionally independent of database credentials.
 function readDatabaseConfig(): AdminDatabaseConfig | null {
-  const url = (
-    process.env["SUPABASE_URL"] ??
-    process.env["VITE_SUPABASE_URL"] ??
-    process.env["NEXT_PUBLIC_SUPABASE_URL"] ??
-    ""
-  ).trim().replace(/\/+$/, "");
-  const serviceRoleKey = (
-    process.env["SUPABASE_SERVICE_ROLE_KEY"] ??
-    process.env["SUPABASE_SECRET_KEY"]
-  )?.trim();
+  const url = [
+    process.env["SUPABASE_URL"],
+    process.env["VITE_SUPABASE_URL"],
+    process.env["NEXT_PUBLIC_SUPABASE_URL"],
+  ].find((value) => value?.trim())?.trim().replace(/\/+$/, "") ?? "";
+  const serviceRoleKey = [
+    process.env["SUPABASE_SERVICE_ROLE_KEY"],
+    process.env["SUPABASE_SECRET_KEY"],
+  ].find((value) => value?.trim())?.trim();
   if (!url || !serviceRoleKey) return null;
 
   try {
