@@ -1,10 +1,10 @@
 import { getAdminServerContext } from "@/lib/server/admin-auth.server";
-import { inspectImageBytes, normalizeObjectPath, referencesAsset, type SupportedImageMime } from "@/lib/media-validation";
+import { inspectImageBytes, normalizeObjectPath, referencesAsset, type SupportedImageMime, type SupportedMediaMime } from "@/lib/media-validation";
 
 type Row = Record<string, unknown>;
 const PUBLIC_BUCKET = "portfolio-public-assets";
 const PRIVATE_BUCKET = "contact-private-attachments";
-const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 500 * 1024 * 1024;
 
 export class AdminMediaError extends Error {
   constructor(message: string, readonly code: "invalid" | "not_found" | "forbidden" | "conflict" | "unavailable" | "unknown" = "unknown") {
@@ -64,10 +64,10 @@ async function storageRequest<T>(context: Awaited<ReturnType<typeof getAdminServ
 }
 
 export function validateMediaUploadInput(input: { originalName: string; contentType: string; byteSize: number; altText?: string; caption?: string }) {
-  const supported = ["image/png", "image/jpeg", "image/webp"];
-  if (!supported.includes(input.contentType)) throw new AdminMediaError("Formato não permitido. Utilize PNG, JPG ou WEBP. SVG não é aceite sem sanitização.", "invalid");
+  const supported = ["image/png", "image/jpeg", "image/webp", "video/mp4"];
+  if (!supported.includes(input.contentType)) throw new AdminMediaError("Formato não permitido. Utilize PNG, JPG, WEBP ou MP4.", "invalid");
   if (!Number.isInteger(input.byteSize) || input.byteSize <= 0 || input.byteSize > MAX_UPLOAD_BYTES) {
-    throw new AdminMediaError("O ficheiro tem de ter entre 1 byte e 15 MB.", "invalid");
+    throw new AdminMediaError("O ficheiro tem de ter entre 1 byte e 500 MB.", "invalid");
   }
   if (input.originalName.length > 180) throw new AdminMediaError("O nome original excede 180 caracteres.", "invalid");
   if ((input.altText?.length ?? 0) > 300 || (input.caption?.length ?? 0) > 500) {
@@ -75,10 +75,10 @@ export function validateMediaUploadInput(input: { originalName: string; contentT
   }
 }
 
-export async function createMediaUpload(input: { originalName: string; contentType: SupportedImageMime; byteSize: number }) {
+export async function createMediaUpload(input: { originalName: string; contentType: SupportedMediaMime; byteSize: number }) {
   const context = await getAdminServerContext();
   validateMediaUploadInput(input);
-  const extension = input.contentType === "image/jpeg" ? "jpg" : input.contentType === "image/png" ? "png" : "webp";
+  const extension = input.contentType === "image/jpeg" ? "jpg" : input.contentType === "image/png" ? "png" : input.contentType === "video/mp4" ? "mp4" : "webp";
   const now = new Date();
   const path = `uploads/${context.actor.sessionId}/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID()}.${extension}`;
   const data = await storageRequest<{ url?: string; token?: string; path?: string }>(
@@ -119,7 +119,7 @@ export async function cancelUnregisteredMediaUpload(input: { path: string }) {
 }
 
 export async function completeMediaUpload(input: {
-  path: string; originalName: string; contentType: SupportedImageMime; byteSize: number; altText: string; caption: string;
+  path: string; originalName: string; contentType: SupportedMediaMime; byteSize: number; altText: string; caption: string;
 }) {
   const context = await getAdminServerContext();
   validateMediaUploadInput(input);
@@ -147,10 +147,15 @@ export async function completeMediaUpload(input: {
 
   if (bytes.byteLength !== input.byteSize || bytes.byteLength <= 0 || bytes.byteLength > MAX_UPLOAD_BYTES) {
     await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
-    throw new AdminMediaError("O tamanho real do ficheiro não corresponde ao anunciado ou excede 15 MB.", "invalid");
+    throw new AdminMediaError("O tamanho real do ficheiro não corresponde ao anunciado ou excede 500 MB.", "invalid");
   }
-  const inspected = inspectImageBytes(bytes);
-  if (!inspected || inspected.mime !== input.contentType || (observedMime !== inspected.mime && observedMime !== "application/octet-stream")) {
+  const inspected = input.contentType === "video/mp4" ? null : inspectImageBytes(bytes);
+  if (input.contentType === "video/mp4") {
+    if (observedMime !== "video/mp4" && observedMime !== "application/octet-stream") {
+      await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
+      throw new AdminMediaError("O conteúdo real não corresponde a um vídeo MP4 válido.", "invalid");
+    }
+  } else if (!inspected || inspected.mime !== input.contentType || (observedMime !== inspected.mime && observedMime !== "application/octet-stream")) {
     await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
     throw new AdminMediaError("O conteúdo real não corresponde a uma imagem PNG, JPG ou WEBP válida.", "invalid");
   }
@@ -163,10 +168,10 @@ export async function completeMediaUpload(input: {
     bucket_id: PUBLIC_BUCKET,
     object_path: path,
     original_name: safeOriginalName(input.originalName),
-    content_type: inspected.mime,
+    content_type: input.contentType,
     byte_size: bytes.byteLength,
-    width: inspected.width,
-    height: inspected.height,
+    width: inspected?.width ?? null,
+    height: inspected?.height ?? null,
     sha256,
     alt_text: input.altText.trim() || null,
     caption: input.caption.trim() || null,
@@ -198,7 +203,7 @@ export async function completeMediaUpload(input: {
         event_type: "media_uploaded",
         success: true,
         subject: path,
-        metadata: { media_asset_id: record["id"], content_type: inspected.mime, byte_size: bytes.byteLength, sha256 },
+        metadata: { media_asset_id: record["id"], content_type: input.contentType, byte_size: bytes.byteLength, sha256 },
       }),
     });
   } catch {
@@ -209,10 +214,10 @@ export async function completeMediaUpload(input: {
     bucket_id: String(record["bucket_id"] ?? PUBLIC_BUCKET),
     object_path: String(record["object_path"] ?? path),
     original_name: record["original_name"] == null ? null : String(record["original_name"]),
-    content_type: String(record["content_type"] ?? inspected.mime),
+    content_type: String(record["content_type"] ?? input.contentType),
     byte_size: Number(record["byte_size"] ?? bytes.byteLength),
-    width: Number(record["width"] ?? inspected.width),
-    height: Number(record["height"] ?? inspected.height),
+    width: record["width"] == null ? null : Number(record["width"]),
+    height: record["height"] == null ? null : Number(record["height"]),
     sha256: String(record["sha256"] ?? sha256),
     alt_text: record["alt_text"] == null ? null : String(record["alt_text"]),
     caption: record["caption"] == null ? null : String(record["caption"]),
