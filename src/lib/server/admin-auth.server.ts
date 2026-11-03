@@ -42,8 +42,8 @@ function readDatabaseConfig(): AdminDatabaseConfig | null {
     process.env["NEXT_PUBLIC_SUPABASE_URL"],
   ].find((value) => value?.trim())?.trim().replace(/\/+$/, "") ?? "";
   const serviceRoleKey = [
-    process.env["SUPABASE_SERVICE_ROLE_KEY"],
     process.env["SUPABASE_SECRET_KEY"],
+    process.env["SUPABASE_SERVICE_ROLE_KEY"],
   ].find((value) => value?.trim())?.trim();
   if (!url || !serviceRoleKey) return null;
 
