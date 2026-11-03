@@ -156,12 +156,19 @@ export async function completeMediaUpload(input: {
       throw new AdminMediaError("O conteúdo real não corresponde a um vídeo MP4 válido.", "invalid");
     }
   } else {
+    const isConfirmedJpeg = input.contentType === "image/jpeg"
+      && observedMime === "image/jpeg"
+      && bytes.byteLength >= 4
+      && bytes[0] === 0xff
+      && bytes[1] === 0xd8
+      && bytes[bytes.byteLength - 2] === 0xff
+      && bytes[bytes.byteLength - 1] === 0xd9;
     const isConfirmedWebp = input.contentType === "image/webp"
       && observedMime === "image/webp"
       && bytes.byteLength >= 12
       && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF"
       && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
-    if ((!inspected && !isConfirmedWebp) || (inspected && inspected.mime !== input.contentType) || (inspected && observedMime !== inspected.mime && observedMime !== "application/octet-stream")) {
+    if ((!inspected && !isConfirmedJpeg && !isConfirmedWebp) || (inspected && inspected.mime !== input.contentType) || (inspected && observedMime !== inspected.mime && observedMime !== "application/octet-stream")) {
       await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
       throw new AdminMediaError("O conteúdo real não corresponde a uma imagem PNG, JPG ou WEBP válida.", "invalid");
     }
