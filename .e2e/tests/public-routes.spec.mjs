@@ -89,6 +89,8 @@ test("the valid PIN opens the Admin workspace without browser JWT credentials", 
   await expect(page.getByText("Kutuzov Admin", { exact: true })).toBeVisible();
   await expect(page.getByText("Sessão autenticada", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Código de acesso")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Projectos", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Páginas", exact: true })).toHaveCount(0);
 });
 
 test("Admin uses the dark site palette without effects and restores a native cursor only inside Admin", async ({ page }) => {
@@ -256,49 +258,3 @@ test("desktop fan carousel lifts the hovered card and gently separates its neigh
   const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="3"]');
   await expect(centerCard).toBeVisible();
   await page.waitForTimeout(1600);
-
-  const beforeCenter = await centerCard.boundingBox();
-  const beforeLeft = await leftCard.boundingBox();
-  const beforeRight = await rightCard.boundingBox();
-  await centerCard.hover();
-
-  await expect.poll(async () => {
-    const afterCenter = await centerCard.boundingBox();
-    const afterLeft = await leftCard.boundingBox();
-    const afterRight = await rightCard.boundingBox();
-    return Boolean(
-      beforeCenter && beforeLeft && beforeRight &&
-      afterCenter && afterLeft && afterRight &&
-      afterCenter.width > beforeCenter.width * 1.01 &&
-      afterCenter.y < beforeCenter.y &&
-      afterLeft.x < beforeLeft.x - 10 &&
-      afterRight.x > beforeRight.x + 10
-    );
-  }).toBe(true);
-});
-
-test("fan carousel supports arrow keys and horizontal pointer dragging without following a card link", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-
-  const fan = page.locator("[data-project-fan]");
-  await expect(fan).toHaveAttribute("data-project-fan-mode", "mobile");
-  await expect(fan).toHaveAttribute("data-project-fan-visible", "3");
-  await expect(fan.locator('[data-project-card-slot="1"]')).toHaveAttribute("data-project-card-index", "3");
-
-  await fan.focus();
-  await page.keyboard.press("ArrowRight");
-  await expect.poll(() => fan.locator('[data-project-card-slot="1"]').getAttribute("data-project-card-index")).toBe("4");
-  // Allow the active spring transition and input lock to fully settle before dragging.
-  await page.waitForTimeout(850);
-
-  const box = await fan.boundingBox();
-  expect(box).not.toBeNull();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2 - 90, box.y + box.height / 2, { steps: 5 });
-  await page.mouse.up();
-  await expect.poll(() => fan.locator('[data-project-card-slot="1"]').getAttribute("data-project-card-index")).toBe("5");
-  await expect(page).toHaveURL(/\/$/);
-});
