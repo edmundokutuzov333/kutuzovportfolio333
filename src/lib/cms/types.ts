@@ -1,3 +1,4 @@
+     442 src/lib/cms/types.ts
 import { z } from "zod";
 
 export const NavigationSettingSchema = z.array(z.object({
@@ -428,3 +429,15 @@ export function toPrinciple(row: z.infer<typeof PrincipleSchema>): Principle {
 
 export const PublicationStateSchema = z.object({
   published_revision: z.coerce.number().int().nonnegative(),
+});
+export type PublicationState = z.infer<typeof PublicationStateSchema>;
+
+export const BudgetsSchema = z.record(z.string(), z.array(z.string()));
+export const ProjectTypesSchema = z.array(z.string().min(1).max(180));
+export const CapabilitiesSchema = z.array(z.string().min(1).max(180));
+export const ContactStepsSchema = z.array(z.object({
+  k: z.string().min(1).max(80),
+  t: z.string().min(1).max(240),
+  d: z.string().min(1).max(600),
+}));
+export type ContactStep = z.infer<typeof ContactStepsSchema>[number];
