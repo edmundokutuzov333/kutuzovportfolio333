@@ -1126,7 +1126,7 @@ function ProjectGrid({
                   <h3 className="line-clamp-2 text-sm font-semibold text-[#20232b]">{rowTitle(row)}</h3>
                   <p className="mt-1 truncate text-xs text-[#707582]">{asText(row["discipline"]) || "Sem categoria"}{asText(row["client_label"]) ? ` · ${asText(row["client_label"])}` : ""}</p>
                 </div>
-                <span className="shrink-0 rounded-md bg-[#f1f3f7] px-2 py-1 text-[10px] font-medium text-[#596174]">#{asNumber(row["position"], index) + 1}</span>
+                <span className="shrink-0 rounded-md bg-[#f1f3f7] px-2 py-1 text-[10px] font-medium text-[#596174]">#{index + 1}</span>
               </div>
               <p className="mt-3 text-[11px] text-[#7a7f8b]">{gallery.length || (source ? 1 : 0)} ficheiro(s) · {statusLabel(row["status"])}</p>
               <div className="mt-4 grid grid-cols-2 gap-2">

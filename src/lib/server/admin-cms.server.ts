@@ -343,23 +343,23 @@ export async function deleteArchivedProject(input: {
   note?: string | null;
 }) {
   const context = await getAdminServerContext();
-  const result = await restRequest<{ record: Row; published_revision: number }>(
-    context,
-    "/rest/v1/rpc/admin_delete_archived_project",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        p_entity_id: input.id,
-        p_expected_updated_at: input.expectedUpdatedAt,
-        p_actor_id: null,
-        p_note: input.note ?? null,
-      }),
-    },
-  );
-  if (!result || typeof result !== "object" || !("record" in result) || !("published_revision" in result)) {
+  const currentRows = await restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}`);
+  const current = currentRows[0];
+  if (!current) throw new AdminCmsError("O projecto já não existe. Actualize a lista.", "not_found");
+  if (current["updated_at"] !== input.expectedUpdatedAt) {
+    throw new AdminCmsError("Conflito: o projecto foi alterado depois de abrir a lista. Actualize os dados.", "conflict");
+  }
+  if (current["status"] !== "archived") {
+    throw new AdminCmsError("Só é possível apagar definitivamente um projecto arquivado.", "invalid");
+  }
+  const deleted = await restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}`, {
+    method: "DELETE",
+    headers: { Prefer: "return=representation" },
+  });
+  if (!Array.isArray(deleted) || deleted.length !== 1) {
     throw new AdminCmsError("A base de dados não confirmou a eliminação definitiva.", "unknown");
   }
-  return result;
+  return { record: deleted[0], published_revision: 0 };
 }
 
 function zReorderEntity(value: string): string {
