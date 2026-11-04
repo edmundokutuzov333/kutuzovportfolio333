@@ -19,6 +19,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Hero({ profile }: { profile: Profile }) {
+  const { tx, t } = useI18n();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.75]);
@@ -36,7 +37,7 @@ function Hero({ profile }: { profile: Profile }) {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-md font-display text-2xl font-semibold leading-tight md:text-3xl"
         >
-          {profile.headline}
+          {tx(profile.headline)}
         </motion.h1>
         <motion.div
           initial={{ opacity: 0 }}
@@ -44,9 +45,9 @@ function Hero({ profile }: { profile: Profile }) {
           transition={{ delay: 0.3, duration: 0.4 }}
           className="eyebrow space-y-1 md:text-right"
         >
-          <p>{profile.roles.join(" / ")}</p>
-          <p>{profile.location}</p>
-            <p className="text-primary">↓ Scroll</p>
+          <p>{profile.roles.map(tx).join(" / ")}</p>
+          <p>{tx(profile.location)}</p>
+          <p className="text-primary">{t("scroll")}</p>
         </motion.div>
       </div>
     </section>
@@ -54,9 +55,10 @@ function Hero({ profile }: { profile: Profile }) {
 }
 
 function Manifesto({ profile, label }: { profile: Profile; label: string }) {
+  const { tx } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 40%"] });
-  const words = profile.intro.split(" ");
+  const words = tx(profile.intro).split(" ");
   return (
     <section className="px-6 py-32 md:px-12 md:py-48">
       <p className="eyebrow mb-10">{label}</p>
@@ -172,7 +174,7 @@ function Home() {
                 <ClientsMarquee clients={clients} />
                 <div className="mt-10 px-6 md:px-12">
                   <Link to="/clients" className="eyebrow hover:text-primary">
-                    {section.config.link_label} {clients.length} →
+                    {tx(section.config.link_label)} {clients.length} →
                   </Link>
                 </div>
               </section>

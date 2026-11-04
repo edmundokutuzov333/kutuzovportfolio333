@@ -71,6 +71,11 @@ type TranslationKey = keyof typeof copy.en;
 const contentTranslations: Record<string, string> = {
   "Maputo · Available for projects": "Maputo · Disponível para projectos",
   "I make ideas stop, take notice, stay in memory, and act.": "Faço as ideias parar, chamar atenção, ficar na memória e levar à acção.",
+  "I'm Edmundo Kutuzov, an art director from Maputo operating globally, building brand systems that earn attention rather than beg for it. 30+ brands. One obsession: work that refuses to be ignored.": "Sou Edmundo Kutuzov, director de arte de Maputo com trabalho global, e construo sistemas de marca que conquistam atenção em vez de a pedir. Mais de 30 marcas. Uma obsessão: trabalho que se recusa a ser ignorado.",
+  "Art Director": "Director de arte",
+  "Social Media Manager": "Gestor de redes sociais",
+  "AI Expert": "Especialista em IA",
+  "Content Creator": "Criador de conteúdo",
   "Art Director / Social Media Manager / AI Expert / Content Creator": "Director de Arte / Gestor de Redes Sociais / Especialista em IA / Criador de Conteúdo",
   "Maputo — Moçambique, Africa": "Maputo - Moçambique, África",
   "Selected work": "Trabalho seleccionado",

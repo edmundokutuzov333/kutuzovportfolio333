@@ -1,17 +1,19 @@
 import { motion } from "framer-motion";
 import type { Client } from "@/lib/cms/types";
 import { SafeAssetImage } from "./SafeAssetImage";
+import { clientLogoUrl } from "@/lib/client-logos";
 
 function Slot({ client }: { client: Client }) {
+  const logo = clientLogoUrl(client.slug) ?? client.logo;
   return (
-    <div className="group relative flex aspect-[3/2] items-center justify-center overflow-hidden border-r border-b border-border p-6">
+    <div className="group relative flex aspect-[3/2] items-center justify-center overflow-hidden border-r border-b border-border bg-background p-6 outline-none transition-colors duration-500 hover:bg-primary focus-within:bg-primary">
       <span className="eyebrow absolute left-4 top-4">{String(client.position + 1).padStart(2, "0")}</span>
       <div className="absolute inset-0 translate-y-full bg-primary transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0" />
-      {client.logo ? (
+      {logo ? (
         <SafeAssetImage
-          src={client.logo}
+          src={logo}
           alt={client.logoAlt}
-          className="relative h-10 w-auto object-contain opacity-70 grayscale transition group-hover:opacity-100"
+          className="relative max-h-12 w-auto max-w-[78%] object-contain opacity-75 grayscale transition duration-500 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 group-focus-within:scale-105 group-focus-within:opacity-100 group-focus-within:grayscale-0"
           fallbackClassName="relative flex min-h-10 items-center justify-center"
           fallbackLabel={client.name}
         />
@@ -50,11 +52,11 @@ export function ClientsMarquee({ clients }: { clients: Client[] }) {
       <div className={`flex shrink-0 gap-4 pr-4 ${reverse ? "animate-marquee-rev" : "animate-marquee"}`}>
         {[...items, ...items].map((client, i) => (
           <div key={`${client.slug}-${i}`} className="flex h-20 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-8">
-            {client.logo ? (
+            {(clientLogoUrl(client.slug) ?? client.logo) ? (
               <SafeAssetImage
-                src={client.logo}
+                src={clientLogoUrl(client.slug) ?? client.logo}
                 alt={client.logoAlt}
-                className="h-7 w-auto"
+                className="max-h-8 w-auto max-w-[10rem] object-contain"
                 fallbackClassName="flex items-center gap-2"
                 fallbackLabel={client.name}
               />

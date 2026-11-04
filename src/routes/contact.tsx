@@ -7,6 +7,7 @@ import { loadContactContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
 import { submitContactForm } from "@/lib/public-forms";
+import { ArrowUpRight, Mail, Phone, Video } from "lucide-react";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loadContactContent(),
@@ -115,13 +116,13 @@ function Contact() {
 
       <section className="grid gap-px bg-border md:grid-cols-3">
         {[
-          { l: "WhatsApp", v: profile.phone, h: profile.whatsapp },
-          { l: "Email", v: profile.email, h: `mailto:${profile.email}` },
-          { l: "30-min call", v: "Request a slot", h: `mailto:${profile.email}?subject=30-minute%20call` },
-        ].map((c) => (
-          <a key={c.l} href={c.h} target="_blank" rel="noreferrer" className="group bg-background p-10 transition hover:bg-primary hover:text-primary-foreground">
-            <p className="eyebrow group-hover:text-primary-foreground">{c.l}</p>
-            <p className="mt-6 font-display text-2xl font-semibold">{c.v} ↗</p>
+          { l: "WhatsApp", v: profile.phone, h: profile.whatsapp, Icon: Phone },
+          { l: "Email", v: profile.email, h: `mailto:${profile.email}`, Icon: Mail },
+          { l: "30-min call", v: "Request a slot", h: `mailto:${profile.email}?subject=30-minute%20call`, Icon: Video },
+        ].map(({ Icon, ...c }) => (
+          <a key={c.l} href={c.h} target="_blank" rel="noreferrer" className="group bg-background p-8 transition hover:bg-primary hover:text-primary-foreground md:p-10">
+            <div className="flex items-center justify-between"><p className="eyebrow group-hover:text-primary-foreground">{c.l}</p><Icon size={18} strokeWidth={1.6} aria-hidden="true" /></div>
+            <p className={`mt-6 break-words font-display font-semibold leading-tight ${c.l === "WhatsApp" ? "text-xl tracking-tight sm:text-2xl" : "text-2xl"}`}>{c.v} <ArrowUpRight className="inline-block align-[0.08em]" size={18} strokeWidth={1.7} aria-hidden="true" /></p>
           </a>
         ))}
       </section>
