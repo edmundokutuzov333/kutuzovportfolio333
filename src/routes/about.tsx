@@ -6,7 +6,6 @@ import { SafeAssetImage } from "@/components/SafeAssetImage";
 import { loadAboutContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { aboutBiography } from "@/lib/content";
-import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import { seoFromPage } from "@/lib/seo";
 import { useI18n } from "@/lib/i18n";
 
@@ -30,7 +29,9 @@ function About() {
   const biography = profile.biography?.trim()
     ? profile.biography.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean)
     : aboutBiography;
-  const portrait = resolvePublicAssetUrl(profile.portraitPath);
+  // The About portrait is the approved profile image supplied for the current site.
+  // Keep it local so the public page does not depend on an outdated CMS asset path.
+  const portrait = "/edmundo-kutuzov-foto.png";
   const selectedProjects = projects.slice(0, 4);
 
   return (
