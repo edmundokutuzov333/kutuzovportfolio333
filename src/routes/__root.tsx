@@ -13,6 +13,7 @@ import { lazy, Suspense, useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { I18nProvider } from "../lib/i18n";
 const PublicShell = lazy(() => import("../components/Shell").then((module) => ({ default: module.Shell })));
 
 function NotFoundComponent() {
@@ -143,15 +144,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isAdminRoute ? (
-        <Outlet />
-      ) : (
-        <Suspense fallback={<div className="min-h-screen bg-background" aria-busy="true" />}>
-          <PublicShell>
-            <Outlet />
-          </PublicShell>
-        </Suspense>
-      )}
+      <I18nProvider>
+        {isAdminRoute ? (
+          <Outlet />
+        ) : (
+          <Suspense fallback={<div className="min-h-screen bg-background" aria-busy="true" />}>
+            <PublicShell>
+              <Outlet />
+            </PublicShell>
+          </Suspense>
+        )}
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

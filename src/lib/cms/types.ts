@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+/** Portfolio copy uses the short hyphen consistently in the public presentation. */
+export function withoutLongDashes(value: string): string {
+  return value.replace(/[–—]/g, "-");
+}
+
 export const NavigationSettingSchema = z.array(z.object({
   to: z.enum(["/", "/work", "/about", "/services", "/process", "/clients", "/contact"]),
   label: z.string().min(1).max(80),
@@ -247,19 +252,19 @@ export function toProject(row: ProjectRow): Project {
   return {
     id: row.id,
     slug: row.slug,
-    title: row.title,
-    client: row.client_label ?? "",
-    year: row.year_label ?? "",
-    discipline: row.discipline ?? "",
-    projectType: row.project_type ?? "",
-    summary: row.summary ?? "",
-    challenge: row.challenge ?? "",
-    idea: row.idea ?? "",
-    outcome: row.outcome ?? "",
+    title: withoutLongDashes(row.title),
+    client: withoutLongDashes(row.client_label ?? ""),
+    year: withoutLongDashes(row.year_label ?? ""),
+    discipline: withoutLongDashes(row.discipline ?? ""),
+    projectType: withoutLongDashes(row.project_type ?? ""),
+    summary: withoutLongDashes(row.summary ?? ""),
+    challenge: withoutLongDashes(row.challenge ?? ""),
+    idea: withoutLongDashes(row.idea ?? ""),
+    outcome: withoutLongDashes(row.outcome ?? ""),
     cover: row.cover_path ?? row.gallery[0] ?? null,
     coverAlt: row.cover_alt ?? row.gallery_alt?.[0] ?? row.title,
     gallery: row.gallery,
-    galleryAlt: row.gallery_alt ?? [],
+    galleryAlt: (row.gallery_alt ?? []).map(withoutLongDashes),
     featured: row.featured,
     position: row.position,
     hue: row.hue,

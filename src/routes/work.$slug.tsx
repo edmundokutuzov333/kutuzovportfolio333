@@ -5,6 +5,7 @@ import { SafeAssetImage } from "@/components/SafeAssetImage";
 import { loadProjectDetailContent } from "@/lib/cms/loaders";
 import { PUBLIC_SITE_URL } from "@/lib/cms/public-client";
 import { seoFromPage, noIndexSeo } from "@/lib/seo";
+import { useI18n } from "@/lib/i18n";
 
 function headlineLines(title: string) {
   const words = title.trim().split(/\s+/).filter(Boolean);
@@ -56,13 +57,14 @@ export const Route = createFileRoute("/work/$slug")({
 
 function CaseStudy() {
   const { project, projects } = Route.useLoaderData();
+  const { t } = useI18n();
   const index = projects.findIndex((item) => item.slug === project.slug);
   const next = projects[(index + 1) % projects.length] ?? project;
   const facts = [
-    ["Client", project.client],
-    ["Discipline", project.discipline],
-    ["Year", project.year],
-    ["Role", "Art Direction"],
+    [t("client"), project.client],
+    [t("discipline"), project.discipline],
+    [t("year"), project.year],
+    [t("role"), "Art Direction"],
   ];
 
   return (
@@ -81,9 +83,9 @@ function CaseStudy() {
           ))}
         </dl>
         <div className="space-y-8 text-lg leading-relaxed text-muted-foreground md:col-span-2">
-          {project.challenge ? <Reveal><p><span className="text-foreground">The challenge.</span> {project.challenge}</p></Reveal> : null}
-          {project.idea ? <Reveal><p><span className="text-foreground">The idea.</span> {project.idea}</p></Reveal> : null}
-          {project.outcome ? <Reveal><p><span className="text-foreground">The outcome.</span> {project.outcome}</p></Reveal> : null}
+          {project.challenge ? <Reveal><p><span className="text-foreground">{t("challenge")}.</span> {project.challenge}</p></Reveal> : null}
+          {project.idea ? <Reveal><p><span className="text-foreground">{t("idea")}.</span> {project.idea}</p></Reveal> : null}
+          {project.outcome ? <Reveal><p><span className="text-foreground">{t("outcome")}.</span> {project.outcome}</p></Reveal> : null}
         </div>
       </section>
       <section className="grid items-start gap-6 px-6 md:grid-cols-2 md:px-12">
@@ -103,7 +105,7 @@ function CaseStudy() {
       </section>
       {projects.length > 1 && (
         <Link to="/work/$slug" params={{ slug: next.slug }} data-cursor="Next" className="group mt-32 block border-t border-border px-6 py-24 md:px-12">
-          <p className="eyebrow">Next project</p>
+          <p className="eyebrow">{t("nextProject")}</p>
           <p className="mt-4 max-w-4xl font-display text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.9] tracking-tight transition-colors group-hover:text-primary">{next.title}</p>
         </Link>
       )}

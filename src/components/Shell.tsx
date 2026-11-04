@@ -10,6 +10,7 @@ import { LogoMark } from "./LogoMark";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
 import { JarvisLauncher } from "./JarvisLauncher";
+import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 
 function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
@@ -48,22 +49,28 @@ function Cursor() {
 }
 
 function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (value: boolean) => void; presentation: PublicPresentation["presentation"] }) {
+  const { t } = useI18n();
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 text-bone md:px-12">
       <Link to="/" aria-label="Home" className="text-bone"><LogoMark className="h-6 w-auto" /></Link>
-      <div className="eyebrow hidden text-bone md:block">{presentation.availability_label}</div>
-      <button onClick={() => setOpen(!open)} className="liquid-glass-button flex items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
-        {open ? presentation.close_menu_label : presentation.open_menu_label}
-        <span className="relative block h-3 w-6">
-          <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
-          <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
-        </span>
-      </button>
+      <div className="hidden items-center gap-4 md:flex"><div className="eyebrow text-bone">{presentation.availability_label || t("available")}</div><LanguageSwitcher /></div>
+      <div className="flex items-center gap-2">
+        <div className="md:hidden"><LanguageSwitcher /></div>
+        <button onClick={() => setOpen(!open)} className="liquid-glass-button flex items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
+          {open ? t("close") : t("menu")}
+          <span className="relative block h-3 w-6">
+            <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
+            <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
+          </span>
+        </button>
+      </div>
     </header>
   );
 }
 
 function Menu({ close, profile, presentation }: { close: () => void; profile: Profile | null; presentation: PublicPresentation }) {
+  const { t } = useI18n();
+  const navLabel = (to: string, fallback: string) => ({ "/": t("home"), "/work": t("work"), "/about": t("about"), "/services": t("services"), "/process": t("process"), "/clients": t("clients"), "/contact": t("contact") }[to] ?? fallback);
   return (
     <motion.div
       className="fixed inset-0 z-40 flex flex-col justify-between bg-primary px-6 pb-10 pt-28 text-primary-foreground md:px-12"
@@ -77,7 +84,7 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
           <motion.div key={item.to} className="overflow-hidden" initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + index * 0.03, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <Link to={item.to} onClick={close} className="group flex items-baseline gap-4 font-display text-[11vw] font-bold leading-[0.95] md:text-[6.5vw]">
               <span className="font-mono text-xs">0{index + 1}</span>
-              <span className="transition-transform duration-500 group-hover:translate-x-6">{item.label}</span>
+              <span className="transition-transform duration-500 group-hover:translate-x-6">{navLabel(item.to, item.label)}</span>
             </Link>
           </motion.div>
         ))}
@@ -85,7 +92,7 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
       <div className="flex flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest">
         {profile?.email && <a href={`mailto:${profile.email}`}>{profile.email}</a>}
         <div className="flex gap-6">
-          <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="liquid-glass-button rounded-full px-4 py-2 uppercase">Replay intro</button>
+          <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="liquid-glass-button rounded-full px-4 py-2 uppercase">{t("replay")}</button>
           {profile?.socials.map((social) => (
             <a key={social.label} href={social.href} target="_blank" rel="noreferrer">{social.label}</a>
           ))}

@@ -29,6 +29,7 @@ type Workspace = {
 type Field = {
   key: string;
   label: string;
+  hidden?: boolean;
   type?: "text" | "textarea" | "number" | "checkbox" | "json" | "select" | "email" | "url";
   required?: boolean;
   nullable?: boolean;
@@ -102,19 +103,25 @@ const MODULES: ModuleDef[] = [
     { key: "is_visible", label: "Visível", type: "checkbox" },
     { key: "config", label: "Configuração tipada (JSON)", type: "json", required: true, help: "JSON estruturado de acordo com o tipo. Não é permitido HTML, CSS ou JavaScript arbitrário." },
   ] },
-  { id: "projects", label: "Projectos", description: "Trabalhos do portfolio. Carregue os ficheiros originais, escolha a categoria e organize a ordem.", table: "projects", entity: "projects", create: true, reorder: true, icon: BriefcaseBusiness, fields: [
-    { key: "title", label: "Nome do trabalho", required: true },
-    { key: "slug", label: "Slug", required: true, help: "Gerado a partir do nome; use apenas minúsculas, números e hífen." },
-    { key: "client_label", label: "Cliente / campanha", nullable: true },
-    { key: "year_label", label: "Ano", nullable: true },
+  { id: "projects", label: "Projectos", description: "Edite cada trabalho como uma peça de portfolio: informação, narrativa, materiais e publicação.", table: "projects", entity: "projects", create: true, reorder: true, icon: BriefcaseBusiness, fields: [
+    { key: "title", label: "Nome do projecto", required: true },
+    { key: "client_label", label: "Cliente / Marca", required: true },
+    { key: "year_label", label: "Ano", required: true },
     { key: "discipline", label: "Categoria", type: "select", required: true, options: portfolioCategories },
-    { key: "project_type", label: "Formato", type: "select", required: true, options: mediaKindOptions },
-    { key: "gallery", label: "Ficheiros do trabalho (JSON)", type: "json", required: true, help: "Ordem dos ficheiros apresentados. Use o botão de upload abaixo para preencher sem copiar caminhos." },
-    { key: "gallery_alt", label: "Textos alternativos (JSON)", type: "json", required: true, help: "Uma descrição curta por ficheiro, na mesma ordem." },
-    { key: "featured", label: "Fixar na Home", type: "checkbox" },
-    { key: "position", label: "Posição", type: "number", required: true },
+    { key: "challenge", label: "The challenge", type: "textarea", nullable: true },
+    { key: "idea", label: "The idea", type: "textarea", nullable: true },
+    { key: "outcome", label: "The outcome", type: "textarea", nullable: true },
+    { key: "gallery", label: "Ficheiros do trabalho", type: "json", required: true, hidden: true },
+    { key: "gallery_alt", label: "Textos alternativos", type: "json", required: true, hidden: true },
+    { key: "cover_path", label: "Capa", hidden: true },
+    { key: "cover_alt", label: "Texto alternativo da capa", hidden: true },
+    { key: "slug", label: "Slug", hidden: true },
+    { key: "client_id", label: "Cliente", hidden: true, nullable: true },
+    { key: "project_type", label: "Formato", hidden: true },
+    { key: "featured", label: "Destacar na página inicial", type: "checkbox" },
+    { key: "position", label: "Posição", type: "number", hidden: true },
     { key: "status", label: "Estado", type: "select", options: statusOptions },
-    { key: "locale", label: "Idioma", required: true },
+    { key: "locale", label: "Idioma", hidden: true },
   ] },
   { id: "clients", label: "Clientes", description: "Logótipos, texto alternativo e visibilidade por contexto.", table: "clients", entity: "clients", create: true, reorder: true, icon: Users, fields: [
     { key: "name", label: "Nome", required: true },
@@ -235,7 +242,20 @@ function createDefaults(module: ModuleDef, rows: Row[], pages: Row[]): Row {
     draft["config"] = JSON.stringify({ label: "Nova secção" }, null, 2);
   }
   if (module.id === "projects") {
-    Object.assign(draft, { featured: false, status: "draft", discipline: "Social Media", project_type: "image", locale: "pt-MZ", gallery: "[]", gallery_alt: "[]" });
+    Object.assign(draft, {
+      featured: false,
+      status: "draft",
+      discipline: "Social Media",
+      project_type: "image",
+      locale: "en",
+      client_id: null,
+      slug: "",
+      position: String(maxPosition + 1),
+      gallery: "[]",
+      gallery_alt: "[]",
+      cover_path: "",
+      cover_alt: "",
+    });
   }
   if (module.id === "clients") {
     Object.assign(draft, { logo_path: "", logo_alt: "", show_on_home: true, show_on_clients_page: true, is_visible: true, display_as_text: false });
@@ -341,6 +361,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [projectFiles, setProjectFiles] = useState<File[]>([]);
+  const [projectDragIndex, setProjectDragIndex] = useState<number | null>(null);
   const [notice, setNotice] = useState<{ tone: "success" | "error" | "info"; text: string } | null>(null);
   const [search, setSearch] = useState("");
   const [sectionPageId, setSectionPageId] = useState("");
@@ -386,6 +407,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setSearch("");
     setNotice(null);
     setProjectFiles([]);
+    setProjectDragIndex(null);
   };
 
   function startEdit(row: Row) {
@@ -396,6 +418,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setCreating(false);
     setNotice(null);
     setProjectFiles([]);
+    setProjectDragIndex(null);
   }
   function startCreate() {
     if (!active.entity || !active.create) return;
@@ -408,6 +431,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setCreating(true);
     setNotice(null);
     setProjectFiles([]);
+    setProjectDragIndex(null);
   }
   function cancelEdit() {
     setEditing(false);
@@ -448,6 +472,37 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     setNotice(null);
   }
 
+  function updateProjectMedia(gallery: string[], galleryAlt: string[]) {
+    setDraft((current) => ({
+      ...current,
+      gallery: JSON.stringify(gallery),
+      gallery_alt: JSON.stringify(galleryAlt.slice(0, gallery.length)),
+      cover_path: gallery[0] ?? "",
+    }));
+    setNotice(null);
+  }
+
+  function moveProjectMedia(from: number, to: number) {
+    const gallery = assetList(draft["gallery"]);
+    const galleryAlt = assetList(draft["gallery_alt"]);
+    if (from < 0 || to < 0 || from >= gallery.length || to >= gallery.length) return;
+    const nextGallery = [...gallery];
+    const nextAlt = [...galleryAlt];
+    const [asset] = nextGallery.splice(from, 1);
+    const [alt] = nextAlt.splice(from, 1);
+    if (asset) nextGallery.splice(to, 0, asset);
+    nextAlt.splice(to, 0, alt ?? "");
+    updateProjectMedia(nextGallery, nextAlt);
+  }
+
+  function removeProjectMedia(index: number) {
+    const gallery = assetList(draft["gallery"]);
+    const galleryAlt = assetList(draft["gallery_alt"]);
+    gallery.splice(index, 1);
+    galleryAlt.splice(index, 1);
+    updateProjectMedia(gallery, galleryAlt);
+  }
+
   async function saveContent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!active.entity || !editing || saving) return;
@@ -457,6 +512,20 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       return;
     }
     let payload = parsed.payload;
+    if (activeId === "projects") {
+      payload = {
+        ...payload,
+        slug: asText(payload["slug"]) || slugifyAssetName(asText(payload["title"])),
+        client_id: payload["client_id"] ?? null,
+        project_type: asText(payload["project_type"]) || "image",
+        gallery: Array.isArray(payload["gallery"]) ? payload["gallery"] : [],
+        gallery_alt: Array.isArray(payload["gallery_alt"]) ? payload["gallery_alt"] : [],
+        position: asNumber(payload["position"], tableRows.length),
+        locale: asText(payload["locale"]) || "en",
+        status: asText(payload["status"]) || "draft",
+        featured: asBool(payload["featured"]),
+      };
+    }
     let bulkProjectPayloads: Row[] | null = null;
     if (activeId === "projects" && projectFiles.length > 0) {
       const selectedProjectFiles = [...projectFiles];
@@ -478,7 +547,14 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
           }
         }
         const previous = Array.isArray(parsed.payload["gallery"]) ? parsed.payload["gallery"].filter((value): value is string => typeof value === "string" && value.length > 0) : [];
-        payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload["gallery_alt"]) ? parsed.payload["gallery_alt"] : []), ...selectedProjectFiles.map((file) => file.name)] };
+        const nextGallery = [...previous, ...uploadedPaths];
+        payload = {
+          ...payload,
+          gallery: nextGallery,
+          gallery_alt: [...(Array.isArray(parsed.payload["gallery_alt"]) ? parsed.payload["gallery_alt"] : []), ...selectedProjectFiles.map((file) => file.name)],
+          cover_path: asText(payload["cover_path"]) || nextGallery[0] || null,
+          cover_alt: asText(payload["cover_alt"]) || selectedProjectFiles[0]?.name || null,
+        };
         const groupedImport = creating && /^Group:\s*/i.test(asText(payload["title"]));
         if (creating && asText(payload["discipline"]) !== "Campaign design" && selectedProjectFiles.length > 1 && !groupedImport) {
           const startPosition = asNumber(payload["position"], 0);
@@ -677,6 +753,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   }
 
   function renderField(field: Field) {
+    if (field.hidden) return null;
     const value = draft[field.key];
     const shared = "mt-1.5 w-full rounded-lg border border-[#d9dce2] bg-white px-3 py-2.5 text-sm text-[#15161a] outline-none transition focus-visible:border-[#3b5ccc] focus-visible:ring-2 focus-visible:ring-[#3b5ccc]/20 disabled:cursor-not-allowed disabled:bg-[#f0f1f4]";
     const fieldDisabled = saving || (!creating && !!active.reorder && field.key === "position") || (!creating && activeId === "sections" && field.key === "page_id");
@@ -823,20 +900,44 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                     {baseline?.["status"] ? stateBadge(baseline["status"]) : null}
                   </div>
                   {activeId === "pages" ? <div className="mb-4 rounded-lg border border-[#eadcb4] bg-[#fff9e9] p-3 text-xs leading-5 text-[#6f5317]">Só estão disponíveis as oito rotas suportadas pelo router. Criar uma rota nova exige implementar e testar um renderer no código; o CMS não inventa páginas nem componentes.</div> : null}
-                  {activeId === "projects" ? <div className="mb-5 rounded-lg border border-[#dfe4f2] bg-[#f7f9ff] p-4">
-                    <p className="text-sm font-semibold">Adicionar ficheiros do trabalho</p>
-                    <p className="mt-1 text-xs leading-5 text-[#626774]">Imagens e MP4 são guardados no tamanho e qualidade originais. Pode seleccionar vários ficheiros para uma campanha ou agrupamento.</p>
-                    <input type="file" multiple accept="image/png,image/jpeg,image/webp,video/mp4" onChange={(event) => setProjectFiles(Array.from(event.target.files ?? []))} disabled={saving} className="mt-3 block w-full text-xs" />
-                    {projectFiles.length > 0 ? <p className="mt-2 text-xs text-[#4f5665]">{projectFiles.length} ficheiro(s) seleccionado(s): {projectFiles.map((file) => file.name).join(", ")}</p> : null}
-                  </div> : null}
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  {activeId === "projects" ? <>
+                    <section className="mb-6 rounded-xl border border-[#e1e4ea] bg-[#fbfcff] p-4 sm:p-5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">01. Informação do projecto</p>
+                      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                        {fields.filter((field) => ["title", "client_label", "year_label", "discipline"].includes(field.key)).map((field) => renderField(field))}
+                        <div className="sm:col-span-2"><p className="block text-sm font-medium text-[#2e3037]">Função desempenhada</p><p className="mt-1.5 rounded-lg border border-[#eceef2] bg-[#f7f8fa] px-3 py-2.5 text-sm text-[#343844]">Art Direction</p></div>
+                      </div>
+                    </section>
+                    <section className="mb-6 rounded-xl border border-[#e1e4ea] bg-white p-4 sm:p-5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">02. Apresentação do projecto</p>
+                      <div className="mt-4 grid gap-4">{fields.filter((field) => ["challenge", "idea", "outcome"].includes(field.key)).map((field) => renderField(field))}</div>
+                    </section>
+                    <section className="mb-6 rounded-xl border border-[#e1e4ea] bg-white p-4 sm:p-5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">03. Imagens e materiais</p>
+                      <div className="mt-4 rounded-xl border-2 border-dashed border-[#b9c4e4] bg-[#f7f9ff] p-5 text-center transition hover:border-[#536bc1]">
+                        <p className="text-sm font-semibold text-[#202b52]">Adicionar imagens do projecto</p>
+                        <p className="mt-1 text-xs text-[#626774]">Arraste os ficheiros para aqui ou seleccione vários de uma vez. PNG, JPG, WebP e MP4. A qualidade original é preservada.</p>
+                        <label className="mt-4 inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#17295f] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#243d82]">
+                          Seleccionar ficheiros
+                          <input type="file" multiple accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime" onChange={(event) => setProjectFiles((current) => [...current, ...Array.from(event.target.files ?? [])])} disabled={saving} className="sr-only" />
+                        </label>
+                        <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); setProjectFiles((current) => [...current, ...Array.from(event.dataTransfer.files)]); }} className="mt-3 rounded-lg border border-transparent px-3 py-2 text-[11px] text-[#7b8293]">ou largue aqui os ficheiros</div>
+                        {projectFiles.length > 0 ? <div className="mt-3 text-left"><p className="text-xs font-semibold text-[#343844]">{projectFiles.length} ficheiro(s) pronto(s) para carregar</p><div className="mt-2 flex flex-wrap gap-2">{projectFiles.map((file, index) => <button key={`${file.name}-${index}`} type="button" onClick={() => setProjectFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="max-w-full truncate rounded-full bg-white px-3 py-1.5 text-[11px] text-[#4f5665] shadow-sm">{file.name} ×</button>)}</div></div> : null}
+                      </div>
+                      {assetList(draft["gallery"]).length > 0 ? <div className="mt-5 space-y-3"><p className="text-xs font-semibold text-[#343844]">Materiais guardados. Arraste para reordenar.</p>{assetList(draft["gallery"]).map((source, index) => { const url = resolvePublicAssetUrl(source); const alt = assetList(draft["gallery_alt"])[index] ?? ""; const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(source); return <div key={`${source}-${index}`} draggable onDragStart={() => setProjectDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (projectDragIndex !== null) moveProjectMedia(projectDragIndex, index); setProjectDragIndex(null); }} className="grid gap-3 rounded-lg border border-[#e5e7ed] bg-[#fafbfc] p-3 sm:grid-cols-[100px_minmax(0,1fr)_auto] sm:items-center"><div className="flex h-20 items-center justify-center overflow-hidden rounded-md bg-[#11141c]">{url && (isVideo ? <video src={url} muted playsInline preload="metadata" className="max-h-20 w-full object-contain" /> : <img src={url} alt={alt || rowTitle(baseline ?? draft)} className="max-h-20 w-full object-contain" />)}</div><div className="min-w-0"><p className="truncate text-xs font-medium text-[#343844]">{index + 1}. {source.split("/").pop()}</p><label className="mt-2 block text-[11px] text-[#6f7480]">Texto alternativo<input value={alt} onChange={(event) => { const nextAlt = assetList(draft["gallery_alt"]); nextAlt[index] = event.target.value; updateProjectMedia(assetList(draft["gallery"]), nextAlt); }} className="mt-1 h-8 w-full rounded-md border border-[#dfe2e8] bg-white px-2 text-xs" /></label></div><div className="flex items-center gap-1 sm:flex-col"><button type="button" aria-label={`Mover material ${index + 1} para cima`} onClick={() => moveProjectMedia(index, index - 1)} disabled={saving || index === 0} className="size-8 rounded-md border border-[#dfe2e8] text-sm disabled:opacity-30">↑</button><button type="button" aria-label={`Mover material ${index + 1} para baixo`} onClick={() => moveProjectMedia(index, index + 1)} disabled={saving || index === assetList(draft["gallery"]).length - 1} className="size-8 rounded-md border border-[#dfe2e8] text-sm disabled:opacity-30">↓</button><button type="button" onClick={() => removeProjectMedia(index)} disabled={saving} className="size-8 rounded-md border border-[#e8b4ae] text-xs text-[#922f25] disabled:opacity-50">×</button></div></div>; })}</div> : null}
+                    </section>
+                    <section className="rounded-xl border border-[#e1e4ea] bg-[#fbfcff] p-4 sm:p-5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">04. Publicação</p>
+                      <div className="mt-4 grid gap-4 sm:grid-cols-2">{fields.filter((field) => ["featured", "status"].includes(field.key)).map((field) => renderField(field))}</div>
+                    </section>
+                  </> : <div className="grid gap-4 sm:grid-cols-2">
                     {fields.map((field) => {
                       if (field.key === "setting_key") {
                         return <div key={field.key}><p className="block text-sm font-medium text-[#2e3037]">{field.label}</p><p className="mt-1.5 rounded-lg border border-[#eceef2] bg-[#f7f8fa] px-3 py-2.5 font-mono text-xs">{asText(baseline?.["setting_key"]) || "Chave definida pelo sistema"}</p><p className="mt-1 text-xs text-[#727784]">A chave identifica uma definição existente e não pode ser alterada.</p></div>;
                       }
                       return renderField(field);
                     })}
-                  </div>
+                  </div>}
                   <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#eceef2] pt-5">
                     <button type="button" onClick={cancelEdit} disabled={saving} className="h-10 rounded-lg border border-[#dfe2e8] px-4 text-sm font-medium text-[#424650] hover:bg-[#f8f9fb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50">Cancelar</button>
                     <button type="submit" disabled={saving || loading} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#17295f] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#243d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><Save size={15} />{saving ? "A guardar..." : "Guardar e publicar"}</button>

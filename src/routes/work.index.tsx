@@ -6,6 +6,7 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { loadWorkContent } from "@/lib/cms/loaders";
 import type { HeroSection } from "@/lib/cms/types";
 import { seoFromPage } from "@/lib/seo";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/work/")({
   loader: () => loadWorkContent(),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/work/")({
 
 function Work() {
   const data = Route.useLoaderData();
+  const { t } = useI18n();
   const hero = data.sections.find((section): section is HeroSection => section.section_type === "hero");
   if (!hero) throw new Error("The published Work page is missing its hero section.");
 
@@ -34,7 +36,7 @@ function Work() {
             aria-pressed={filter === value}
             className="liquid-glass-button rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest"
           >
-            {value}
+            {value === "All" ? t("all") : value}
           </button>
         ))}
       </div>
