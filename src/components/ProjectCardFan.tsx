@@ -17,6 +17,7 @@ import {
   getFanVisibleCount,
   getVisibleFanCards,
   INITIAL_FAN_INDEX,
+  PROJECT_FAN_ASPECT_RATIO,
 } from "@/lib/project-card-fan";
 
 type ProjectCardFanProps = {
