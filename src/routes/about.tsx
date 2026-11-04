@@ -6,6 +6,7 @@ import { SafeAssetImage } from "@/components/SafeAssetImage";
 import { loadAboutContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { aboutBiography } from "@/lib/content";
+import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import { seoFromPage } from "@/lib/seo";
 import { useI18n } from "@/lib/i18n";
 
