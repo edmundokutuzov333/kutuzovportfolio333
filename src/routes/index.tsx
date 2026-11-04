@@ -19,7 +19,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Hero({ profile }: { profile: Profile }) {
-  const { tx, t } = useI18n();
+  const { language, tx, t } = useI18n();
+  const headline = language === "pt-PT" ? "Faço as ideias parar, chamar atenção, ficar na memória e levar à acção." : profile.headline;
+  const roles = language === "pt-PT"
+    ? ["Director de arte", "Gestor de redes sociais", "Especialista em IA", "Criador de conteúdo"]
+    : profile.roles;
+  const location = language === "pt-PT" ? "Maputo - Moçambique, África" : profile.location;
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.75]);
@@ -37,7 +42,7 @@ function Hero({ profile }: { profile: Profile }) {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-md font-display text-2xl font-semibold leading-tight md:text-3xl"
         >
-          {tx(profile.headline.trim())}
+          {tx(headline.trim())}
         </motion.h1>
         <motion.div
           initial={{ opacity: 0 }}
@@ -45,8 +50,8 @@ function Hero({ profile }: { profile: Profile }) {
           transition={{ delay: 0.3, duration: 0.4 }}
           className="eyebrow space-y-1 md:text-right"
         >
-          <p>{profile.roles.map(tx).join(" / ")}</p>
-          <p>{tx(profile.location)}</p>
+          <p>{roles.map(tx).join(" / ")}</p>
+          <p>{location}</p>
           <p className="text-primary">{t("scroll")}</p>
         </motion.div>
       </div>
@@ -55,10 +60,13 @@ function Hero({ profile }: { profile: Profile }) {
 }
 
 function Manifesto({ profile, label }: { profile: Profile; label: string }) {
-  const { tx } = useI18n();
+  const { language, tx } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 40%"] });
-  const words = tx(profile.intro.trim()).split(" ");
+  const intro = language === "pt-PT"
+    ? "Sou Edmundo Kutuzov, director de arte de Maputo com trabalho global, e construo sistemas de marca que conquistam atenção em vez de a pedir. Mais de 30 marcas. Uma obsessão: trabalho que se recusa a ser ignorado."
+    : profile.intro;
+  const words = tx(intro.trim()).split(" ");
   return (
     <section className="px-6 py-32 md:px-12 md:py-48">
       <p className="eyebrow mb-10">{label}</p>
