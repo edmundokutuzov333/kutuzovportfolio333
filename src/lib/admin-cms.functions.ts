@@ -8,6 +8,7 @@ import {
 import {
   loadAdminWorkspace,
   mutateAdminContent,
+  deleteArchivedProject,
   reorderAdminContent,
   updateContactSubmission,
 } from "./server/admin-cms.server";
@@ -49,6 +50,14 @@ export const mutateAdminContentFn = createServerFn({ method: "POST" })
 export const reorderAdminContentFn = createServerFn({ method: "POST" })
   .inputValidator(reorderInput)
   .handler(async ({ data }) => reorderAdminContent(data));
+
+export const deleteArchivedProjectFn = createServerFn({ method: "POST" })
+  .inputValidator(z.object({
+    id: z.string().uuid(),
+    expectedUpdatedAt: z.string().datetime({ offset: true }),
+    note: z.string().trim().max(500).nullable().optional(),
+  }).strict())
+  .handler(async ({ data }) => deleteArchivedProject({ ...data, note: data.note ?? null }));
 
 export const updateContactSubmissionFn = createServerFn({ method: "POST" })
   .inputValidator(contactInput)

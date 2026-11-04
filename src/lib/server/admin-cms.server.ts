@@ -303,6 +303,31 @@ export async function reorderAdminContent(input: {
   return result;
 }
 
+export async function deleteArchivedProject(input: {
+  id: string;
+  expectedUpdatedAt: string;
+  note?: string | null;
+}) {
+  const context = await getAdminServerContext();
+  const result = await restRequest<{ record: Row; published_revision: number }>(
+    context,
+    "/rest/v1/rpc/admin_delete_archived_project",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        p_entity_id: input.id,
+        p_expected_updated_at: input.expectedUpdatedAt,
+        p_actor_id: null,
+        p_note: input.note ?? null,
+      }),
+    },
+  );
+  if (!result || typeof result !== "object" || !("record" in result) || !("published_revision" in result)) {
+    throw new AdminCmsError("A base de dados não confirmou a eliminação definitiva.", "unknown");
+  }
+  return result;
+}
+
 function zReorderEntity(value: string): string {
   const allowed = [
     "page_sections", "projects", "clients", "experience_items", "metrics",

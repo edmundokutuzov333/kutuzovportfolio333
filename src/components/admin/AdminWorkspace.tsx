@@ -9,6 +9,7 @@ import {
 import {
   loadAdminWorkspaceFn,
   mutateAdminContentFn,
+  deleteArchivedProjectFn,
   reorderAdminContentFn,
   updateContactSubmissionFn,
 } from "@/lib/admin-cms.functions";
@@ -38,6 +39,7 @@ type Field = {
 };
 type ModuleId =
   | "overview" | "pages" | "sections" | "projects" | "clients" | "profile"
+  | "archived"
   | "experience" | "metrics" | "skills" | "disciplines" | "principles"
   | "services" | "process" | "settings" | "history" | "inbox" | "media" | "newsletter" | "mail";
 type ModuleDef = {
@@ -123,6 +125,7 @@ const MODULES: ModuleDef[] = [
     { key: "status", label: "Estado", type: "select", options: statusOptions },
     { key: "locale", label: "Idioma", hidden: true },
   ] },
+  { id: "archived", label: "Arquivados", description: "Trabalhos retirados da publicação. Restaure-os ou elimine-os definitivamente.", table: "projects", entity: "projects", icon: Archive },
   { id: "clients", label: "Clientes", description: "Logótipos, texto alternativo e visibilidade por contexto.", table: "clients", entity: "clients", create: true, reorder: true, icon: Users, fields: [
     { key: "name", label: "Nome", required: true },
     { key: "slug", label: "Slug", required: true },
@@ -390,6 +393,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
 
   const records = useMemo(() => {
     let rows = tableRows;
+    if (activeId === "projects") rows = rows.filter((row) => asText(row["status"]) !== "archived");
+    if (activeId === "archived") rows = rows.filter((row) => asText(row["status"]) === "archived");
     if (activeId === "sections" && sectionPageId) rows = rows.filter((row) => row["page_id"] === sectionPageId);
     if (activeId === "profile") rows = rows.slice(0, 1);
     if (!search.trim()) return rows;
@@ -654,8 +659,46 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     }
   }
 
+  async function restoreRecord(row: Row) {
+    if (saving) return;
+    setSaving(true);
+    setNotice(null);
+    try {
+      const result = await mutateAdminContentFn({ data: {
+        entity: "projects", action: "restore", id: asText(row["id"]),
+        payload: row, expectedUpdatedAt: asText(row["updated_at"]) || null,
+        note: "Restauro solicitado no Kutuzov Admin",
+      } }) as { record: Row; published_revision: number };
+      setNotice({ tone: "success", text: `“${rowTitle(row)}” foi restaurado. Revisão ${result.published_revision} confirmada.` });
+      await refresh();
+    } catch (error) {
+      setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível restaurar o projecto." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteProjectPermanently(row: Row) {
+    if (saving) return;
+    if (!window.confirm(`Apagar definitivamente “${rowTitle(row)}”? Esta operação não pode ser desfeita.`)) return;
+    setSaving(true);
+    setNotice(null);
+    try {
+      const result = await deleteArchivedProjectFn({ data: {
+        id: asText(row["id"]), expectedUpdatedAt: asText(row["updated_at"]),
+        note: "Eliminação definitiva solicitada no Kutuzov Admin",
+      } });
+      setNotice({ tone: "success", text: `“${rowTitle(row)}” foi eliminado definitivamente. Revisão ${result.published_revision} confirmada.` });
+      await refresh();
+    } catch (error) {
+      setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível eliminar o projecto." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function moveRecord(index: number, direction: -1 | 1) {
-    if (!active.entity || !active.reorder || search.trim() || saving) return;
+    if (activeId !== "projects" || !active.entity || !active.reorder || search.trim() || saving) return;
     const target = index + direction;
     if (target < 0 || target >= records.length) return;
     const ids = records.map((row) => asText(row["id"]));
@@ -666,7 +709,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       const result = await reorderAdminContentFn({ data: {
         entity: active.entity as "page_sections" | "projects" | "clients" | "experience_items" | "metrics" | "skills" | "disciplines" | "principles" | "services" | "process_steps",
         ids,
-        pageId: activeId === "sections" ? sectionPageId : null,
+        pageId: null,
       } }) as { count: number; published_revision: number };
       setNotice({ tone: "success", text: `Ordem actualizada para ${result.count} registos. Revisão ${result.published_revision} confirmada.` });
       await refresh();
@@ -809,7 +852,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
 
   // Focus mode: only works management for now (user request). Other modules stay in code.
   const sidebarGroups: Array<{ label: string; ids: ModuleId[] }> = [
-    { label: "Trabalhos", ids: ["projects"] },
+    { label: "Trabalhos", ids: ["projects", "archived"] },
   ];
 
   const stateBadge = (value: unknown) => <span className="inline-flex rounded-full border border-[#d8dbe2] bg-[#f6f7f9] px-2.5 py-1 text-[11px] font-medium text-[#555a65]">{statusLabel(value)}</span>;
@@ -967,7 +1010,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                   ) : null}
                 </aside>
               </div>
-            ) : activeId === "projects" ? (
+            ) : activeId === "projects" || activeId === "archived" ? (
               <ProjectGrid
                 records={records}
                 saving={saving}
@@ -975,6 +1018,9 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                 onMove={(index, direction) => void moveRecord(index, direction)}
                 onToggleFeatured={(row) => void toggleFeatured(row)}
                 onArchive={(row) => void archiveRecord(row)}
+                archived={activeId === "archived"}
+                onRestore={(row) => void restoreRecord(row)}
+                onDeletePermanently={(row) => void deleteProjectPermanently(row)}
               />
             ) : (
               <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm">
@@ -1038,6 +1084,9 @@ function ProjectGrid({
   onMove,
   onToggleFeatured,
   onArchive,
+  archived,
+  onRestore,
+  onDeletePermanently,
 }: {
   records: Row[];
   saving: boolean;
@@ -1045,6 +1094,9 @@ function ProjectGrid({
   onMove: (index: number, direction: -1 | 1) => void;
   onToggleFeatured: (row: Row) => void;
   onArchive: (row: Row) => void;
+  archived: boolean;
+  onRestore: (row: Row) => void;
+  onDeletePermanently: (row: Row) => void;
 }) {
   return (
     <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -1078,15 +1130,15 @@ function ProjectGrid({
               </div>
               <p className="mt-3 text-[11px] text-[#7a7f8b]">{gallery.length || (source ? 1 : 0)} ficheiro(s) · {statusLabel(row["status"])}</p>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => onEdit(row)} disabled={saving} className="h-9 rounded-lg bg-[#17295f] px-3 text-xs font-semibold text-white hover:bg-[#243d82] disabled:opacity-50">Editar / preview</button>
-                <button type="button" onClick={() => onToggleFeatured(row)} disabled={saving} className="h-9 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold text-[#343844] hover:bg-[#f8f9fb] disabled:opacity-50">{featured ? "Desfixar" : "Fixar"}</button>
+                {!archived ? <button type="button" onClick={() => onEdit(row)} disabled={saving} className="h-9 rounded-lg bg-[#17295f] px-3 text-xs font-semibold text-white hover:bg-[#243d82] disabled:opacity-50">Editar / preview</button> : <div className="flex h-9 items-center justify-center rounded-lg bg-[#f1f3f7] px-3 text-xs font-semibold text-[#596174]">Pré-visualização</div>}
+                {!archived ? <button type="button" onClick={() => onToggleFeatured(row)} disabled={saving} className="h-9 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold text-[#343844] hover:bg-[#f8f9fb] disabled:opacity-50">{featured ? "Desfixar" : "Fixar"}</button> : <button type="button" onClick={() => onRestore(row)} disabled={saving} className="h-9 rounded-lg border border-[#b9c4e4] px-3 text-xs font-semibold text-[#253d86] hover:bg-[#f3f6ff] disabled:opacity-50">Restaurar</button>}
               </div>
               <div className="mt-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
+                {!archived ? <div className="flex items-center gap-1">
                   <button type="button" aria-label={`Mover ${rowTitle(row)} para cima`} onClick={() => onMove(index, -1)} disabled={saving || index === 0} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] text-sm hover:bg-[#f1f3f7] disabled:opacity-30">↑</button>
                   <button type="button" aria-label={`Mover ${rowTitle(row)} para baixo`} onClick={() => onMove(index, 1)} disabled={saving || index === records.length - 1} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] text-sm hover:bg-[#f1f3f7] disabled:opacity-30">↓</button>
-                </div>
-                <button type="button" onClick={() => onArchive(row)} disabled={saving} className="h-8 rounded-md border border-[#d8aaa4] px-3 text-[11px] font-semibold text-[#922f25] hover:bg-[#fff4f2] disabled:opacity-50">Arquivar</button>
+                </div> : <span className="text-[11px] text-[#7a7f8b]">Fora da publicação</span>}
+                {archived ? <button type="button" onClick={() => onDeletePermanently(row)} disabled={saving} className="h-8 rounded-md border border-[#d8aaa4] px-3 text-[11px] font-semibold text-[#922f25] hover:bg-[#fff4f2] disabled:opacity-50">Apagar de vez</button> : <button type="button" onClick={() => onArchive(row)} disabled={saving} className="h-8 rounded-md border border-[#d8aaa4] px-3 text-[11px] font-semibold text-[#922f25] hover:bg-[#fff4f2] disabled:opacity-50">Arquivar</button>}
               </div>
             </div>
           </article>

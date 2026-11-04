@@ -54,7 +54,7 @@ export function ClientsMarquee({ clients }: { clients: Client[] }) {
           <div key={`${client.slug}-${i}`} className="flex h-20 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-8">
             {(clientLogoUrl(client.slug) ?? client.logo) ? (
               <SafeAssetImage
-                src={clientLogoUrl(client.slug) ?? client.logo}
+                src={(clientLogoUrl(client.slug) ?? client.logo) as string}
                 alt={client.logoAlt}
                 className="max-h-8 w-auto max-w-[10rem] object-contain"
                 fallbackClassName="flex items-center gap-2"
