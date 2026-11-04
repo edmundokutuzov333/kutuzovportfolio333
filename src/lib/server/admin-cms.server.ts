@@ -170,6 +170,32 @@ export async function mutateAdminContent(input: {
   let payload: Row;
   let validationInput = input.payload;
   let settingKey: string | undefined;
+  // These portfolio controls must also work while an older Supabase project
+  // still exposes the previous editorial RPC actor contract. Keep the
+  // optimistic timestamp guard and use the authenticated server REST client.
+  if (input.entity === "projects" && input.id &&
+      ((input.action === "archive" && Object.keys(input.payload).length === 0) ||
+       (input.action === "publish" && Object.keys(input.payload).length === 1 && "featured" in input.payload))) {
+    if (!input.expectedUpdatedAt) throw new AdminCmsError("Recarregue o projecto antes de alterar o estado.", "conflict");
+    const currentRows = await restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}&select=id,updated_at,status,featured`);
+    const current = currentRows[0];
+    if (!current) throw new AdminCmsError("O projecto já não existe. Actualize a lista.", "not_found");
+    if (current["updated_at"] !== input.expectedUpdatedAt) {
+      throw new AdminCmsError("Conflito: o projecto foi alterado depois de abrir a lista. Actualize os dados.", "conflict");
+    }
+    const next = input.action === "archive"
+      ? { status: "archived", featured: false }
+      : { featured: Boolean(input.payload["featured"]) };
+    const rows = await restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(next),
+    });
+    if (!Array.isArray(rows) || rows.length !== 1) {
+      throw new AdminCmsError("O projecto foi alterado ou não existe. Actualize os dados antes de tentar novamente.", "conflict");
+    }
+    return { record: rows[0], published_revision: 0 };
+  }
   if (
     input.entity === "site_settings" &&
     input.id &&
@@ -287,6 +313,14 @@ export async function reorderAdminContent(input: {
 }) {
   const context = await getAdminServerContext();
   const entity = zReorderEntity(input.entity);
+  if (entity === "projects") {
+    await Promise.all(input.ids.map((id, position) => restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ position }),
+    })));
+    return { count: input.ids.length, published_revision: 0 };
+  }
   const result = await restRequest<{ count: number; published_revision: number }>(
     context,
     "/rest/v1/rpc/admin_reorder_content",
