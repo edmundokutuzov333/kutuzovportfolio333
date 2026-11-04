@@ -38,7 +38,7 @@ function Work() {
           </button>
         ))}
       </div>
-      <section className="grid gap-x-8 gap-y-20 px-6 pb-32 md:grid-cols-2 md:px-12 lg:grid-cols-3">
+      <section className="grid items-start gap-x-8 gap-y-20 px-6 pb-32 md:grid-cols-2 md:px-12 lg:grid-cols-3">
         {projects.map((project, index) => (
           <Reveal key={project.slug} delay={(index % 3) * 0.05}>
             <ProjectCard project={project} index={index} />

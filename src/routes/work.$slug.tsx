@@ -52,7 +52,7 @@ function CaseStudy() {
     <>
       <PageHero eyebrow={project.discipline} lines={project.title.split(" ")} />
       <div className="px-6 md:px-12">
-        <div className="aspect-[16/9] overflow-hidden rounded-sm"><ArtSlot project={project} /></div>
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-sm"><ArtSlot project={project} /></div>
       </div>
       <section className="grid gap-12 px-6 py-24 md:grid-cols-3 md:px-12">
         <dl className="space-y-6">
@@ -69,14 +69,14 @@ function CaseStudy() {
           {project.outcome ? <Reveal><p><span className="text-foreground">The outcome.</span> {project.outcome}</p></Reveal> : null}
         </div>
       </section>
-      <section className="grid gap-6 px-6 md:grid-cols-2 md:px-12">
+      <section className="grid items-start gap-6 px-6 md:grid-cols-2 md:px-12">
         {project.gallery.map((source, imageIndex) => (
-          <Reveal key={source} className={imageIndex % 3 === 2 ? "md:col-span-2" : ""}>
-            <div className={`overflow-hidden rounded-sm ${imageIndex % 3 === 2 ? "aspect-[21/9]" : "aspect-square"}`}>
-              {project.projectType === "video" ? <video src={source} className="h-full w-full object-cover" controls playsInline preload="metadata" aria-label={project.galleryAlt[imageIndex] || project.title} /> : <SafeAssetImage
+          <Reveal key={source}>
+            <div className="overflow-hidden rounded-sm">
+              {project.projectType === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(source) ? <video src={source} className="block h-auto w-full" controls playsInline preload="metadata" aria-label={project.galleryAlt[imageIndex] || project.title} /> : <SafeAssetImage
                 src={source}
                 alt={project.galleryAlt[imageIndex] || `${project.title}, image ${imageIndex + 1}`}
-                className="h-full w-full object-cover"
+                className="block h-auto w-full"
                 fallbackClassName="flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center"
                 fallbackLabel="Image unavailable"
               />}
