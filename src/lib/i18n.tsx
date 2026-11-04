@@ -170,12 +170,18 @@ function readLanguage(): SiteLanguage {
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<SiteLanguage>(readLanguage);
+  // Keep the first render identical to SSR. Restore the saved preference only
+  // after hydration so a saved PT preference cannot create a React mismatch.
+  const [language, setLanguageState] = useState<SiteLanguage>("en");
   const setLanguage = (next: SiteLanguage) => {
     setLanguageState(next);
     window.localStorage.setItem("ek-language", next);
     document.documentElement.lang = next;
   };
+  useEffect(() => {
+    const savedLanguage = readLanguage();
+    if (savedLanguage !== language) setLanguageState(savedLanguage);
+  }, []);
   useEffect(() => { document.documentElement.lang = language; }, [language]);
   const value = useMemo<I18nValue>(() => ({ language, setLanguage, t: (key) => copy[language][key] ?? copy.en[key], tx: (value) => language === "pt-PT" ? contentTranslations[value] ?? value : value }), [language]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
