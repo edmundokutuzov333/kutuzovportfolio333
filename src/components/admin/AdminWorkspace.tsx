@@ -15,6 +15,7 @@ import {
 import { cancelMediaUploadFn, completeMediaUploadFn, createMediaUploadFn } from "@/lib/admin-media.functions";
 import type { AdminEntity } from "@/lib/admin-cms.schema";
 import { getRestorableSnapshot } from "@/lib/admin-revisions";
+import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import { ContactInboxView as InboxView, EmailOutboxView, MediaLibraryView as MediaView, NewsletterManagementView as NewsletterView } from "@/components/admin/Phase4Modules";
 
 type Row = Record<string, unknown>;
@@ -297,6 +298,26 @@ function rowTitle(row: Row): string {
   }
   return "Registo";
 }
+function assetList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  if (typeof value === "string") {
+    try {
+      const parsed: unknown = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+function projectPreviewSource(row: Row): string {
+  const cover = asText(row["cover_path"]);
+  const gallery = assetList(row["gallery"]);
+  return resolvePublicAssetUrl(cover || gallery[0] || "");
+}
+function isVideoSource(row: Row, source: string): boolean {
+  return asText(row["project_type"]) === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(source);
+}
 function statusLabel(value: unknown): string {
   const labels: Record<string, string> = { published: "Publicado", draft: "Rascunho", archived: "Arquivado", new: "Novo", in_review: "Em análise", replied: "Respondido", confirmed: "Confirmado", pending: "Pendente", unsubscribed: "Cancelado" };
   return labels[String(value)] ?? (value ? String(value) : "Sem estado");
@@ -578,6 +599,30 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     }
   }
 
+  async function toggleFeatured(row: Row) {
+    if (!active.entity || saving) return;
+    setSaving(true);
+    setNotice(null);
+    try {
+      const nextFeatured = !asBool(row["featured"]);
+      const result = await mutateAdminContentFn({ data: {
+        entity: active.entity,
+        action: "publish",
+        id: asText(row["id"]),
+        payload: { featured: nextFeatured },
+        expectedUpdatedAt: asText(row["updated_at"]) || null,
+        note: nextFeatured ? "Trabalho fixado na Home" : "Trabalho retirado da Home",
+      } }) as { published_revision: number };
+      setNotice({ tone: "success", text: nextFeatured ? `“${rowTitle(row)}” foi fixado na Home.` : `“${rowTitle(row)}” deixou de estar fixado na Home.` });
+      await refresh();
+      void result;
+    } catch (error) {
+      setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível actualizar o destaque." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function setContactStatus(row: Row, status: "new" | "in_review" | "replied" | "archived") {
     if (saving) return;
     setSaving(true);
@@ -819,6 +864,15 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                   ) : null}
                 </aside>
               </div>
+            ) : activeId === "projects" ? (
+              <ProjectGrid
+                records={records}
+                saving={saving}
+                onEdit={startEdit}
+                onMove={(index, direction) => void moveRecord(index, direction)}
+                onToggleFeatured={(row) => void toggleFeatured(row)}
+                onArchive={(row) => void archiveRecord(row)}
+              />
             ) : (
               <div className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eaf0] p-4">
@@ -835,11 +889,11 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                     {records.map((row, index) => (
                       <div key={asText(row["id"]) || `${activeId}-${index}`} className="flex flex-wrap items-center gap-3 px-4 py-3.5 hover:bg-[#fafbfc] sm:px-5">
                         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#f0f2f7] text-[#596174]">
-                          {activeId === "projects" ? <BriefcaseBusiness size={16} /> : activeId === "clients" ? <Users size={16} /> : activeId === "sections" ? <Layers3 size={16} /> : <FileText size={16} />}
+                          {activeId === "clients" ? <Users size={16} /> : activeId === "sections" ? <Layers3 size={16} /> : <FileText size={16} />}
                         </div>
                         <button type="button" onClick={() => active.fields && active.entity ? startEdit(row) : undefined} disabled={!active.fields || !active.entity || saving} className="min-w-0 flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-default">
                           <span className="block truncate text-sm font-semibold text-[#252730]">{rowTitle(row)}</span>
-                          <span className="mt-1 block truncate text-xs text-[#767b86]">{activeId === "pages" ? asText(row["route_path"]) : activeId === "sections" ? `${asText(row["section_type"])} · ${asText(row["section_key"])}` : activeId === "projects" ? `/${asText(row["slug"])} · ${asText(row["client_label"])}` : activeId === "clients" ? `/${asText(row["slug"])} · ${row["logo_path"] ? "Com logótipo" : "Apresentação textual"}` : `Actualizado: ${asText(row["updated_at"]) || asText(row["created_at"]) || "data indisponível"}`}</span>
+                          <span className="mt-1 block truncate text-xs text-[#767b86]">{activeId === "pages" ? asText(row["route_path"]) : activeId === "sections" ? `${asText(row["section_type"])} · ${asText(row["section_key"])}` : activeId === "clients" ? `/${asText(row["slug"])} · ${row["logo_path"] ? "Com logótipo" : "Apresentação textual"}` : `Actualizado: ${asText(row["updated_at"]) || asText(row["created_at"]) || "data indisponível"}`}</span>
                         </button>
                         <div className="flex items-center gap-2">{stateBadge(row["status"] ?? (row["is_visible"] === false ? "archived" : row["migration_status"]))}
                           {active.reorder && !search.trim() ? (
@@ -871,6 +925,71 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
         </section>
       </div>
     </main>
+  );
+}
+
+function ProjectGrid({
+  records,
+  saving,
+  onEdit,
+  onMove,
+  onToggleFeatured,
+  onArchive,
+}: {
+  records: Row[];
+  saving: boolean;
+  onEdit: (row: Row) => void;
+  onMove: (index: number, direction: -1 | 1) => void;
+  onToggleFeatured: (row: Row) => void;
+  onArchive: (row: Row) => void;
+}) {
+  return (
+    <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {records.map((row, index) => {
+        const source = projectPreviewSource(row);
+        const video = isVideoSource(row, source);
+        const gallery = assetList(row["gallery"]);
+        const featured = asBool(row["featured"]);
+        return (
+          <article key={asText(row["id"]) || `${rowTitle(row)}-${index}`} className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm transition-shadow hover:shadow-md">
+            <div className="relative flex min-h-48 items-center justify-center overflow-hidden bg-[#10131b]">
+              {source ? video ? (
+                <video src={source} controls playsInline preload="metadata" className="block max-h-80 w-full object-contain" aria-label={rowTitle(row)} />
+              ) : (
+                <img src={source} alt={asText(row["cover_alt"]) || rowTitle(row)} loading="lazy" className="block max-h-80 w-full object-contain" />
+              ) : (
+                <div className="p-8 text-center text-xs text-[#b9beca]">Sem imagem ou vídeo associado</div>
+              )}
+              <span className="absolute left-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+                {video ? "Vídeo" : "Imagem"}
+              </span>
+              {featured ? <span className="absolute right-3 top-3 rounded-full bg-[#fff3bd] px-2.5 py-1 text-[10px] font-semibold text-[#725b12]">Fixado</span> : null}
+            </div>
+            <div className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="line-clamp-2 text-sm font-semibold text-[#20232b]">{rowTitle(row)}</h3>
+                  <p className="mt-1 truncate text-xs text-[#707582]">{asText(row["discipline"]) || "Sem categoria"}{asText(row["client_label"]) ? ` · ${asText(row["client_label"])}` : ""}</p>
+                </div>
+                <span className="shrink-0 rounded-md bg-[#f1f3f7] px-2 py-1 text-[10px] font-medium text-[#596174]">#{asNumber(row["position"], index) + 1}</span>
+              </div>
+              <p className="mt-3 text-[11px] text-[#7a7f8b]">{gallery.length || (source ? 1 : 0)} ficheiro(s) · {statusLabel(row["status"])}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => onEdit(row)} disabled={saving} className="h-9 rounded-lg bg-[#17295f] px-3 text-xs font-semibold text-white hover:bg-[#243d82] disabled:opacity-50">Editar / preview</button>
+                <button type="button" onClick={() => onToggleFeatured(row)} disabled={saving} className="h-9 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold text-[#343844] hover:bg-[#f8f9fb] disabled:opacity-50">{featured ? "Desfixar" : "Fixar"}</button>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <button type="button" aria-label={`Mover ${rowTitle(row)} para cima`} onClick={() => onMove(index, -1)} disabled={saving || index === 0} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] text-sm hover:bg-[#f1f3f7] disabled:opacity-30">↑</button>
+                  <button type="button" aria-label={`Mover ${rowTitle(row)} para baixo`} onClick={() => onMove(index, 1)} disabled={saving || index === records.length - 1} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] text-sm hover:bg-[#f1f3f7] disabled:opacity-30">↓</button>
+                </div>
+                <button type="button" onClick={() => onArchive(row)} disabled={saving} className="h-8 rounded-md border border-[#d8aaa4] px-3 text-[11px] font-semibold text-[#922f25] hover:bg-[#fff4f2] disabled:opacity-50">Arquivar</button>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
   );
 }
 
