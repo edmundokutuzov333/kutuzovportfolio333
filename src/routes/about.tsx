@@ -8,6 +8,7 @@ import { requireHeroSection } from "@/lib/cms/section-utils";
 import { aboutBiography } from "@/lib/content";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import { seoFromPage } from "@/lib/seo";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/about")({
   loader: () => loadAboutContent(),
@@ -23,6 +24,7 @@ const skillLevelLabel: Record<string, string> = {
 
 function About() {
   const data = Route.useLoaderData();
+  const { tx } = useI18n();
   const { profile, metrics, experience, skills, disciplines, principles, projects, clients, sections } = data;
   const hero = requireHeroSection(sections);
   const biography = profile.biography?.trim()
@@ -68,12 +70,12 @@ function About() {
             )}
           </div>
           <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <MapPin size={13} aria-hidden="true" /> Based in Maputo. Working worldwide.
+            <MapPin size={13} aria-hidden="true" /> {tx("Based in Maputo. Working worldwide.")}
           </p>
         </Reveal>
 
         <Reveal delay={0.08} className="flex flex-col justify-center">
-          <p className="eyebrow mb-7 text-primary">The person behind the practice</p>
+          <p className="eyebrow mb-7 text-primary">{tx("The person behind the practice")}</p>
           <div className="space-y-6 text-lg leading-relaxed md:text-xl">
             {biography.map((paragraph, index) => (
               <p key={index} className={index === 0 ? "text-foreground" : "text-muted-foreground"}>{paragraph}</p>
@@ -90,7 +92,7 @@ function About() {
               View CV (PDF)
             </a>
             <a href="/contact" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm transition hover:border-primary">
-              Start a conversation <ArrowUpRight size={15} aria-hidden="true" />
+              {tx("Start a conversation")} <ArrowUpRight size={15} aria-hidden="true" />
             </a>
           </div>
         </Reveal>
@@ -114,8 +116,8 @@ function About() {
       <section className="px-6 py-24 md:px-12 md:py-32">
         <div className="mb-12 flex flex-col justify-between gap-5 md:mb-16 md:flex-row md:items-end">
           <div>
-            <p className="eyebrow mb-5 text-primary">Experience / 2020 - 2026</p>
-            <h2 className="font-display text-4xl font-bold tracking-tight md:text-6xl">Professional timeline.</h2>
+            <p className="eyebrow mb-5 text-primary">{tx("Experience / 2020 - 2026")}</p>
+            <h2 className="font-display text-4xl font-bold tracking-tight md:text-6xl">{tx("Professional timeline.")}</h2>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             A progression from hands-on graphic design to art direction, marketing communication and the leadership of integrated creative work.
@@ -142,8 +144,8 @@ function About() {
       <section className="bg-card/40 px-6 py-24 md:px-12 md:py-32">
         <div className="mb-12 flex flex-col justify-between gap-5 md:mb-16 md:flex-row md:items-end">
           <div>
-            <p className="eyebrow mb-5 text-primary">Selected achievements</p>
-            <h2 className="font-display text-4xl font-bold tracking-tight md:text-6xl">Work with a point of view.</h2>
+            <p className="eyebrow mb-5 text-primary">{tx("Selected achievements")}</p>
+            <h2 className="font-display text-4xl font-bold tracking-tight md:text-6xl">{tx("Work with a point of view.")}</h2>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             Selected projects that demonstrate creative responsibility, visual direction and the ability to carry one idea across a wider communication system.
@@ -180,7 +182,7 @@ function About() {
                       <h3 className="font-display text-2xl font-bold md:text-3xl">{project.title}</h3>
                       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{project.outcome || project.idea || project.summary}</p>
                       <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                        Explore project <ArrowUpRight size={15} aria-hidden="true" />
+                        {tx("Explore project")} <ArrowUpRight size={15} aria-hidden="true" />
                       </span>
                     </div>
                   </Link>
@@ -191,7 +193,7 @@ function About() {
         </div>
 
         <div className="mt-16 border-t border-border pt-8">
-          <p className="eyebrow mb-6">Selected collaborations</p>
+          <p className="eyebrow mb-6">{tx("Selected collaborations")}</p>
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             {clients.map((client) => (
               <span key={client.slug} className="text-sm text-muted-foreground">{client.name}</span>
@@ -202,8 +204,8 @@ function About() {
 
       <section className="grid gap-16 px-6 py-24 md:grid-cols-2 md:px-12 md:py-32">
         <div>
-          <p className="eyebrow mb-8 text-primary">Tools & proficiency</p>
-          <h2 className="mb-10 font-display text-4xl font-bold tracking-tight md:text-5xl">The tools serve the idea.</h2>
+          <p className="eyebrow mb-8 text-primary">{tx("Tools & proficiency")}</p>
+          <h2 className="mb-10 font-display text-4xl font-bold tracking-tight md:text-5xl">{tx("The tools serve the idea.")}</h2>
           <div className="divide-y divide-border border-y border-border">
             {skills.map((skill) => (
               <div key={skill.id} className="flex flex-wrap items-center justify-between gap-3 py-5">

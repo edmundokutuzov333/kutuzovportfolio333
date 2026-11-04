@@ -16,7 +16,7 @@ export const Route = createFileRoute("/work/")({
 
 function Work() {
   const data = Route.useLoaderData();
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const hero = data.sections.find((section): section is HeroSection => section.section_type === "hero");
   if (!hero) throw new Error("The published Work page is missing its hero section.");
 
@@ -36,7 +36,7 @@ function Work() {
             aria-pressed={filter === value}
             className="liquid-glass-button rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest"
           >
-            {value === "All" ? t("all") : value}
+            {value === "All" ? t("all") : tx(value)}
           </button>
         ))}
       </div>

@@ -6,6 +6,7 @@ import { PageHero } from "@/components/Reveal";
 import { loadProcessContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/process")({
   loader: () => loadProcessContent(),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/process")({
 function Process() {
   const data = Route.useLoaderData();
   const hero = requireHeroSection(data.sections);
+  const { tx } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const x = useTransform(scrollYProgress, [0, 1], ["0%", "-75%"]);
@@ -29,8 +31,8 @@ function Process() {
             {data.process.map((step) => (
               <div key={step.n} className="flex w-screen shrink-0 flex-col justify-center px-6 md:px-24">
                 <span className="stroke-text font-display text-[30vw] font-bold leading-none md:text-[18vw]">{step.n}</span>
-                <h2 className="font-display text-5xl font-bold md:text-7xl">{step.title}</h2>
-                <p className="mt-6 max-w-lg text-xl text-muted-foreground">{step.text}</p>
+                <h2 className="font-display text-5xl font-bold md:text-7xl">{tx(step.title)}</h2>
+                <p className="mt-6 max-w-lg text-xl text-muted-foreground">{tx(step.text)}</p>
               </div>
             ))}
           </motion.div>

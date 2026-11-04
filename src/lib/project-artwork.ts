@@ -48,6 +48,22 @@ export function buildProjectArtwork(
   });
 }
 
+/**
+ * The homepage fan represents projects, not every asset inside a project.
+ * Keep the first artwork for each slug, which is the cover when one exists,
+ * so a multi-image project cannot appear as repeated cards in the carousel.
+ */
+export function buildProjectFanArtwork(
+  projects: readonly Pick<Project, "slug" | "title" | "position" | "cover" | "coverAlt" | "gallery" | "galleryAlt">[],
+): ProjectArtwork[] {
+  const seen = new Set<string>();
+  return buildProjectArtwork(projects).filter((artwork) => {
+    if (seen.has(artwork.slug)) return false;
+    seen.add(artwork.slug);
+    return true;
+  });
+}
+
 
 /** Backwards-compatible name retained for existing project artwork callers. */
 export function resolveProjectArtworkUrl(source: string | null | undefined): string {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Project } from "@/lib/cms/types";
 import {
+  buildProjectFanArtwork,
   buildProjectArtwork,
   resolveProjectArtworkUrl,
 } from "@/lib/project-artwork";
@@ -144,6 +145,24 @@ describe("homepage project card fan carousel", () => {
     expect(artwork.filter((image) => image.slug === "project-1")).toHaveLength(3);
     expect(artwork.filter((image) => image.slug === "project-2")).toHaveLength(8);
     expect(artwork.filter((image) => image.slug === "project-3")).toHaveLength(4);
+  });
+
+  it("shows each project once in the homepage fan, preferring its cover", () => {
+    const artwork = buildProjectFanArtwork(currentPublishedProjects());
+    expect(artwork).toHaveLength(4);
+    expect(artwork.map((image) => image.slug)).toEqual([
+      "project-0",
+      "project-1",
+      "project-2",
+      "project-3",
+    ]);
+    expect(artwork.map((image) => new URL(image.src).pathname)).toEqual([
+      "/cover-0.webp",
+      "/cover-1.webp",
+      "/cover-2.webp",
+      "/cover-3.webp",
+    ]);
+    expect(new Set(artwork.map((image) => image.slug)).size).toBe(artwork.length);
   });
 
   it("uses five mirrored desktop positions with a dominant centre and exposed outer corners", () => {

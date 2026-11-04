@@ -6,10 +6,11 @@ import { Logo3D } from "@/components/Logo3D";
 import { Reveal } from "@/components/Reveal";
 import { ClientsMarquee } from "@/components/Clients";
 import { ProjectCardFan } from "@/components/ProjectCardFan";
-import { buildProjectArtwork } from "@/lib/project-artwork";
+import { buildProjectFanArtwork } from "@/lib/project-artwork";
 import { loadHomeContent } from "@/lib/cms/loaders";
 import type { Profile } from "@/lib/cms/types";
 import { seoFromPage } from "@/lib/seo";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   loader: () => loadHomeContent(),
@@ -45,7 +46,7 @@ function Hero({ profile }: { profile: Profile }) {
         >
           <p>{profile.roles.join(" / ")}</p>
           <p>{profile.location}</p>
-          <p className="text-primary">↓ Scroll</p>
+            <p className="text-primary">↓ Scroll</p>
         </motion.div>
       </div>
     </section>
@@ -85,8 +86,9 @@ function Word({
 
 function Home() {
   const data = Route.useLoaderData();
+  const { tx } = useI18n();
   const { profile, sections, projects, services, metrics, clients, principles } = data;
-  const artwork = useMemo(() => buildProjectArtwork(projects), [projects]);
+  const artwork = useMemo(() => buildProjectFanArtwork(projects), [projects]);
   const numberedSectionTypes = new Set(["manifesto", "featured_work", "services", "clients"]);
 
   return (
@@ -101,22 +103,22 @@ function Home() {
             return <Hero key={section.id} profile={profile} />;
 
           case "manifesto":
-            return <Manifesto key={section.id} profile={profile} label={`(${number}) ${section.config.label}`} />;
+            return <Manifesto key={section.id} profile={profile} label={`(${number}) ${tx(section.config.label)}`} />;
 
           case "featured_work":
             return (
               <section key={section.id} className="px-6 py-32 md:px-12">
                 <div className="mb-16 flex items-end justify-between gap-4 lg:gap-6">
                   <div className="min-w-0 flex-1">
-                    <p className="eyebrow mb-4">{`(${number}) ${section.config.label}`}</p>
+                    <p className="eyebrow mb-4">{`(${number}) ${tx(section.config.label)}`}</p>
                     <h2 className="font-display min-w-0 text-5xl font-bold md:text-6xl lg:text-7xl">
                       {section.config.title_lines.map((line, lineIndex) => (
-                        <span key={line}>{lineIndex > 0 && <br />}{line}</span>
+                        <span key={line}>{lineIndex > 0 && <br />}{tx(line)}</span>
                       ))}
                     </h2>
                   </div>
                   <Link to="/work" className="eyebrow shrink-0 whitespace-nowrap hover:text-primary">
-                    {section.config.link_label} →
+                    {tx(section.config.link_label)} →
                   </Link>
                 </div>
                 {artwork.length > 0 && (
@@ -130,13 +132,13 @@ function Home() {
           case "services":
             return (
               <section key={section.id} className="px-6 py-32 md:px-12">
-                <p className="eyebrow mb-10">{`(${number}) ${section.config.label}`}</p>
+                <p className="eyebrow mb-10">{`(${number}) ${tx(section.config.label)}`}</p>
                 <div className="border-t border-border">
                   {services.map((service) => (
                     <Link key={service.slug} to="/services" className="group flex items-center justify-between gap-6 border-b border-border py-8 transition-colors hover:bg-primary hover:text-primary-foreground md:px-6">
                       <span className="font-mono text-xs">{service.n}</span>
-                      <span className="flex-1 font-display text-3xl font-semibold transition-transform duration-500 group-hover:translate-x-4 md:text-5xl">{service.title}</span>
-                      <span className="hidden max-w-xs text-sm opacity-70 md:block">{service.line}</span>
+                      <span className="flex-1 font-display text-3xl font-semibold transition-transform duration-500 group-hover:translate-x-4 md:text-5xl">{tx(service.title)}</span>
+                      <span className="hidden max-w-xs text-sm opacity-70 md:block">{tx(service.line)}</span>
                     </Link>
                   ))}
                 </div>
@@ -149,8 +151,8 @@ function Home() {
                 {metrics.map((metric, metricIndex) => (
                   <Reveal key={metric.label} delay={metricIndex * 0.04} className="bg-background px-6 py-16">
                     <p className="font-display text-6xl font-bold text-primary">{metric.value}</p>
-                    <p className="mt-2 font-display text-xl font-semibold">{metric.label}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{metric.note}</p>
+                    <p className="mt-2 font-display text-xl font-semibold">{tx(metric.label)}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tx(metric.note ?? "")}</p>
                   </Reveal>
                 ))}
               </section>
@@ -160,10 +162,10 @@ function Home() {
             return (
               <section key={section.id} className="py-32">
                 <div className="mb-14 px-6 md:px-12">
-                  <p className="eyebrow mb-4">{`(${number}) ${section.config.label}`}</p>
+                  <p className="eyebrow mb-4">{`(${number}) ${tx(section.config.label)}`}</p>
                   <h2 className="font-display text-5xl font-bold md:text-7xl">
                     {section.config.title_lines.map((line, lineIndex) => (
-                      <span key={line}>{lineIndex > 0 && <br />}{line}</span>
+                        <span key={line}>{lineIndex > 0 && <br />}{tx(line)}</span>
                     ))}
                   </h2>
                 </div>
@@ -182,8 +184,8 @@ function Home() {
                 {principles.map((principle, principleIndex) => (
                   <Reveal key={principle.title} delay={principleIndex * 0.04} className="bg-background p-8 md:p-10">
                     <p className="font-mono text-xs text-primary">{String(principleIndex + 1).padStart(2, "0")}</p>
-                    <h3 className="mt-16 font-display text-3xl font-bold">{principle.title}</h3>
-                    <p className="mt-3 text-muted-foreground">{principle.text}</p>
+                    <h3 className="mt-16 font-display text-3xl font-bold">{tx(principle.title)}</h3>
+                    <p className="mt-3 text-muted-foreground">{tx(principle.text)}</p>
                   </Reveal>
                 ))}
               </section>

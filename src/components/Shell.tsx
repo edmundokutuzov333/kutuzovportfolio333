@@ -104,29 +104,30 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
 
 export function Footer({ profile, presentation }: { profile: Profile | null; presentation: PublicPresentation }) {
   const copy = presentation.footer;
+  const { t, tx } = useI18n();
   return (
     <footer className="border-t border-border px-6 pb-8 pt-24 md:px-12">
       <div className="grid gap-16 md:grid-cols-2">
         <div>
-          <p className="eyebrow mb-6">{copy.next_move_label}</p>
-          <Link to={copy.cta_path} data-cursor="Talk" className="font-display text-6xl font-bold leading-none hover:text-primary md:text-8xl">{copy.cta_label}</Link>
-          <p className="mt-6 max-w-sm text-muted-foreground">{copy.cta_description}</p>
+          <p className="eyebrow mb-6">{tx(copy.next_move_label) || t("talk")}</p>
+          <Link to={copy.cta_path} data-cursor="Talk" className="font-display text-6xl font-bold leading-none hover:text-primary md:text-8xl">{tx(copy.cta_label)}</Link>
+          <p className="mt-6 max-w-sm text-muted-foreground">{tx(copy.cta_description)}</p>
         </div>
         <div className="grid grid-cols-2 gap-10">
           <div className="space-y-3 text-sm">
-            <p className="eyebrow mb-4">{copy.contact_label}</p>
+            <p className="eyebrow mb-4">{tx(copy.contact_label) || t("contact")}</p>
             {profile?.email && <a className="block hover:text-primary" href={`mailto:${profile.email}`}>{profile.email}</a>}
             {profile?.whatsapp && profile.phone && <a className="block hover:text-primary" href={profile.whatsapp} target="_blank" rel="noreferrer">{profile.phone}</a>}
             {profile?.location && <p className="text-muted-foreground">{profile.location}</p>}
           </div>
           <div className="space-y-3 text-sm">
-            <p className="eyebrow mb-4">{copy.social_label}</p>
+            <p className="eyebrow mb-4">{tx(copy.social_label) || "Social"}</p>
             {profile?.socials.map((social) => (
               <a key={social.label} className="block hover:text-primary" href={social.href} target="_blank" rel="noreferrer">{social.label} ↗</a>
             ))}
           </div>
           <div className="col-span-2" aria-label="Newsletter subscription">
-            <p className="eyebrow mb-4">{copy.newsletter_label}</p>
+            <p className="eyebrow mb-4">{tx(copy.newsletter_label) || t("newsletter")}</p>
             <NewsletterSignup />
           </div>
         </div>
@@ -134,7 +135,7 @@ export function Footer({ profile, presentation }: { profile: Profile | null; pre
       <div className="mt-14 overflow-hidden md:mt-20"><EKBlueprint /></div>
       <div className="mt-6 flex flex-wrap justify-between gap-4 eyebrow">
         <span>© {new Date().getFullYear()} Edmundo Kutuzov</span>
-        <span>{copy.signature}</span>
+        <span>{tx(copy.signature)}</span>
       </div>
     </footer>
   );

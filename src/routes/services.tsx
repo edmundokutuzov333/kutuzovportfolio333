@@ -6,6 +6,7 @@ import { PageHero } from "@/components/Reveal";
 import { loadServicesContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/services")({
   loader: () => loadServicesContent(),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/services")({
 function Services() {
   const data = Route.useLoaderData();
   const hero = requireHeroSection(data.sections);
+  const { tx } = useI18n();
   const [open, setOpen] = useState<string | null>(data.services[0]?.slug ?? null);
 
   return (
@@ -33,7 +35,7 @@ function Services() {
                 className="group flex w-full items-center gap-6 py-10 text-left"
               >
                 <span className="font-mono text-xs text-primary">{service.n}</span>
-                <span className="flex-1 font-display text-4xl font-bold transition-transform duration-500 group-hover:translate-x-3 md:text-7xl">{service.title}</span>
+                <span className="flex-1 font-display text-4xl font-bold transition-transform duration-500 group-hover:translate-x-3 md:text-7xl">{tx(service.title)}</span>
                 <span className={`text-3xl transition-transform duration-500 ${isOpen ? "rotate-45 text-primary" : ""}`}>+</span>
               </button>
               <AnimatePresence initial={false}>
@@ -47,12 +49,12 @@ function Services() {
                   >
                     <div className="grid gap-10 pb-12 md:grid-cols-2 md:pl-12">
                       <div>
-                        <p className="font-display text-2xl">{service.line}</p>
-                        <p className="mt-4 text-muted-foreground">{service.text}</p>
+                        <p className="font-display text-2xl">{tx(service.line)}</p>
+                        <p className="mt-4 text-muted-foreground">{tx(service.text)}</p>
                       </div>
                       <ul className="grid gap-3 sm:grid-cols-2">
                         {service.deliverables.map((deliverable) => (
-                          <li key={deliverable} className="rounded-sm border border-border p-4 text-sm">{deliverable}</li>
+                          <li key={deliverable} className="rounded-sm border border-border p-4 text-sm">{tx(deliverable)}</li>
                         ))}
                       </ul>
                     </div>
