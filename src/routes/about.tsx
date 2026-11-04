@@ -31,7 +31,7 @@ function About() {
     : aboutBiography;
   // The About portrait is the approved profile image supplied for the current site.
   // Keep it local so the public page does not depend on an outdated CMS asset path.
-  const portrait = "/edmundo-kutuzov-foto.png";
+  const portrait = "/edmundo-kutuzov-foto.jpg";
   const selectedProjects = projects.slice(0, 4);
 
   return (
