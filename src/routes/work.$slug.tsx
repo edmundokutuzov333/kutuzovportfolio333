@@ -6,6 +6,23 @@ import { loadProjectDetailContent } from "@/lib/cms/loaders";
 import { PUBLIC_SITE_URL } from "@/lib/cms/public-client";
 import { seoFromPage, noIndexSeo } from "@/lib/seo";
 
+function headlineLines(title: string) {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (current && candidate.length > 19) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.length ? lines : [title];
+}
+
 export const Route = createFileRoute("/work/$slug")({
   loader: async ({ params }) => {
     const data = await loadProjectDetailContent(params.slug);
@@ -50,7 +67,7 @@ function CaseStudy() {
 
   return (
     <>
-      <PageHero eyebrow={project.discipline} lines={project.title.split(" ")} />
+      <PageHero eyebrow={project.discipline} lines={headlineLines(project.title)} />
       <div className="px-6 md:px-12">
         <div className="mx-auto max-w-5xl overflow-hidden rounded-sm"><ArtSlot project={project} /></div>
       </div>
@@ -87,7 +104,7 @@ function CaseStudy() {
       {projects.length > 1 && (
         <Link to="/work/$slug" params={{ slug: next.slug }} data-cursor="Next" className="group mt-32 block border-t border-border px-6 py-24 md:px-12">
           <p className="eyebrow">Next project</p>
-          <p className="mt-4 font-display text-6xl font-bold transition-colors group-hover:text-primary md:text-9xl">{next.title}</p>
+          <p className="mt-4 max-w-4xl font-display text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.9] tracking-tight transition-colors group-hover:text-primary">{next.title}</p>
         </Link>
       )}
     </>

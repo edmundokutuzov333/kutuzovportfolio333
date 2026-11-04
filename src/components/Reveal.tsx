@@ -39,7 +39,7 @@ export function PageHero({ eyebrow, lines, intro }: { eyebrow: string; lines: st
   return (
     <section className="px-6 pb-16 pt-40 md:px-12 md:pt-48">
       <p className="eyebrow mb-8">{eyebrow}</p>
-      <SplitHeading lines={lines} className="font-display text-[13vw] font-bold leading-[0.88] tracking-tight md:text-[8.5vw]" />
+      <SplitHeading lines={lines} className="max-w-[12ch] font-display text-[clamp(3.5rem,8.5vw,9rem)] font-bold leading-[0.88] tracking-tight" />
       {intro && (
         <Reveal delay={0.15} className="mt-10 max-w-xl text-lg text-muted-foreground">
           <p>{intro}</p>

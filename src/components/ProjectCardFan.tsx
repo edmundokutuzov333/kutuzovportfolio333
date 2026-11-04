@@ -17,7 +17,6 @@ import {
   getFanVisibleCount,
   getVisibleFanCards,
   INITIAL_FAN_INDEX,
-  PROJECT_FAN_ASPECT_RATIO,
 } from "@/lib/project-card-fan";
 
 type ProjectCardFanProps = {
@@ -311,7 +310,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
           data-project-fan-visible={visibleCards.length}
           data-project-fan-center-slot={centerSlot}
           data-project-fan-mode={visibleCount === 3 ? "mobile" : "desktop"}
-          data-project-fan-ratio="4:5"
+          data-project-fan-ratio="natural"
           data-project-fan-viewport-ready={viewport.width > 0 ? "true" : "false"}
         >
           <AnimatePresence custom={directionRef.current} mode="sync">
@@ -343,7 +342,6 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                 <motion.div
                   key={`${item.slug}-${item.artworkIndex}-${index}`}
                   className="fan-card"
-                  style={{ aspectRatio: PROJECT_FAN_ASPECT_RATIO }}
                   initial={reducedMotion ? false : initial}
                   animate={{
                     x: target.x,
@@ -398,7 +396,7 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                   data-project-card-slot={slot}
                   data-project-artwork-src={item.src}
                   data-project-slug={item.slug}
-                  data-card-aspect-ratio={PROJECT_FAN_ASPECT_RATIO}
+                  data-card-aspect-ratio="natural"
                 >
                   <Link
                     to="/work/$slug"
