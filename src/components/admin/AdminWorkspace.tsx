@@ -456,8 +456,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
             throw error;
           }
         }
-        const previous = Array.isArray(parsed.payload.gallery) ? parsed.payload.gallery.filter((value): value is string => typeof value === "string" && value.length > 0) : [];
-        payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload.gallery_alt) ? parsed.payload.gallery_alt : []), ...selectedProjectFiles.map((file) => file.name)] };
+        const previous = Array.isArray(parsed.payload["gallery"]) ? parsed.payload["gallery"].filter((value): value is string => typeof value === "string" && value.length > 0) : [];
+        payload = { ...payload, gallery: [...previous, ...uploadedPaths], gallery_alt: [...(Array.isArray(parsed.payload["gallery_alt"]) ? parsed.payload["gallery_alt"] : []), ...selectedProjectFiles.map((file) => file.name)] };
         const groupedImport = creating && /^Group:\s*/i.test(asText(payload.title));
         if (creating && asText(payload.discipline) !== "Campaign design" && selectedProjectFiles.length > 1 && !groupedImport) {
           const startPosition = asNumber(payload.position, 0);
