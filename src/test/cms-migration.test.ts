@@ -85,7 +85,7 @@ describe("CMS migration domain contracts", () => {
     expect(mapped.slug).toBe(source.slug);
     expect(mapped.title).toBe(source.title);
     expect(mapped.client).toBe(source.client);
-    expect(mapped.year).toBe("2025 — 2026");
+    expect(mapped.year).toBe("2025 - 2026");
     expect(mapped.gallery).toEqual(source.gallery);
     expect(mapped.featured).toBe(true);
   });

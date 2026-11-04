@@ -506,6 +506,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   async function saveContent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!active.entity || !editing || saving) return;
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const requestedStatus = submitter?.value === "draft" || submitter?.value === "published" ? submitter.value : null;
     const parsed = parseDraft(draft, fields);
     if (parsed.error) {
       setNotice({ tone: "error", text: parsed.error });
@@ -522,7 +524,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
         gallery_alt: Array.isArray(payload["gallery_alt"]) ? payload["gallery_alt"] : [],
         position: asNumber(payload["position"], tableRows.length),
         locale: asText(payload["locale"]) || "en",
-        status: asText(payload["status"]) || "draft",
+        status: requestedStatus ?? (asText(payload["status"]) || "draft"),
         featured: asBool(payload["featured"]),
       };
     }
@@ -940,7 +942,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                   </div>}
                   <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#eceef2] pt-5">
                     <button type="button" onClick={cancelEdit} disabled={saving} className="h-10 rounded-lg border border-[#dfe2e8] px-4 text-sm font-medium text-[#424650] hover:bg-[#f8f9fb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50">Cancelar</button>
-                    <button type="submit" disabled={saving || loading} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#17295f] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#243d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><Save size={15} />{saving ? "A guardar..." : "Guardar e publicar"}</button>
+                    {activeId === "projects" ? <div className="flex flex-wrap items-center gap-2"><button type="submit" value="draft" disabled={saving || loading} className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#cfd5e2] bg-white px-4 text-sm font-semibold text-[#25345f] shadow-sm hover:bg-[#f5f7fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><Save size={15} />{saving ? "A guardar..." : "Guardar rascunho"}</button><button type="submit" value="published" disabled={saving || loading} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#17295f] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#243d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><Save size={15} />{saving ? "A guardar..." : "Publicar projecto"}</button></div> : <button type="submit" disabled={saving || loading} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#17295f] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#243d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><Save size={15} />{saving ? "A guardar..." : "Guardar e publicar"}</button>}
                   </div>
                 </form>
                 <aside className="space-y-4">
