@@ -1,5 +1,5 @@
 import { getAdminServerContext } from "@/lib/server/admin-auth.server";
-import { backblazePublicUrl, createBackblazeUploadUrl, deleteBackblazeObject, getBackblazeConfig, headBackblazeObject } from "@/lib/server/backblaze.server";
+import { backblazePublicUrl, createBackblazeNativeUpload, deleteBackblazeObject, getBackblazeConfig, headBackblazeObject } from "@/lib/server/backblaze.server";
 import { inspectImageBytes, normalizeObjectPath, referencesAsset, type SupportedImageMime, type SupportedMediaMime } from "@/lib/media-validation";
 
 type Row = Record<string, unknown>;
@@ -82,7 +82,8 @@ export async function createMediaUpload(input: { originalName: string; contentTy
   const backblaze = input.contentType === "video/mp4" ? getBackblazeConfig() : null;
   if (backblaze) {
     const path = `uploads/${context.actor.sessionId}/${new Date().getUTCFullYear()}/${crypto.randomUUID()}.mp4`;
-    return { path, uploadUrl: createBackblazeUploadUrl(backblaze, path, input.contentType), expiresInSeconds: 900, storage: "backblaze" as const };
+    const upload = await createBackblazeNativeUpload(backblaze, path, input.contentType);
+    return { path, ...upload, expiresInSeconds: 900, storage: "backblaze" as const };
   }
   const extension = input.contentType === "image/jpeg" ? "jpg" : input.contentType === "image/png" ? "png" : input.contentType === "video/mp4" ? "mp4" : "webp";
   const now = new Date();
