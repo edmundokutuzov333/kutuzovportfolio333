@@ -37,7 +37,7 @@ function Hero({ profile }: { profile: Profile }) {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-md font-display text-2xl font-semibold leading-tight md:text-3xl"
         >
-          {tx(profile.headline)}
+          {tx(profile.headline.trim())}
         </motion.h1>
         <motion.div
           initial={{ opacity: 0 }}
@@ -58,7 +58,7 @@ function Manifesto({ profile, label }: { profile: Profile; label: string }) {
   const { tx } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 40%"] });
-  const words = tx(profile.intro).split(" ");
+  const words = tx(profile.intro.trim()).split(" ");
   return (
     <section className="px-6 py-32 md:px-12 md:py-48">
       <p className="eyebrow mb-10">{label}</p>

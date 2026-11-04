@@ -188,7 +188,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (savedLanguage !== language) setLanguageState(savedLanguage);
   }, []);
   useEffect(() => { document.documentElement.lang = language; }, [language]);
-  const value = useMemo<I18nValue>(() => ({ language, setLanguage, t: (key) => copy[language][key] ?? copy.en[key], tx: (value) => language === "pt-PT" ? contentTranslations[value] ?? value : value }), [language]);
+  const value = useMemo<I18nValue>(() => ({ language, setLanguage, t: (key) => copy[language][key] ?? copy.en[key], tx: (value) => language === "pt-PT" ? contentTranslations[value] ?? contentTranslations[value.trim()] ?? value : value }), [language]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
