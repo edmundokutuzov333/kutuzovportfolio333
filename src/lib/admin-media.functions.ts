@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/admin-media.server";
 
 const imageType = z.enum(["image/png", "image/jpeg", "image/webp", "video/mp4"]);
+const storage = z.enum(["supabase", "backblaze"]).optional();
 const createUploadInput = z.object({
   originalName: z.string().trim().min(1).max(180),
   contentType: imageType,
@@ -20,8 +21,9 @@ const completeUploadInput = createUploadInput.extend({
   path: z.string().min(1).max(1024),
   altText: z.string().max(300),
   caption: z.string().max(500),
+  storage,
 }).strict();
-const pathInput = z.object({ path: z.string().min(1).max(1024) }).strict();
+const pathInput = z.object({ path: z.string().min(1).max(1024), storage }).strict();
 const idInput = z.object({ id: z.string().uuid() }).strict();
 const attachmentInput = z.object({
   submissionId: z.string().uuid(),

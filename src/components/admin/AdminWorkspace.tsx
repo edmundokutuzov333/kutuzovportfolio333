@@ -445,14 +445,14 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       try {
         for (const file of projectFiles) {
           const contentType = file.type === "video/mp4" ? "video/mp4" : file.type as "image/png" | "image/jpeg" | "image/webp";
-          const intent = await createMediaUploadFn({ data: { originalName: file.name, contentType, byteSize: file.size } }) as { path: string; uploadUrl: string };
+          const intent = await createMediaUploadFn({ data: { originalName: file.name, contentType, byteSize: file.size } }) as { path: string; uploadUrl: string; storage?: "supabase" | "backblaze" };
           try {
             const response = await fetch(intent.uploadUrl, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
             if (!response.ok) throw new Error(`O upload de ${file.name} falhou.`);
-            const completed = await completeMediaUploadFn({ data: { path: intent.path, originalName: file.name, contentType, byteSize: file.size, altText: file.name, caption: "" } }) as { publicUrl: string };
+            const completed = await completeMediaUploadFn({ data: { path: intent.path, originalName: file.name, contentType, byteSize: file.size, altText: file.name, caption: "", storage: intent.storage } }) as { publicUrl: string };
             uploadedPaths.push(completed.publicUrl);
           } catch (error) {
-            await cancelMediaUploadFn({ data: { path: intent.path } }).catch(() => undefined);
+            await cancelMediaUploadFn({ data: { path: intent.path, storage: intent.storage } }).catch(() => undefined);
             throw error;
           }
         }

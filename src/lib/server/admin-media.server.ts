@@ -1,4 +1,5 @@
 import { getAdminServerContext } from "@/lib/server/admin-auth.server";
+import { backblazePublicUrl, createBackblazeUploadUrl, deleteBackblazeObject, getBackblazeConfig, headBackblazeObject } from "@/lib/server/backblaze.server";
 import { inspectImageBytes, normalizeObjectPath, referencesAsset, type SupportedImageMime, type SupportedMediaMime } from "@/lib/media-validation";
 
 type Row = Record<string, unknown>;
@@ -78,6 +79,11 @@ export function validateMediaUploadInput(input: { originalName: string; contentT
 export async function createMediaUpload(input: { originalName: string; contentType: SupportedMediaMime; byteSize: number }) {
   const context = await getAdminServerContext();
   validateMediaUploadInput(input);
+  const backblaze = input.contentType === "video/mp4" ? getBackblazeConfig() : null;
+  if (backblaze) {
+    const path = `uploads/${context.actor.sessionId}/${new Date().getUTCFullYear()}/${crypto.randomUUID()}.mp4`;
+    return { path, uploadUrl: createBackblazeUploadUrl(backblaze, path, input.contentType), expiresInSeconds: 900, storage: "backblaze" as const };
+  }
   const extension = input.contentType === "image/jpeg" ? "jpg" : input.contentType === "image/png" ? "png" : input.contentType === "video/mp4" ? "mp4" : "webp";
   const now = new Date();
   const path = `uploads/${context.actor.sessionId}/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID()}.${extension}`;
@@ -103,23 +109,32 @@ export async function createMediaUpload(input: { originalName: string; contentTy
 }
 
 async function deleteStorageObject(context: Awaited<ReturnType<typeof getAdminServerContext>>, bucket: string, path: string): Promise<void> {
+  if (bucket.startsWith("backblaze:")) {
+    const config = getBackblazeConfig();
+    if (!config || bucket !== `backblaze:${config.bucket}`) throw new AdminMediaError("O armazenamento Backblaze não está configurado.", "unavailable");
+    try { await deleteBackblazeObject(config, path); } catch { throw new AdminMediaError("Não foi possível remover o ficheiro no Backblaze.", "unavailable"); }
+    return;
+  }
   await storageRequest(context, `/storage/v1/object/${bucket}/${encodePath(path)}`, { method: "DELETE" });
 }
 
-export async function cancelUnregisteredMediaUpload(input: { path: string }) {
+export async function cancelUnregisteredMediaUpload(input: { path: string; storage?: "supabase" | "backblaze" | undefined }) {
   const context = await getAdminServerContext();
   const path = normalizeObjectPath(input.path);
   if (!path || !path.startsWith(`uploads/${context.actor.sessionId}/`)) throw new AdminMediaError("O caminho de upload não pertence à sua sessão.", "forbidden");
-  const rows = await request<Row[]>(context, `/rest/v1/media_assets?bucket_id=eq.${PUBLIC_BUCKET}&object_path=eq.${encodeURIComponent(path)}&select=id`);
+  const storage = input.storage ?? "supabase";
+  const backblaze = storage === "backblaze" ? getBackblazeConfig() : null;
+  const bucket = backblaze ? `backblaze:${backblaze.bucket}` : PUBLIC_BUCKET;
+  const rows = await request<Row[]>(context, `/rest/v1/media_assets?bucket_id=eq.${encodeURIComponent(bucket)}&object_path=eq.${encodeURIComponent(path)}&select=id`);
   if (rows.length > 0) return { removed: false, reason: "already_registered" };
-  const references = await findAssetReferences(context, path);
+  const references = await findAssetReferences(context, path, backblaze ? backblazePublicUrl(backblaze, path) : publicAssetUrl(context.supabase.url, path));
   if (references.length > 0) return { removed: false, reason: "asset_referenced" };
-  await deleteStorageObject(context, PUBLIC_BUCKET, path);
+  await deleteStorageObject(context, bucket, path);
   return { removed: true };
 }
 
 export async function completeMediaUpload(input: {
-  path: string; originalName: string; contentType: SupportedMediaMime; byteSize: number; altText: string; caption: string;
+  path: string; originalName: string; contentType: SupportedMediaMime; byteSize: number; altText: string; caption: string; storage?: "supabase" | "backblaze" | undefined;
 }) {
   const context = await getAdminServerContext();
   validateMediaUploadInput(input);
@@ -128,24 +143,27 @@ export async function completeMediaUpload(input: {
     throw new AdminMediaError("O caminho de upload não pertence à sessão administrativa actual.", "forbidden");
   }
   if (input.altText.length > 300 || input.caption.length > 500) throw new AdminMediaError("Texto alternativo ou legenda demasiado longos.", "invalid");
-  const resource = `/storage/v1/object/${PUBLIC_BUCKET}/${encodePath(path)}`;
   const isVideo = input.contentType === "video/mp4";
+  const backblaze = input.storage === "backblaze" ? getBackblazeConfig() : null;
+  if (input.storage === "backblaze" && !backblaze) throw new AdminMediaError("O armazenamento Backblaze não está configurado.", "unavailable");
+  const bucket = backblaze ? `backblaze:${backblaze.bucket}` : PUBLIC_BUCKET;
+  const publicUrl = backblaze ? backblazePublicUrl(backblaze, path) : publicAssetUrl(context.supabase.url, path);
+  const resource = `/storage/v1/object/${PUBLIC_BUCKET}/${encodePath(path)}`;
   let bytes = new Uint8Array();
   let observedMime: string;
   try {
-    const key = context.supabase.serviceRoleKey;
-    const response = await fetch(new URL(resource, context.supabase.url), {
-      method: isVideo ? "HEAD" : "GET",
-      headers: { apikey: key, Authorization: "Bearer " + key },
-      cache: "no-store",
-    });
-    if (!response.ok) throw new AdminMediaError("O objecto carregado não pôde ser verificado. Volte a carregar o ficheiro.", response.status === 404 ? "not_found" : "unavailable");
-    observedMime = (response.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
-    if (!isVideo) bytes = new Uint8Array(await response.arrayBuffer());
-    const observedSize = Number(response.headers.get("content-length") ?? "");
-    if (isVideo && Number.isFinite(observedSize) && observedSize > 0 && observedSize !== input.byteSize) {
-      await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
-      throw new AdminMediaError("O tamanho real do vídeo não corresponde ao anunciado.", "invalid");
+    if (backblaze) {
+      const head = await headBackblazeObject(backblaze, path);
+      observedMime = head.contentType;
+      if (head.contentLength && head.contentLength !== input.byteSize) throw new AdminMediaError("O tamanho real do vídeo não corresponde ao anunciado.", "invalid");
+    } else {
+      const key = context.supabase.serviceRoleKey;
+      const response = await fetch(new URL(resource, context.supabase.url), { method: isVideo ? "HEAD" : "GET", headers: { apikey: key, Authorization: "Bearer " + key }, cache: "no-store" });
+      if (!response.ok) throw new AdminMediaError("O objecto carregado não pôde ser verificado. Volte a carregar o ficheiro.", response.status === 404 ? "not_found" : "unavailable");
+      observedMime = (response.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
+      if (!isVideo) bytes = new Uint8Array(await response.arrayBuffer());
+      const observedSize = Number(response.headers.get("content-length") ?? "");
+      if (isVideo && Number.isFinite(observedSize) && observedSize > 0 && observedSize !== input.byteSize) throw new AdminMediaError("O tamanho real do vídeo não corresponde ao anunciado.", "invalid");
     }
   } catch (error) {
     if (error instanceof AdminMediaError) throw error;
@@ -153,13 +171,13 @@ export async function completeMediaUpload(input: {
   }
 
   if ((!isVideo && (bytes.byteLength !== input.byteSize || bytes.byteLength <= 0)) || input.byteSize <= 0 || input.byteSize > MAX_UPLOAD_BYTES) {
-    await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
+    await deleteStorageObject(context, bucket, path).catch(() => undefined);
     throw new AdminMediaError("O tamanho real do ficheiro não corresponde ao anunciado ou excede 500 MB.", "invalid");
   }
-  const inspected = isVideo ? null : inspectImageBytes(bytes);
+  const inspected = isVideo || backblaze ? null : inspectImageBytes(bytes);
   if (isVideo) {
     if (observedMime !== "video/mp4" && observedMime !== "application/octet-stream") {
-      await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
+      await deleteStorageObject(context, bucket, path).catch(() => undefined);
       throw new AdminMediaError("O conteúdo real não corresponde a um vídeo MP4 válido.", "invalid");
     }
   } else {
@@ -176,14 +194,14 @@ export async function completeMediaUpload(input: {
       && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF"
       && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
     if ((!inspected && !isConfirmedJpeg && !isConfirmedWebp) || (inspected && inspected.mime !== input.contentType) || (inspected && observedMime !== inspected.mime && observedMime !== "application/octet-stream")) {
-      await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
+      await deleteStorageObject(context, bucket, path).catch(() => undefined);
       throw new AdminMediaError("O conteúdo real não corresponde a uma imagem PNG, JPG ou WEBP válida.", "invalid");
     }
   }
 
   const sha256 = isVideo ? null : Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes.buffer)), (value) => value.toString(16).padStart(2, "0")).join("");
   const mediaRecord = {
-    bucket_id: PUBLIC_BUCKET,
+    bucket_id: bucket,
     object_path: path,
     original_name: safeOriginalName(input.originalName),
     content_type: input.contentType,
@@ -206,7 +224,7 @@ export async function completeMediaUpload(input: {
     record = rows[0] ?? null;
     if (!record || typeof record["id"] !== "string") throw new AdminMediaError("A base de dados não confirmou o registo do asset.", "unknown");
   } catch (error) {
-    await deleteStorageObject(context, PUBLIC_BUCKET, path).catch(() => undefined);
+    await deleteStorageObject(context, bucket, path).catch(() => undefined);
     if (error instanceof AdminMediaError) throw error;
     throw new AdminMediaError("O objecto foi carregado, mas o registo não foi confirmado. O objecto foi removido.", "unavailable");
   }
@@ -245,7 +263,7 @@ export async function completeMediaUpload(input: {
   };
   return {
     asset,
-    publicUrl: publicAssetUrl(context.supabase.url, path),
+    publicUrl,
     auditRecorded,
   };
 }
@@ -258,8 +276,7 @@ async function rows(context: Awaited<ReturnType<typeof getAdminServerContext>>, 
   return data as Row[];
 }
 
-async function findAssetReferences(context: Awaited<ReturnType<typeof getAdminServerContext>>, path: string): Promise<string[]> {
-  const url = publicAssetUrl(context.supabase.url, path);
+async function findAssetReferences(context: Awaited<ReturnType<typeof getAdminServerContext>>, path: string, url = publicAssetUrl(context.supabase.url, path)): Promise<string[]> {
   const tables = ["projects", "clients", "pages", "profile_content", "page_sections", "site_settings", "services", "process_steps", "disciplines", "skills", "principles", "metrics", "experience_items", "content_revisions"];
   const results = await Promise.all(tables.map(async (table) => ({ table, values: await rows(context, table) })));
   const references: string[] = [];
@@ -279,8 +296,10 @@ export async function getMediaAssetReferences(input: { id: string }) {
   const found = await request<Row[]>(context, `/rest/v1/media_assets?id=eq.${encodeURIComponent(input.id)}&select=id,bucket_id,object_path,original_name&limit=1`);
   const asset = found[0];
   if (!asset || typeof asset["object_path"] !== "string") throw new AdminMediaError("O asset já não existe.", "not_found");
-  if (asset["bucket_id"] !== PUBLIC_BUCKET) throw new AdminMediaError("Só é permitido consultar assets do bucket público do portfólio.", "invalid");
-  return { references: await findAssetReferences(context, asset["object_path"]) };
+  if (asset["bucket_id"] !== PUBLIC_BUCKET && !String(asset["bucket_id"]).startsWith("backblaze:")) throw new AdminMediaError("Só é permitido consultar assets do portfólio.", "invalid");
+  const config = String(asset["bucket_id"]).startsWith("backblaze:") ? getBackblazeConfig() : null;
+  const url = config ? backblazePublicUrl(config, asset["object_path"]) : publicAssetUrl(context.supabase.url, asset["object_path"]);
+  return { references: await findAssetReferences(context, asset["object_path"], url) };
 }
 
 export async function deleteMediaAsset(input: { id: string }) {
@@ -288,14 +307,15 @@ export async function deleteMediaAsset(input: { id: string }) {
   const found = await request<Row[]>(context, `/rest/v1/media_assets?id=eq.${encodeURIComponent(input.id)}&select=id,bucket_id,object_path,original_name&limit=1`);
   const asset = found[0];
   if (!asset || typeof asset["object_path"] !== "string") throw new AdminMediaError("O asset já não existe.", "not_found");
-  if (asset["bucket_id"] !== PUBLIC_BUCKET) throw new AdminMediaError("Este módulo não pode remover anexos privados de contactos.", "forbidden");
+  if (asset["bucket_id"] !== PUBLIC_BUCKET && !String(asset["bucket_id"]).startsWith("backblaze:")) throw new AdminMediaError("Este módulo não pode remover anexos privados de contactos.", "forbidden");
   const path = normalizeObjectPath(asset["object_path"]);
   if (!path) throw new AdminMediaError("O caminho guardado no registo é inválido; a remoção foi bloqueada.", "invalid");
-  const references = await findAssetReferences(context, path);
+  const config = String(asset["bucket_id"]).startsWith("backblaze:") ? getBackblazeConfig() : null;
+  const references = await findAssetReferences(context, path, config ? backblazePublicUrl(config, path) : publicAssetUrl(context.supabase.url, path));
   if (references.length > 0) throw new AdminMediaError(`O asset continua a ser utilizado e não foi removido: ${references.slice(0, 8).join(", ")}.`, "conflict");
 
-  await deleteStorageObject(context, PUBLIC_BUCKET, path);
-  await request(context, `/rest/v1/media_assets?id=eq.${encodeURIComponent(input.id)}&bucket_id=eq.${PUBLIC_BUCKET}`, { method: "DELETE" });
+  await deleteStorageObject(context, String(asset["bucket_id"]), path);
+  await request(context, `/rest/v1/media_assets?id=eq.${encodeURIComponent(input.id)}&bucket_id=eq.${encodeURIComponent(String(asset["bucket_id"]))}`, { method: "DELETE" });
   await request(context, "/rest/v1/admin_audit_log", {
     method: "POST",
     headers: { Prefer: "return=minimal" },
