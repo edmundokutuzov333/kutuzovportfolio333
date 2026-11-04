@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { createBackblazeDownloadUrl, getBackblazeConfig } from "./lib/server/backblaze.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -47,6 +48,8 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const mediaResponse = await handleBackblazeMedia(request);
+      if (mediaResponse) return mediaResponse;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
@@ -59,3 +62,22 @@ export default {
     }
   },
 };
+
+async function handleBackblazeMedia(request: Request): Promise<Response | null> {
+  const url = new URL(request.url);
+  const prefix = "/api/media/";
+  if (!url.pathname.startsWith(prefix)) return null;
+  if (request.method !== "GET" && request.method !== "HEAD") return new Response("Method not allowed", { status: 405 });
+  const config = getBackblazeConfig();
+  const key = decodeURIComponent(url.pathname.slice(prefix.length)).replace(/^\/+/, "");
+  if (!config || !key || key.includes("..")) return new Response("Not found", { status: 404 });
+  const response = await fetch(createBackblazeDownloadUrl(config, key), { method: request.method, cache: "no-store" });
+  if (!response.ok) return new Response("Media unavailable", { status: response.status === 404 ? 404 : 502 });
+  const headers = new Headers();
+  for (const name of ["content-type", "content-length", "etag", "last-modified"]) {
+    const value = response.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  headers.set("cache-control", "public, max-age=31536000, immutable");
+  return new Response(request.method === "HEAD" ? null : response.body, { status: 200, headers });
+}
