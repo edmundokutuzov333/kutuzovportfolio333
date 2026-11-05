@@ -16,21 +16,26 @@ import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
   const [label, setLabel] = useState<string | null>(null);
+  const lens = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState(false);
+  const [lensOn, setLensOn] = useState(false);
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
     let x = 0, y = 0, cx = 0, cy = 0, raf = 0;
     const move = (event: MouseEvent) => {
       x = event.clientX;
       y = event.clientY;
-      const element = (event.target as HTMLElement).closest("a,button,[data-cursor]") as HTMLElement | null;
+      const target = event.target as HTMLElement;
+      const element = target.closest("a,button,[data-cursor]") as HTMLElement | null;
       setHover(!!element);
       setLabel(element?.dataset["cursor"] ?? null);
+      setLensOn(!element && !!target.closest("img,video,h1,h2,h3,h4,p,.font-display"));
     };
     const loop = () => {
       cx += (x - cx) * 0.35;
       cy += (y - cy) * 0.35;
       if (dot.current) dot.current.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
+      if (lens.current) lens.current.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
       raf = requestAnimationFrame(loop);
     };
     window.addEventListener("mousemove", move, { passive: true });
@@ -41,11 +46,37 @@ function Cursor() {
     };
   }, []);
   return (
+    <>
+    <svg width="0" height="0" className="absolute" aria-hidden>
+      <filter id="ek-lens" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+        <feImage result="map" preserveAspectRatio="none" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3CradialGradient id='g'%3E%3Cstop offset='0' stop-color='%23808080'/%3E%3Cstop offset='1' stop-color='%23ff00ff'/%3E%3C/radialGradient%3E%3Crect width='100' height='100' fill='url(%23g)'/%3E%3C/svg%3E" />
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="22" xChannelSelector="R" yChannelSelector="B" result="d" />
+        <feColorMatrix in="d" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="r" />
+        <feOffset in="r" dx="2" result="ro" />
+        <feColorMatrix in="d" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0" result="gb" />
+        <feOffset in="gb" dx="-1" result="gbo" />
+        <feBlend in="ro" in2="gbo" mode="screen" />
+      </filter>
+    </svg>
+    <div
+      ref={lens}
+      aria-hidden
+      className="pointer-events-none fixed left-0 top-0 z-[89] hidden h-32 w-32 rounded-full md:block"
+      style={{
+        opacity: lensOn ? 1 : 0,
+        scale: lensOn ? "1" : "0.4",
+        transition: "opacity .15s ease, scale .15s ease",
+        backdropFilter: "url(#ek-lens) saturate(1.25) brightness(1.08)",
+        WebkitBackdropFilter: "saturate(1.25) brightness(1.08)",
+        boxShadow: "inset 0 0 0 1px color-mix(in oklab, var(--primary) 55%, transparent), inset 0 0 24px color-mix(in oklab, var(--primary) 35%, transparent)",
+      }}
+    />
     <div ref={dot} className="pointer-events-none fixed left-0 top-0 z-[90] hidden md:block">
       <div className={`flex items-center justify-center rounded-full bg-bone text-background mix-blend-difference transition-all duration-300 ${label ? "h-20 w-20" : hover ? "h-10 w-10" : "h-3 w-3"}`}>
         {label && <span className="font-mono text-[10px] uppercase tracking-widest">{label}</span>}
       </div>
     </div>
+    </>
   );
 }
 
