@@ -17,7 +17,7 @@ export function JarvisTrigger({ className = "", label = "JARVIS · AI" }: { clas
   );
 }
 
-export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null }) {
+export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefined }) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
