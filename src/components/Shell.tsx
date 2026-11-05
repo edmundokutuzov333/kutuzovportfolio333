@@ -10,6 +10,7 @@ import { LogoMark } from "./LogoMark";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
 import { JarvisLauncher } from "./JarvisLauncher";
+import { LiquidTransition } from "./LiquidTransition";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 
 function Cursor() {
@@ -225,7 +226,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <Cursor />
       <Header open={open} setOpen={setOpen} presentation={presentation.presentation} />
       <AnimatePresence>{open && <Menu close={() => setOpen(false)} profile={profile} presentation={presentation} />}</AnimatePresence>
-      <motion.div key={pathname + "-curtain"} className="pointer-events-none fixed inset-0 z-[45] bg-[linear-gradient(180deg,var(--primary),var(--background))]" initial={{ scaleY: 1 }} animate={{ scaleY: 0 }} style={{ originY: 0 }} transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }} />
+      <LiquidTransition />
       <main>{children}</main>
       <Footer profile={profile} presentation={presentation} />
       <JarvisLauncher />
