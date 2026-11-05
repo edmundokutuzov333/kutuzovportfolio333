@@ -9,7 +9,7 @@ import { EKBlueprint } from "./EKBlueprint";
 import { LogoMark } from "./LogoMark";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
-import { JarvisLauncher } from "./JarvisLauncher";
+import { JarvisLauncher, JarvisTrigger } from "./JarvisLauncher";
 import { LiquidTransition } from "./LiquidTransition";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 
@@ -87,6 +87,7 @@ function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (valu
       <Link to="/" aria-label="Home" className="text-bone"><LogoMark className="h-6 w-auto" /></Link>
       <div className="hidden items-center gap-4 md:flex"><div className="eyebrow text-bone">{presentation.availability_label || t("available")}</div><LanguageSwitcher /></div>
       <div className="flex items-center gap-2">
+        <JarvisTrigger className="liquid-glass-button hidden rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone sm:inline-flex" />
         <div className="md:hidden"><LanguageSwitcher /></div>
         <button onClick={() => setOpen(!open)} className="liquid-glass-button flex items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
           {open ? t("close") : t("menu")}
@@ -124,6 +125,7 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
       <div className="flex flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest">
         {profile?.email && <a href={`mailto:${profile.email}`}>{profile.email}</a>}
         <div className="flex gap-6">
+          <span onClick={close}><JarvisTrigger className="liquid-glass-button rounded-full px-4 py-2 uppercase" label="JARVIS (IA)" /></span>
           <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="liquid-glass-button rounded-full px-4 py-2 uppercase">{t("replay")}</button>
           {profile?.socials.map((social) => (
             <a key={social.label} href={social.href} target="_blank" rel="noreferrer">{social.label}</a>
@@ -151,6 +153,7 @@ export function Footer({ profile, presentation }: { profile: Profile | null; pre
             {profile?.email && <a className="block hover:text-primary" href={`mailto:${profile.email}`}>{profile.email}</a>}
             {profile?.whatsapp && profile.phone && <a className="block hover:text-primary" href={profile.whatsapp} target="_blank" rel="noreferrer">{profile.phone}</a>}
             {profile?.location && <p className="text-muted-foreground">{profile.location}</p>}
+            <JarvisTrigger className="pt-2 font-mono text-[10px] uppercase tracking-[0.2em] hover:text-primary" label="Falar com JARVIS (IA) →" />
           </div>
           <div className="space-y-3 text-sm">
             <p className="eyebrow mb-4">{tx(copy.social_label) || "Social"}</p>
@@ -260,7 +263,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <LiquidTransition />
       <main>{children}</main>
       <Footer profile={profile} presentation={presentation} />
-      <JarvisLauncher />
+      <JarvisLauncher whatsapp={profile?.whatsapp} />
     </div>
   );
 }
