@@ -44,22 +44,10 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       aria-label="JARVIS, assistente de IA de Edmundo Kutuzov"
       onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}
     >
-      <div className="relative flex h-[92svh] w-full max-w-6xl flex-col overflow-hidden rounded-t-2xl border border-primary/30 bg-card shadow-2xl md:h-[min(88svh,860px)] md:rounded-2xl">
-        <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 md:px-6">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inset-0 rounded-full bg-primary blur-[4px]" />
-              <span className="relative h-2.5 w-2.5 rounded-full bg-primary" />
-            </span>
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-foreground">JARVIS // AI Twin</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Assistente de IA treinado sobre o trabalho de Edmundo</p>
-            </div>
-          </div>
-          <button type="button" aria-label="Fechar JARVIS" onClick={() => setOpen(false)} className="liquid-glass-button rounded-full px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-foreground">
-            Esc · Fechar
-          </button>
-        </div>
+      <div className="relative flex h-[100svh] w-full flex-col overflow-hidden bg-card md:h-[min(92svh,960px)] md:max-w-[1400px] md:rounded-2xl md:border md:border-primary/30 md:shadow-2xl">
+        <button type="button" aria-label="Fechar JARVIS" onClick={() => setOpen(false)} className="liquid-glass-button absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full font-mono text-sm text-foreground md:right-4 md:top-4">
+          ✕
+        </button>
 
         <div className="relative flex-1">
           {!loaded && (
