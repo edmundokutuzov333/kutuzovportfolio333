@@ -2,13 +2,17 @@ import { DEFAULT_SUPABASE_PUBLISHABLE_KEY, DEFAULT_SUPABASE_URL } from "./public
 
 const env = import.meta.env;
 
-export const SUPABASE_URL =
-  env["VITE_SUPABASE_URL"]?.trim().replace(/\/+$/, "") || DEFAULT_SUPABASE_URL;
+const envUrl = env["VITE_SUPABASE_URL"]?.trim().replace(/\/+$/, "");
 const publishableKey = env["VITE_SUPABASE_PUBLISHABLE_KEY"]?.trim();
 const anonKey = env["VITE_SUPABASE_ANON_KEY"]?.trim();
+const envKey = publishableKey || anonKey;
+// URL and key must come from the same project; a mixed pair returns HTTP 401.
+const useEnv = Boolean(envUrl && envKey);
 
-export const SUPABASE_API_KEY = publishableKey || anonKey || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-const AUTHORIZATION_KEY = anonKey || null;
+export const SUPABASE_URL = useEnv ? envUrl! : DEFAULT_SUPABASE_URL;
+export const SUPABASE_API_KEY = useEnv ? envKey! : DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+// Only legacy JWT anon keys may be sent as a bearer; opaque sb_ keys cause 401.
+const AUTHORIZATION_KEY = useEnv && anonKey?.startsWith("eyJ") && !publishableKey ? anonKey : null;
 export function validatePublicOrigin(value: string | undefined): string {
   if (!value?.trim()) return "";
   try {
