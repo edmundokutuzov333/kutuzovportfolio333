@@ -1,9 +1,9 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import { auditReducer, initialAuditState, mockAudit, normalizePublicUrl } from "../lib/audit.mjs";
 import { copy } from "../lib/content";
-export function AuditCard({ full = false }) {
+export function AuditCard({ full = false, initialUrl = "" }) {
   const [state, dispatch] = useReducer(auditReducer, initialAuditState);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialUrl);
   const [scenario, setScenario] = useState("success");
   const [unlocked, setUnlocked] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
@@ -80,7 +80,7 @@ export function AuditCard({ full = false }) {
           <li key={label}><span>{label}</span><meter min="0" max="20" value={state.result?.categories[index].score ?? [9,8,7,10,8][index]} />
             <span>{state.result?.categories[index].score ?? [9,8,7,10,8][index]}/20</span></li>)}</ul>
         {state.status === "success" && <>
-          <p className="muted">2 pontos fortes · 6 problemas · 3 oportunidades. Valores fictícios.</p>
+          <p className="muted">{state.result.counts.wins} pontos fortes · {state.result.counts.issues} problemas · {state.result.counts.opportunities} oportunidades. Valores fictícios.</p>
           <button className="pill" onClick={share}>Copiar ligação</button>
           {!unlocked ? <form className="unlock" onSubmit={event => { event.preventDefault(); setUnlocked(true); }}>
             <h3>Ver o relatório de exemplo</h3>

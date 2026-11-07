@@ -1,0 +1,5973 @@
+[
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/style.giuK2xWE.css",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/css; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BebiBQEF.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/xvJaPgZX.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BeUrQCHV.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Cp497ybm.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/C0TJSBcc.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CmlJUJy5.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DTsrajoW.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/soundsplash.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/toi-whakaari.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Cj-fgEKK.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/fonts/RoobertMonoTRIAL-Medium-latin.woff2",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "font/woff2"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Yx19RTFy.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CNs_Ozdc.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DWxn8li7.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/token2049.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/D2MAnKPh.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/D2mt5u4z.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BF3NFneV.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/UxU1hnM8.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/victim-support.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/killer-klowns.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/zfnM-DLG.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/university-of-otago.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/medicalert.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/_880Vhlk.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BgPhETEj.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/hePW80VL.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CwvgAvOf.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/uVOJimCL.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BUpWfp3l.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Dg6kXghY.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/q-bio.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/silver-fern-farms.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/optimal-workshop.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/monster-train-art.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/oasis-protocol.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BVzN17QF.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BPg1DrOH.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/7L1vxLTy.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BFE8Yncj.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BsHilHY7.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Cpm8tOdU.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DBzICErp.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/eepswn5d.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Ds-Zqp09.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DBcNSYmc.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BF_kr7p4.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/dv7SlUzl.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BUOO5lAm.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/bnIs2u-O.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Cu_3K7jD.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CneV3oPZ.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B_rO-9Cv.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BLxW0B1A.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DBrkUV2t.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CXYYui-5.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/SLO8xpMj.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B8eHxc30.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B2UxSi4Q.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BLQcGZAf.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DQMiXf7O.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Aw4hE97d.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DUA7EeQT.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DjU58q7w.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/feEO5RDr.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B2Mw4W0C.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/j7aI0Xh_.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/fonts/Roobert-Regular-latin.woff2",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "font/woff2"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/super-ai.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/all-blacks.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/adidas.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/token-2049.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/wow.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/hellboy.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/blackbird.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BnqJvmIP.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/ocuLONdT.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BaDwb6xQ.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CMjGDnj9.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Cz4XK8st.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/fonts/Roobert-Medium-latin.woff2",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "font/woff2"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/video/hologram-poster.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/video-player-dots-overlay.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/awwwards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/muse.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/tech-behemoths.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/css-design-awards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/orpetron.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/best-awards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Hero_cbe1c68d3d.avif",
+    "queryKeys": [
+      "bulge"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/logo-1.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awards/w3.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Hero_21cc2f4c3e.avif",
+    "queryKeys": [
+      "bulge"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Woolf_Hero_8d2e9d72d2.avif",
+    "queryKeys": [
+      "bulge"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/WOW_hero_f037c36c6c.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Hero_1de0515e65.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/01_hub_preview_82355b4f68.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/logo-2.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Hero_70f24cdd90.avif",
+    "queryKeys": [
+      "bulge"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/medium_mosaic_preview_card_33ae127cb0.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Hero_e368eeb5a9.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/image_226_cdb87a5458.avif",
+    "queryKeys": [
+      "bulge"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/03_josh_preview_87284230b4.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_vercel/insights/script.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/video/hologram.webm",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/webm"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/qm3TBJn7.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/logo-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/frog-new.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/contact-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/contact-responses.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/slider-3.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/work-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/webflow-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/content-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/warp-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/slider-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/slider-2.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/contact-response-short.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/about-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/home-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/services-load.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/sound-btn-hover-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/accordion-open.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/accordion-close.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/talk-btn-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/talk-btn-hover-2.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/talk-btn-hover-3.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/talk-btn-hover-4.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/text-hover-3.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/text-hover-4.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/card-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/talk-btn-hover-5.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/talk-btn-hover-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/text-hover-2.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/text-hover-5.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/ai-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/text-hover-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/click-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/click-2.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/click-3.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/click-4.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/click-5.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/menu-close.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/menu-hover-close.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/menu-hover-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/menu-open.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/showreel-hover-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/mute-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/showreel-hover-2.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/showreel-open-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/showreel-hover-3.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/scroll-btn-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/btn-hover-down.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/btn-hover-simple.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/text-hover-short.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/play-hover-simple.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/play-hover-menu.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/awards-footer-hover-1.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/awards-footer-hover-2.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/awards-footer-hover-3.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/awards-footer-hover-4.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/awards-footer-hover-5.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/sound/share-hover.mp3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/tpkS6goFnp12NeBrOdVAaFVPzCIVogWA0201801L01ZoMUg.m3u8",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/DGN9W75V8nDh4aERGzkYEbj4VOptDviiaNfPY6gA6Is.m3u8",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/about",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/muse.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/best-awards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CwM8QBnQ.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/FTUzmJdP.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/C_-uJWcy.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CnGlCh_X.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DECbiYZZ.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BQeGLVr8.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/D4ZkXBJD.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CAMgqLMh.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Db0WqDRz.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CADpLQvg.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/about/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/cmz-gTX5.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/webflow.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/tech-behemoths.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/awwards-logo.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/awwwards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/w3.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/css-design-awards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/featured/orpetron.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/tpkS6goFnp12NeBrOdVAaFVPzCIVogWA0201801L01ZoMUg/highest.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/clients",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DtZkFCjl.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/clients/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/world-of-wearableart.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/fonts/Roobert-RegularItalic-latin.woff2",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "font/woff2"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BM5UNQN-.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/1B6AiEji.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/hellboy.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/blackbird.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/all-blacks-jersey-launch.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/showgunners.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/woolf.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/summer-game-fest.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/slot/zendetta.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/clients/feature/hellboy-1280.webp",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/contact",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/contact/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/VghvMXwk.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/C35bEubG.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DpqlGaC5.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_00.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_01.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_02.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_03.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_04.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_05.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_06.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/contact/step_07.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DS2yxzlJ.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_inc_thumbnail_14323a09b0.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/AI_1x1_converted_4d4119c422.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/webgl_roundup_cover_5b87d03b65.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Switch_to_webflow_1x1_converted_18bf592636.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Wellington_Gold_Awards_1x1_converted_31a4b75950.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/02_serhii_preview_1436d52af4.jpg",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/TE_Dx_Wellington_converted_1f3fb404db.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6761fc8483c673ae45ad9508_665ed5ca3bc21740d704f095_Summer_Game_Fest_1_f6dfd9f615.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/01_02_6a2663fb6f.jpg",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis_1x1_converted_a5a4553585.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/What_does_Webflow_offer_1x1_converted_c657d9c065.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/mosaic_preview_card_33ae127cb0.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Nomination_1x1_converted_2e29bc2ac9.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Becomes_premium_partner_converted_db3628da7e.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Crypto_1x1_converted_7763ec346e.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_converted_1_a4f5980498.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_article_94457e6cc8.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Hero_c213469eea.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Hero_5a67df8f3c.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Accessibility_1x1_converted_03374285ca.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/how_we_built_f016b77c26.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Web_Content_1x1_converted_d5c297f69e.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_Blacks_small_1_bc57e26a9b.jpg",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Gaming_converted_745ee510d1.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hard_West_2_Article_Thumbnail_9b6be1f8f6.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/What_is_webflow_1x1_converted_f4be8ec90e.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Become_professional_partner_1x1_converted_9df09239cb.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_metamorphosis_panel_preview_ffaff6837b.jpg",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/medium_webgl_roundup_cover_5b87d03b65.jpg",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/medium_how_we_built_f016b77c26.webp",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/medium_6761fc8483c673ae45ad9508_665ed5ca3bc21740d704f095_Summer_Game_Fest_1_f6dfd9f615.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/design-audit",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_ipx/s_58x58/img/W3-awards-logo.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_ipx/s_106x53/img/awards/orpetron.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_ipx/s_58x58/img/Awwwards-logo.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_ipx/s_159x53/img/Techbehemoths-logo.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/design-audit/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_ipx/s_59x58/img/Best-awards-logo.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CcbVSV-f.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_ipx/s_59x53/img/CSS-Awards-logo.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/api/audit-recent",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/json"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/9rw7Fg02.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CtX-HJq1.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/the-web.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/C0on38kR.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/dfqGMUi1jsMIX00EvdRnywVIeWIQpEr6UF02R3Ovftp3A.m3u8",
+    "queryKeys": [
+      "redundant_streams"
+    ],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/zcMhZdPpBbEz502SfJ01BSX7B01PZ8axsMSYLg006F00Lpd8.m3u8",
+    "queryKeys": [
+      "redundant_streams"
+    ],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/Gs9aZT00jpkPxKzJmbajcZES7rw2WYYaTmLFIu00Gt5f4.m3u8",
+    "queryKeys": [
+      "redundant_streams"
+    ],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/02DqXW02V3CvlvBJQ022g100ADRYlQU01TZMvutEffhYhTqw.m3u8",
+    "queryKeys": [
+      "redundant_streams"
+    ],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "POST",
+    "origin": "https://inferred.litix.io",
+    "path": "/",
+    "queryKeys": [],
+    "status": 200
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/wri9qmfp01VRcEsGsWtOgWeo4JPHFjOYXPQy1mZ9oNNo.m3u8",
+    "queryKeys": [
+      "redundant_streams"
+    ],
+    "status": 200,
+    "contentType": "application/vnd.apple.mpegurl"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/fDH5c-56.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DiWCWObn.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/OInSgk8H.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Hero_9b6e40acbe.avif",
+    "queryKeys": [
+      "bulge"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Hero_2_8967e2c835.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hero_76be8e5389.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/best-webgl-interactive-3d-agencies",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/3G8EfSRa.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/9-b6XEYD.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/C1K43SVS.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/icon-in.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-4.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-7.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-3.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-0.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/arrow-right-long.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-10.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-14.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-8.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/lusion_everswap_loop_8e8748b20a.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/merci_michel_loop_14d5c0b55d.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-11.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-12.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-6.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-5.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-13.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/active_theory_loop_d6f7c021f5.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/icon-f.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/makemepulse_apechain_loop_760fab3a12.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-1.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/Blnroj1e.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/icon-x.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-2.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/noomo_storytelling_loop_145c39bc77.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/videinfra_springs_loop_fbfb3b164c.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/offbrand_steven_loop_e0e04c40ad.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/utsubo_loop_e63cc968a7.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/psychoactive_zendetta_loop_7f291793ea.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/frog_steps/progress-logo-9.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/unseen_hubtown_loop_d69ac6db4d.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/builds/meta/a6e84b68-f095-4121-9de9-bfbc1bd07acb.json",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/capturing-the-spirit-of-summer-game-fest",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6761fc8483c673ae45ad94df_6752362613c1964cef5666bf_6660135445b52a6391d55c8a_1_hero_c8a9b84118.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6761fc8483c673ae45ad94dd_6752362613c1964cef5666d0_666013a89e085aae2ff36133_5_partners_2520_1_e7eb50cecc.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6761fc8483c673ae45ad94db_6752362613c1964cef5666b9_6660133e766eb74bd9fd8340_1_2023_489387220d.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6761fc8483c673ae45ad94dc_6752362613c1964cef5666bc_666013892d01951aa393bbdb_3_featured_2520events_a3b7abdae0.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6761fc8483c673ae45ad94de_6752362613c1964cef5666c2_6660136cea355ebe31b81812_2_schedule_444f6b154e.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/from-unity-to-web-gl-building-high-performance-3d-experiences-for-the-modern-web",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_Blacks2_1_9169822fea.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_Blacks_1_c9d4aca23b.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-to-write-high-converting-website-content",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_1_d53fb1badb.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_10_41642d5a32.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_3_8ae0d4080c.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_2_cf07ab4a7b.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Web_Content_2x1_converted_0579afb23e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_5_75425ef2da.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_9_95d926979e.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_4_1b4741b257.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_6_c851252624.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_7_11fb7f2c44.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Image_8_528fcb5906.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-we-built-award-worthy-websites-for-global-events",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6806d10501cc922c3037f501_wow_hero_fd392da694.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Screenshot_2026_02_19_at_5_08_37_PM_9d57739960.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/6806d1192993b4c6c34d09be_superai_hero_79765e4200.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-we-created-the-sound-for-the-new-psychoactive-website",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/ableton_frame_syncing_converted_149a1bad6e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/josh_waay_djing_stylised_converted_c72dc86500.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/audio_system_vue_code_converted_7d40aefd08.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/xfer_serum_2_sample_oscillator_converted_e4df304833.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/03_josh_cover_ableton_converted_da382cd5b6.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/one_sample_six_sounds_4cde617c8e.mp3",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "audio/mpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/josh_waay_portrait_converted_44ce32cce1.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-we-designed-psychoactive-3",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/content_hub_case_studies_grid_converted_47c2b7fb6b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/01_hub_cover_converted_c8957734f9.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://syd1.digitaloceanspaces.com",
+    "path": "/new-psychoactive-website-media/psychoactive_3_walkthrough_rotated_fixed_4d5b807e9d.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-we-designed-the-new-psychoactive-visual-system",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/02_serhii_cover_hero_iterations_converted_cc8bbb4c36.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/visual_system_mood_board_converted_5173d94ea7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/serhii_churilov_portrait_converted_126dd335a0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/showreel_warp_interaction_optimised_7910b90157.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/homepage_particle_interaction_optimised_f47a3a21b1.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://syd1.digitaloceanspaces.com",
+    "path": "/new-psychoactive-website-media/psychoactive_3_showreel_mux_6046c9737d.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/page_transition_about_trim33_60a237908a.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/page_transition_services_trim33_df4085849e.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-we-designed-the-psychoactive-brand-identity",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_bannwarth_metamorphosis_tessellation_converted_e169093d8f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_psychoactive_lockup_sizes_converted_c8d9907086.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_regular_tessellations_grid_converted_3884af66a9.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_bannwarth_frog_iterations_converted_d3d51e7635.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_escher_reptiles_references_converted_2d4a171ad5.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_bannwarth_tessellation_samples_converted_be21131fc8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Reptiles_d7e4daf801.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_psychoactive_logo_iterations_converted_ffed23a024.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://syd1.digitaloceanspaces.com",
+    "path": "/new-psychoactive-website-media/Tessellation_Process_235d774b4e.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_psychoactive_brand_colours_converted_64306c89f8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/2021_escher_metamorphosis_III_converted_9e316fed1a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://syd1.digitaloceanspaces.com",
+    "path": "/new-psychoactive-website-media/Frog_Tessellation_64418cc6d7.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/how-zendetta-was-made-psychoactives-most-awarded-project",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_2x1_converted_1_0fe950a397.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/01_02_6c0a5eaa62.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/05_02_f9aeb45086.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/03_01_82711925ab.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/02_02_e8b7935e3a.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/07_109c7415ff.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/05_01_ccdbd6162f.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/10_539b1ab8cc.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/mosaic-conversation-cards-online",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/mosaic_cover_tessellation_10fbbd37eb.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/mosaic_card_deck_yellow_d88e3de916.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://syd1.digitaloceanspaces.com",
+    "path": "/new-psychoactive-website-media/mosaic_phone_scroll_loop_wide_v2_7cd74ae085.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/mosaic_allyship_pathway_hero_8344bb1c6a.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/mosaic_allyship_support_section_6dbf8b5348.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/mosaic_learning_pathways_grid_f44d4b859b.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://syd1.digitaloceanspaces.com",
+    "path": "/new-psychoactive-website-media/mosaic_walkthrough_eae4804f48.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-builds-world-class-gaming-websites",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Screenshot_2026_02_19_at_6_05_42_PM_1_2713e3bd9e.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Game_cover_20bf799e0c.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Screenshot_2026_02_19_at_6_06_58_PM_1_423ea6c897.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/VR_Adventure_91f4ba57e9.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Compendium1_1_b57114eaef.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Screenshot_2026_02_19_at_5_09_30_PM_983ca8d696.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Screenshot_2026_02_19_at_6_00_28_PM_f7ffc60517.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_16edc3099f.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Wildboys_5fa6b43ed5.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/KKFOS_1_3dc054967d.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/S_Howgunners_a4658d88ed.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-collaborates-with-oasis-for-ethdam",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis_2x1_converted_4c07fbb119.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis1_f4345dbff9.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis2_dbf09cb3ed.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis4_59560fca3d.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis3_b735a1e0fc.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Oasis5_f6afd55418.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-leads-early-adoption-of-crypto-payroll-in-new-zealand",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Crypto_2x1_converted_016687e1a3.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-named-new-zealands-first-webflow-enterprise-partner",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Webflow_and_Psychoactive_Studios_converted_8ea64362ef.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-nominated-by-awwwards-for-agency-of-the-year-2022",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/01_02_38c53be8be.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Nomination_2x1_converted_b36b5977e4.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-officially-recognised-as-a-webflow-professional-partner",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Become_professional_partner_2x1_converted_bec3142570.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-studios-nominated-at-the-wellington-gold-awards",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Wellington_Gold_Awards_2x1_converted_ab975f98b2.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/psychoactive-studios-sponsors-tedxwellington-2024",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Ted_X2_489c6d062c.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Tedx1_d4c1e2779c.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Tedx3_f86233d203.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/webflow-features-explained-what-it-offers-businesses-in-2026",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/What_does_Webflow_offer_2x1_converted_d69c7146f6.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/what-is-webflow-a-complete-guide-for-business-owners",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/What_is_webflow_2x1_converted_63f0b1ade7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/when-to-build-with-ai-and-when-to-use-webflow-and-custom-code",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/AI_2x1_converted_29584ca7bf.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/why-accessible-healthcare-websites-are-critical-for-patient-trust-and-growth",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Health2_3880cc769b.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Accessibility_2x1_converted_dc7f65c15b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Health3_37811c4cdc.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Health4_18121e46db.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/why-businesses-are-migrating-to-webflow-performance-flexibility-and-scale",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Switch_to_webflow_2x1_converted_f73da810e4.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/content-hub/zendetta-bearing-witness-as-syria-enters-a-new-chapter",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/06_02_25d80598bf.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/industries/events",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CLsGcyMo.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BIHz6uKN.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BBMmNBcC.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DfvHD1lM.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/wow-hero-blur.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/industries/events/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/opensummit-ai.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/soundsplash.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/121-festival.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/oasis-protocol.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/pixel-awards.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/hype-entertainment.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/nz-music-trust.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/dimensions-festival.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/resolution-festival.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/nz-spirit-festival.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/wow-hero-3840.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/nz-yoga-day.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/partners/summer-game.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/events/logos/portrait-festival.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Andy_Bing_add804d90a.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Geoff_1a4ba4b7e5.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_8_0360c65ad1.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_7_6acf689f90.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_12_0b8a9aef11.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_4_da562319d3.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_3_c563a54d47.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_7_ff86e07de2.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_13_c3d028dc0b.avif",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_1_2bfc8f655b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/industries/gaming",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/jason_3e9822dd6a.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/dBXmynfw.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/industries/gaming/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B265M919.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/hard-west-2.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/eternal-cylinder.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DNVWehdB.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/testimonials/emily-latta.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/build/hellboy.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/wild-boy.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/hellboy.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/hard-west.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/good-shepherd.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/monster-train.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/showgunners.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/digital-eclipse.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/linkoln_a3ab38f347.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/gaming/wall/balancing-monkey.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_VIDEO_e0c1de2e0c.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/build-with-ai",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Anna_Meshcherova_b966f4b598.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Ciaran_Jack_693a5cdc64.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DkRQ8fZN.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BbuqmBzy.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/build-with-ai/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/build-ai-arm-mobile.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/peeW3f9c.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DU9gZ4mT.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-way-01-poster.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Randy_Wang_8a1a590e11.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-way-03-poster.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-way-02-poster.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/seo-aeo-geo",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B_zePXOO.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/1PP2N0aM.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B-FBstsU.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/seo-aeo-geo/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-07.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-06.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-own-site-poster.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-02.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-04.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-05.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-01.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/services/seo-aeo-geo-std-03.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/webflow-enterprise",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/webflow-timeline-blick.png",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/png"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/webflow-logo.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://stream.mux.com",
+    "path": "/02DqXW02V3CvlvBJQ022g100ADRYlQU01TZMvutEffhYhTqw/highest.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/C0i5dvNo.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/EpmLndFL.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/webflow-enterprise/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/webflow/icon_01.svg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/svg+xml"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/webgl-3d",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/services/webgl-3d/_payload.json",
+    "queryKeys": [
+      "_b"
+    ],
+    "status": 200,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BvnO542-.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/models/reducecharacterfab-opt.glb",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "model/gltf-binary"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/draco_wasm_wrapper.fZCQGLGb.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/DnPZf4l6.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/draco_wasm_wrapper.DxJM36Ib.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/draco_decoder.Z1_iN-Ht.wasm",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/wasm"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/draco_decoder.C32yEggz.wasm",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/wasm"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/draco/draco_decoder.wasm",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/wasm"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/flesh-and-blood.webp",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/webp"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/flesh-and-blood-character.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/draco_decoder.fzg4nYZr.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/work/andrew-hillstead-site.jpg",
+    "queryKeys": [
+      "scene"
+    ],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/img/team/Andrew.jpg",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/jpeg"
+  },
+  {
+    "method": "GET",
+    "origin": "https://prod.spline.design",
+    "path": "/BmdjwfqdW7sAaIcM/scene.splinecode",
+    "queryKeys": [
+      "v"
+    ],
+    "status": 200,
+    "contentType": "application/json"
+  },
+  {
+    "method": "GET",
+    "origin": "https://unpkg.com",
+    "path": "/@splinetool/modelling-wasm@1.12.98/build/process.wasm",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/wasm"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/BMgZx15y.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "https://www.psychoactive.co.nz/e433867f-9959-4099-9a57-959ff22a01bb",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": ""
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "https://www.psychoactive.co.nz/e2f9d4a2-966f-40e7-a320-7a1d361259fd",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": ""
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "https://www.psychoactive.co.nz/19c659b3-1dd7-4854-bc5e-54443e7466e8",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": ""
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "https://www.psychoactive.co.nz/d3d2882e-b357-4bbf-8ebd-71ae030b8ac8",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": ""
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "https://www.psychoactive.co.nz/2e106bb5-1089-4b97-aecc-27e23d99125e",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": ""
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/all-blacks-jersey-launch",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_2_66326dccd6.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/B2gnV9-E.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/_nuxt/CddjGoBq.js",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "application/javascript; charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_5_be433ac35b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_8_101c9f4217.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_1_e49b6e86a6.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_3_8ced059123.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_11_830db51311.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_4_d52bff37b8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_6_4ba78b9584.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_10_a849f8aa3d.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_12_301cb433be.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_blacks_Slide_9_a85f90ceb8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/All_Blacks_VIDEO_b46f48537e.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/aratek",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_1_9bacb3ba12.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_3_d5c481e87b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_5_4c1844afd1.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_7_194eedcc85.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_4_ff4fd573e1.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_2_3d1490574a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Aratek_Slide_6_36b904428c.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/blackbird",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_7_0a5a38c580.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_8_db38266aa0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_6_1_1bb6ed95fa.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_1_55b46641c1.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_4_1_ce6c606726.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_9_6479e6f325.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_6_2_b1a17765b2.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_3_32263e20e4.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_10_33a2bc7fef.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_2_b06a07ddf7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Video_3b21c5fe88.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Last_Slide_7c2b09448c.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_4_2_89c57a739a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Blackbird_Slide_5_30f9de3744.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/burgerfuel",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_8_1a81d73a5c.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_3_62ce2b3117.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_7_140728c24b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_5_d4619a145b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_6_e947108e7f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_2_c4e5bbbcff.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_1_2fe66bdd8b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_VIDEO_4d41820e62.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_4_416599be8d.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_10_6792b7e95c.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Burger_Fuel_Slide_9_8859c0953e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/good-shepherd-entertainment",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hellboy_5_1fa45ee0ce.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_Hero_1dccf41a7b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_5_f54582053a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_7_c38b054d94.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Showgunners_2_32dfcefe4f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_2_e013cec7c8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_4_302b4f66a2.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_9_8c18bf58dc.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Monster_Train_2_605b7e631d.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hellboy_3_664cd14bc0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_8_da8a2199c5.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_Hero_be75fe1595.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Eternal_Cylinder_1_22a043c640.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Eternal_Cylinder_Hero_87f07acddb.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Eternal_Cylinder_4_bd81643a78.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Monster_Train_Hero_bbf2f4b1ff.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_4_323148bc19.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Last_Slide_ff1572b382.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Showgunners_3_63c6f7c46b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_7_561d6af5f7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_First_slide_e9bf6cd50a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hellboy_1_57e4cefb10.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hellboy_4_5a1c159c63.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Eternal_Cylinder_3_308713ad10.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hellboy_2_d0933e6b77.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Showgunners_Hero_7840bf1f46.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Showgunners_4_cc495b9104.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_5_3c850ff37b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_3_c63411e8a0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Monster_Train_3_af00687650.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Showgunners_1_b74fcff5de.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_8_3b327d9d86.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_6_f96d0bc077.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_1_36ec98394d.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Monster_Train_4_0322164e13.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_1_6082130491.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Hard_West_3_c90b4f6e46.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_6_517029fa1d.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Klowns_2_a0708d24cc.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Monster_Train_1_aacfd2d335.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/GSE_Eternal_Cylinder_2_74e7806e74.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/hellboy",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Slide_3_42ee019111.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Slide_1_4a2449d8af.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Slide_4_d717559685.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Slide_2_4bd8d8b82e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Last_Slide_c7830bddf3.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Hellboy_Slide_5_e8bfacfed7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/summer-game-fest",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_7_7e1e2d33f7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_2_bcce3bd4a7.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_6_Mobile_34dc59f1e6.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_5_94713015c3.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_7_Mobile_9a481f6439.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_5_Mobile_91968afa61.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_6_43eb742432.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_VIDEO_1e1e55e028.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_1_1acd278862.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/SGF_Slide_4_b56c919476.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/super-ai",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_1_035afe0725.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_3_3b72f60552.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_4_47eb55eb38.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_10_cc24920c99.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_8_9575fa6ad8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_2_351d5dbba4.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_5_d922173c61.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_6_8d5b2d1871.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_9_cc0913e908.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Slide_11_e4e000de04.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_Last_Slide_4da4d3c91b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Super_AI_VIDEO_e0338b6d33.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/talent-army",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_1_35d0c57dce.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_3_9a265f4b5e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_5_e784676688.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_4_82524140fc.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_8_5eea59f854.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_2_31cc241c01.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_6_7dcfd8aa1a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Talent_Army_Slide_7_91ee4c91f3.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Home_Hero_Ani_V03_ddaabf87e1.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/things-inc",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_1_1b2aea4c0c.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_2_9f36308ba0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_4_88314e9e63.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_2_Mobile_5e8fed23b9.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_6_56866cfcd1.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_7_58fc6d8c70.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_8_5f9750483f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_8_Mobile_2b3dace38e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_6_Mobile_042d6130fb.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_9_736cc3d59f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Preloader_Video_v3_ca49f80a13.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_5_9fc7c26391.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Rooms_video_v3_322e0ca08a.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Things_Slide_3_a330c77797.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/woolf",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Slide_2_48d158fa96.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_7_72d94ff325.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_Slide_5_06065fcbe0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_6_375efa6eac.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_8_cdc2614a9e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_virginia_woolf_6d05efe7e4.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_4_69c184d338.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_3_cc4af6ada6.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_20_c728ecefef.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Slide_1_40d8ee90ff.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/woolf_slide_9_ad817e144e.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/world-of-wearableart",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Wow_slide_hero_8576f64628.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_5_6e5f00e2f0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_2_e62a3ea096.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_3_243b42faa0.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_7_4915844f42.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_8_c4f44575d2.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_9_4a1f7c5538.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_slide_6_e98e7912fa.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/WOW_VIDEO_b94b1572b9.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/wow_last_slide_3c5b34ac50.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://www.psychoactive.co.nz",
+    "path": "/work/zendetta",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "text/html;charset=utf-8"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_1_f79d3a5c91.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_5_f95d56da0b.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_7_97988b9131.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_9_83d9dbcc2a.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_4_d5eefe72b5.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_8_46feccf5a8.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_2_359055822f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_6_79318a829f.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_10_6b10529cca.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_VIDEO_b751548219.mp4",
+    "queryKeys": [],
+    "status": 206,
+    "contentType": "video/mp4"
+  },
+  {
+    "method": "GET",
+    "origin": "https://new-psychoactive-website-media.syd1.cdn.digitaloceanspaces.com",
+    "path": "/Zendetta_Slide_3_6b5d25cdf5.avif",
+    "queryKeys": [],
+    "status": 200,
+    "contentType": "image/avif"
+  }
+]

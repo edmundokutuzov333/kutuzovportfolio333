@@ -1,0 +1,4774 @@
+{
+  "capturedAt": "2026-11-07T01:56:02.201Z",
+  "rea": {
+    "exit": 0,
+    "bytes": 575775,
+    "evidenceId": "ev_182734978867550663a3ee3df3ebedd8e0e0e515f4ac56f7376e787aa27a4bb0",
+    "run": "https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42326260072",
+    "limitations": [
+      "attach_limited",
+      "policy_filtered",
+      "no_script_sources"
+    ]
+  },
+  "sitemap": [
+    "/",
+    "/about",
+    "/clients",
+    "/contact",
+    "/content-hub",
+    "/design-audit",
+    "/services",
+    "/work",
+    "/content-hub/best-webgl-interactive-3d-agencies",
+    "/content-hub/capturing-the-spirit-of-summer-game-fest",
+    "/content-hub/from-unity-to-web-gl-building-high-performance-3d-experiences-for-the-modern-web",
+    "/content-hub/how-to-write-high-converting-website-content",
+    "/content-hub/how-we-built-award-worthy-websites-for-global-events",
+    "/content-hub/how-we-created-the-sound-for-the-new-psychoactive-website",
+    "/content-hub/how-we-designed-psychoactive-3",
+    "/content-hub/how-we-designed-the-new-psychoactive-visual-system",
+    "/content-hub/how-we-designed-the-psychoactive-brand-identity",
+    "/content-hub/how-zendetta-was-made-psychoactives-most-awarded-project",
+    "/content-hub/mosaic-conversation-cards-online",
+    "/content-hub/psychoactive-builds-world-class-gaming-websites",
+    "/content-hub/psychoactive-collaborates-with-oasis-for-ethdam",
+    "/content-hub/psychoactive-leads-early-adoption-of-crypto-payroll-in-new-zealand",
+    "/content-hub/psychoactive-named-new-zealands-first-webflow-enterprise-partner",
+    "/content-hub/psychoactive-nominated-by-awwwards-for-agency-of-the-year-2022",
+    "/content-hub/psychoactive-officially-recognised-as-a-webflow-professional-partner",
+    "/content-hub/psychoactive-studios-nominated-at-the-wellington-gold-awards",
+    "/content-hub/psychoactive-studios-sponsors-tedxwellington-2024",
+    "/content-hub/webflow-features-explained-what-it-offers-businesses-in-2026",
+    "/content-hub/what-is-webflow-a-complete-guide-for-business-owners",
+    "/content-hub/when-to-build-with-ai-and-when-to-use-webflow-and-custom-code",
+    "/content-hub/why-accessible-healthcare-websites-are-critical-for-patient-trust-and-growth",
+    "/content-hub/why-businesses-are-migrating-to-webflow-performance-flexibility-and-scale",
+    "/content-hub/zendetta-bearing-witness-as-syria-enters-a-new-chapter",
+    "/industries/events",
+    "/industries/gaming",
+    "/services/build-with-ai",
+    "/services/seo-aeo-geo",
+    "/services/webflow-enterprise",
+    "/services/webgl-3d",
+    "/work/all-blacks-jersey-launch",
+    "/work/aratek",
+    "/work/blackbird",
+    "/work/burgerfuel",
+    "/work/good-shepherd-entertainment",
+    "/work/hellboy",
+    "/work/summer-game-fest",
+    "/work/super-ai",
+    "/work/talent-army",
+    "/work/things-inc",
+    "/work/woolf",
+    "/work/world-of-wearableart",
+    "/work/zendetta"
+  ],
+  "tokens": {
+    "--ps-gutter-portrait": "48px",
+    "--ps-color-fg-08": "#ffffff14",
+    "--ps-tracking-tightest": "-.07em",
+    "--ps-color-foreground": "#fff",
+    "--ps-color-dots": "#878788",
+    "--ps-tracking-wider": ".14em",
+    "--ps-color-fg-18": "#ffffff2e",
+    "--ps-tracking-normal": "0",
+    "--ps-leading-tight": "1.1",
+    "--ps-font-body": "1.25rem",
+    "--ps-tracking-tighter": "-.06em",
+    "--ps-glass-raised-active": "#ffffff1c",
+    "--ps-font-subheader-sm": ".75rem",
+    "--ps-space-10": "40px",
+    "--ps-glass-resting": "#ffffff0d",
+    "--ps-space-28": "112px",
+    "--ps-scan-alpha": ".13",
+    "--ps-space-12": "48px",
+    "--ps-font-display-2xl": "min(8.333vw, 159.994px)",
+    "--ps-font-display-lg": "clamp(48px, 4.79vw, 91.968px)",
+    "--ps-accent-magenta": "#cc4f8c",
+    "--ps-tracking-tight": "-.05em",
+    "--ps-z-sticky": "20",
+    "--ps-transition-base": ".3s cubic-bezier(.33, 1, .68, 1)",
+    "--ps-font-mono": "\"RoobertMono\", monospace",
+    "--ps-leading-display": ".88",
+    "--ps-font-body-xl": "min(1.6667vw, 32.0006px)",
+    "--ps-z-below": "-1",
+    "--ps-font-display-xl": "min(6.25vw, 120px)",
+    "--ps-tracking-wide": ".08em",
+    "--ps-space-40": "160px",
+    "--ps-glass-resting-edge": "inset 0 1px 0 #ffffff0d",
+    "--ps-color-fg-70": "#ffffffb3",
+    "--ps-color-fg-40": "#fff6",
+    "--ps-z-skip-link": "9999",
+    "--ps-glow-blue": "0 0 6px #136df4e6",
+    "--ps-accent-cyan-light": "#71cff7",
+    "--ps-font-h4": "min(2.5vw, 48px)",
+    "--ps-z-toast": "1000",
+    "--ps-leading-none": "1",
+    "--ps-radius-sm": "4px",
+    "--ps-scanlines": "repeating-linear-gradient(to bottom, rgba(0, 0, 0, .13) 0, transparent 1.5px, rgba(0, 0, 0, .13) 3px)",
+    "--ps-accent-salmon": "#ff9a9a",
+    "--ps-font-h2": "min(3.3333vw, 63.9994px)",
+    "--ps-shadow-sm": "0 12px 32px #0006",
+    "--ps-z-modal": "100",
+    "--ps-color-error": "#f33",
+    "--ps-layout-cap": "1920px",
+    "--ps-font-body-lg": "1.5rem",
+    "--ps-bp-laptop-small": "1024px",
+    "--ps-font-body-sm": "1rem",
+    "--ps-radius-xs": "2px",
+    "--ps-z-overlay": "50",
+    "--ps-space-5": "20px",
+    "--ps-space-2": "8px",
+    "--ps-space-4": "16px",
+    "--ps-color-stroke": "#c2c2c2",
+    "--ps-leading-relaxed": "1.4",
+    "--ps-z-nav-cover": "98",
+    "--ps-weight-regular": "400",
+    "--ps-ease-out-cubic": "cubic-bezier(.33, 1, .68, 1)",
+    "--ps-circle-line-opacity": ".1",
+    "--ps-color-hairline": "#ffffff1f",
+    "--ps-accent-red": "#e4393c",
+    "--ps-space-6": "24px",
+    "--ps-tracking-snug": "-.04em",
+    "--ps-circle-line-opacity-portrait": ".2",
+    "--ps-space-8": "32px",
+    "--ps-glass-raised-shadow": "0 20px 60px #00000059, inset 0 1px 0 #ffffff14",
+    "--ps-gutter": "160px",
+    "--ps-space-3": "12px",
+    "--ps-radius-xl": "24px",
+    "--ps-space-24": "96px",
+    "--ps-duration-fast": ".15s",
+    "--ps-duration-medium": ".3s",
+    "--ps-z-header": "90",
+    "--ps-radius-pill": "999px",
+    "--ps-glass-resting-hover": "#ffffff14",
+    "--ps-color-surface": "#1b1b1b",
+    "--ps-accent-electric": "#0646ff",
+    "--ps-font-sans": "\"Roobert\", sans-serif",
+    "--ps-shadow-focus-ring": "0 0 0 3px #136df424",
+    "--ps-space-0": "0",
+    "--ps-radius-button": "48px",
+    "--ps-radius-full": "50%",
+    "--ps-leading-normal": "1.3",
+    "--ps-z-raised": "1",
+    "--ps-color-cyan": "#17ffff",
+    "--ps-bp-mobile": "768px",
+    "--ps-accent-beige": "#ffe2b7",
+    "--ps-color-white": "#fff",
+    "--ps-tracking-micro": "-.02em",
+    "--mc-focus": "1",
+    "--ps-color-blue": "#136df4",
+    "--mg-focus": "1",
+    "--ps-leading-snug": "1.2",
+    "--ps-z-nav": "99",
+    "--ps-bp-laptop": "1200px",
+    "--ps-ease-standard": "cubic-bezier(.25, .1, .25, 1)",
+    "--ps-duration-slow": ".5s",
+    "--ps-color-fg-12": "#ffffff1f",
+    "--ps-font-subheader": "1rem",
+    "--ps-color-black": "#000",
+    "--ps-gutter-mobile": "16px",
+    "--ps-ease-in-out": "cubic-bezier(.76, 0, .24, 1)",
+    "--ps-font-display-4xl": "min(14.583vw, 279.994px)",
+    "--ps-space-16": "64px",
+    "--ps-duration-slower": "1s",
+    "--ps-duration-base": ".2s",
+    "--ps-glass-blur": "22px",
+    "--ps-color-grey": "#cfcfd0",
+    "--ps-font-h5": "clamp(20px, 2.0833vw, 39.9994px)",
+    "--ps-font-display-3xl": "clamp(128px, 12.6vw, 241.92px)",
+    "--ps-glass-raised": "#ffffff12",
+    "--ps-space-20": "80px",
+    "--ps-radius-lg": "12px",
+    "--ps-leading-loose": "1.5",
+    "--ps-color-grey-light": "#f5f5f5",
+    "--ps-font-h3": "min(2.9167vw, 56.0006px)",
+    "--ps-tracking-widest": ".22em",
+    "--ps-weight-medium": "500",
+    "--ps-space-1": "4px",
+    "--ps-color-background": "#101012",
+    "--ps-font-h1": "min(5vw, 96px)",
+    "--ps-bp-tablet": "992px",
+    "--ps-z-dropdown": "10",
+    "--ps-bp-desktop": "1440px",
+    "--ps-radius-md": "8px",
+    "--ps-shadow-md": "0 24px 48px #00000080",
+    "--ps-z-base": "0",
+    "--ps-space-14": "56px"
+  },
+  "interactionError": "locator.evaluate: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('h3 a[href=\"/work/super-ai\"]')\n    - locator resolved to visible <a class=\"\" data-v-0a9cf529=\"\" href=\"/work/super-ai\">SuperAI Conference </a>\n",
+  "pages": [
+    {
+      "url": "https://www.psychoactive.co.nz/",
+      "title": "Psychoactive Studios — AI-era Design & Development Agency",
+      "headings": [
+        {
+          "text": "Eight years of work forambitious brands",
+          "tag": "H3"
+        },
+        {
+          "text": "SuperAI Conference",
+          "tag": "H3"
+        },
+        {
+          "text": "Blackbird VC",
+          "tag": "H3"
+        },
+        {
+          "text": "Summer Game Fest",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf University",
+          "tag": "H3"
+        },
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "World of WearableArt",
+          "tag": "H3"
+        },
+        {
+          "text": "Hellboy Web of Wyrd",
+          "tag": "H3"
+        },
+        {
+          "text": "BurgerFuel",
+          "tag": "H3"
+        },
+        {
+          "text": "What does your site say in the first five seconds?",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Designed Psychoactive 3.0",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Created the Sound for the New Psychoactive Website",
+          "tag": "H3"
+        },
+        {
+          "text": "MOSAIC: Cards for Hard Conversations, Now Fully Online",
+          "tag": "H3"
+        },
+        {
+          "text": "50+",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "promo-audit-url",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "Run audit"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "Highlights"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "←"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "→"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/about",
+      "title": "About Psychoactive Studios | AI-era Design & Development Agency",
+      "headings": [
+        {
+          "text": "Digital Amphibians",
+          "tag": "H1"
+        },
+        {
+          "text": "BORN AMPHIBIOUS",
+          "tag": "H2"
+        },
+        {
+          "text": "As Featured In",
+          "tag": "H2"
+        },
+        {
+          "text": "Metamorphosis",
+          "tag": "H2"
+        },
+        {
+          "text": "Outcomes",
+          "tag": "H3"
+        },
+        {
+          "text": "Origin",
+          "tag": "H3"
+        },
+        {
+          "text": "THRIVE THROUGH COLLABORATION",
+          "tag": "H2"
+        },
+        {
+          "text": "Andrew",
+          "tag": "H3"
+        },
+        {
+          "text": "Luca",
+          "tag": "H3"
+        },
+        {
+          "text": "Serhii",
+          "tag": "H3"
+        },
+        {
+          "text": "Alex",
+          "tag": "H3"
+        },
+        {
+          "text": "Carl",
+          "tag": "H3"
+        },
+        {
+          "text": "Josh",
+          "tag": "H3"
+        },
+        {
+          "text": "Laura",
+          "tag": "H3"
+        },
+        {
+          "text": "Sheridan",
+          "tag": "H3"
+        },
+        {
+          "text": "Our story",
+          "tag": "H2"
+        },
+        {
+          "text": "Our Ethos",
+          "tag": "H2"
+        },
+        {
+          "text": "Put the customer first",
+          "tag": "H3"
+        },
+        {
+          "text": "Know where to innovate",
+          "tag": "H3"
+        },
+        {
+          "text": "Technical excellence",
+          "tag": "H3"
+        },
+        {
+          "text": "Partnership mindset",
+          "tag": "H3"
+        },
+        {
+          "text": "The basics, answered",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Where is Psychoactive based?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you only work with New Zealand brands?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What kind of brands do you work with?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you build with Webflow or custom code?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What makes you different from other New Zealand web design agencies?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What does “Digital Amphibians” mean?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "How do I start a project with you?"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/clients",
+      "title": "Our Clients | Games, Events, Startups & More | Psychoactive",
+      "headings": [
+        {
+          "text": "Who we'vebuilt for.",
+          "tag": "H1"
+        },
+        {
+          "text": "Gaming& entertainment",
+          "tag": "H2"
+        },
+        {
+          "text": "Events, arts& culture",
+          "tag": "H2"
+        },
+        {
+          "text": "Startups& tech",
+          "tag": "H2"
+        },
+        {
+          "text": "Health& medical",
+          "tag": "H2"
+        },
+        {
+          "text": "Education& research",
+          "tag": "H2"
+        },
+        {
+          "text": "Brands& business",
+          "tag": "H2"
+        },
+        {
+          "text": "Non-profit& public sector",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-navigation-button",
+          "text": "Close"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-sound-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/contact",
+      "title": "Start a Project | Psychoactive Studios",
+      "headings": [],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "start a project  start a project"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Join the team  Join the team"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Contact  Contact"
+        },
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "text-field-v-0-0",
+          "required": true,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "type": "email",
+          "id": "text-field-v-0-1",
+          "required": true,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "submitsubmit"
+        },
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "text-field-v-0-2",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "text-field-v-0-3",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "submitsubmit"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Branding  Branding"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Website  Website"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Branding & Website  Branding & Website"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "I have other needs  I have other needs"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "$50K–$75K  $50K–$75K"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "$75K–$100K  $75K–$100K"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "$100K+  $100K+"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "ASAP  ASAP"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Within 6 months  Within 6 months"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Flexible  Flexible"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "I have a set date  I have a set date"
+        },
+        {
+          "tag": "INPUT",
+          "type": "month",
+          "id": "text-field-v-0-4",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "submitsubmit"
+        },
+        {
+          "tag": "TEXTAREA",
+          "type": "textarea",
+          "id": "text-field-v-0-5",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "submitsubmit"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Design  Design"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Development  Development"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Motion / 3D  Motion / 3D"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Strategy / Content  Strategy / Content"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub",
+      "title": "Content Hub | Articles & Insights | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Content HUB",
+          "tag": "H1"
+        },
+        {
+          "text": "MOSAIC: Cards for Hard Conversations, Now Fully Online",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Designed the New Psychoactive Visual System",
+          "tag": "H3"
+        },
+        {
+          "text": "The Best WebGL and Interactive 3D Agencies in 2026",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Created the Sound for the New Psychoactive Website",
+          "tag": "H3"
+        },
+        {
+          "text": "What does your site say in the first five seconds?",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Designed Psychoactive 3.0",
+          "tag": "H3"
+        },
+        {
+          "text": "When to Build with AI and When to Use Webflow & Custom Code",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Designs a Digital Playground for Things Inc",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Built Award-Worthy Websites for Global Events",
+          "tag": "H3"
+        },
+        {
+          "text": "Zendetta: Bearing Witness as Syria Enters a New Chapter",
+          "tag": "H3"
+        },
+        {
+          "text": "Designing the Stage for Asia's Biggest AI Event",
+          "tag": "H3"
+        },
+        {
+          "text": "Designing a Digital Campus for Woolf University",
+          "tag": "H3"
+        },
+        {
+          "text": "Behind the Burgers: A Refresh for BurgerFuel",
+          "tag": "H3"
+        },
+        {
+          "text": "Why Businesses Are Migrating to Webflow: Performance, Flexibility and Scale",
+          "tag": "H3"
+        },
+        {
+          "text": "Why Accessible Healthcare Websites Are Critical for Patient Trust and Growth",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Builds World-Class Gaming Websites",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Studios Sponsors TEDxWellington 2024",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Collaborates with Oasis for ETHDam",
+          "tag": "H3"
+        },
+        {
+          "text": "Capturing the Spirit of Summer Game Fest",
+          "tag": "H3"
+        },
+        {
+          "text": "Webflow Features Explained: What It Offers Businesses in 2026",
+          "tag": "H3"
+        },
+        {
+          "text": "What Is Webflow? A Complete Guide for Business Owners",
+          "tag": "H3"
+        },
+        {
+          "text": "From Unity to WebGL: Building High-Performance 3D Experiences for the Modern Web",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Nominated by Awwwards for Agency of the Year 2022",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Studios Nominated at the Wellington Gold Awards",
+          "tag": "H3"
+        },
+        {
+          "text": "How to Write High-Converting Website Content",
+          "tag": "H3"
+        },
+        {
+          "text": "Designing the All Blacks World Cup Jersey Launch with Adidas",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Named New Zealand’s First Webflow Enterprise Partner",
+          "tag": "H3"
+        },
+        {
+          "text": "How Zendetta Was Made: Psychoactive’s Most Awarded Project",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Leads Early Adoption of Crypto Payroll in New Zealand",
+          "tag": "H3"
+        },
+        {
+          "text": "A Long-Term Digital Partner for Global Game Releases",
+          "tag": "H3"
+        },
+        {
+          "text": "Simplifying Biometric Technology for a Global Audience",
+          "tag": "H3"
+        },
+        {
+          "text": "Rebuilding Talent Army's Online Brand",
+          "tag": "H3"
+        },
+        {
+          "text": "Zendetta: An Award-Winning Interactive Documentary",
+          "tag": "H3"
+        },
+        {
+          "text": "Bringing Hellboy: Web of Wyrd to the Web",
+          "tag": "H3"
+        },
+        {
+          "text": "Building the Online Home of World of WearableArt",
+          "tag": "H3"
+        },
+        {
+          "text": "A Web Presence for Australasia's Top VC",
+          "tag": "H3"
+        },
+        {
+          "text": "How We Designed the Psychoactive Brand Identity",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Officially Recognised as a Webflow Professional Partner",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-navigation-button",
+          "text": "Close"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-sound-button",
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "All"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Resources"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Announcements"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Case Studies"
+        },
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "promo-audit-url",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "Run audit"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/design-audit",
+      "title": "Free Design Audit | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Find out what your website's really saying.",
+          "tag": "H1"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "audit-url",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "Audit my site→"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/services",
+      "title": "Services | AI-era Design & Development | Psychoactive",
+      "headings": [
+        {
+          "text": "We shape the Web",
+          "tag": "H1"
+        },
+        {
+          "text": "Design for the customer",
+          "tag": "H3"
+        },
+        {
+          "text": "Create with intention",
+          "tag": "H3"
+        },
+        {
+          "text": "Build for performance",
+          "tag": "H3"
+        },
+        {
+          "text": "Optimise for discoverability",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work",
+      "title": "Our Work | Case Studies | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Bold ideas. Meticulous execution. Built to perform.",
+          "tag": "H1"
+        },
+        {
+          "text": "Things Inc",
+          "tag": "H3"
+        },
+        {
+          "text": "SuperAI Conference",
+          "tag": "H3"
+        },
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf University",
+          "tag": "H3"
+        },
+        {
+          "text": "Blackbird VC",
+          "tag": "H3"
+        },
+        {
+          "text": "BurgerFuel",
+          "tag": "H3"
+        },
+        {
+          "text": "Zendetta",
+          "tag": "H3"
+        },
+        {
+          "text": "World of WearableArt",
+          "tag": "H3"
+        },
+        {
+          "text": "Good Shepherd Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Aratek Biometrics",
+          "tag": "H3"
+        },
+        {
+          "text": "Talent Army",
+          "tag": "H3"
+        },
+        {
+          "text": "Hellboy Web of Wyrd",
+          "tag": "H3"
+        },
+        {
+          "text": "Summer Game Fest",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-navigation-button",
+          "text": "Close"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-sound-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/best-webgl-interactive-3d-agencies",
+      "title": "The Best WebGL & Interactive 3D Agencies in 2026 | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "The Best WebGL and Interactive 3D Agencies in 2026",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "The list at a glance",
+          "tag": "H2"
+        },
+        {
+          "text": "The studios",
+          "tag": "H2"
+        },
+        {
+          "text": "Active Theory",
+          "tag": "H3"
+        },
+        {
+          "text": "Lusion",
+          "tag": "H3"
+        },
+        {
+          "text": "makemepulse",
+          "tag": "H3"
+        },
+        {
+          "text": "Merci-Michel",
+          "tag": "H3"
+        },
+        {
+          "text": "Noomo Agency",
+          "tag": "H3"
+        },
+        {
+          "text": "OFF+BRAND",
+          "tag": "H3"
+        },
+        {
+          "text": "Psychoactive Studios",
+          "tag": "H3"
+        },
+        {
+          "text": "Unseen Studio",
+          "tag": "H3"
+        },
+        {
+          "text": "Utsubo",
+          "tag": "H3"
+        },
+        {
+          "text": "Vide Infra",
+          "tag": "H3"
+        },
+        {
+          "text": "How to actually choose",
+          "tag": "H2"
+        },
+        {
+          "text": "Frequently asked questions",
+          "tag": "H2"
+        },
+        {
+          "text": "What does a WebGL or interactive 3D website cost?",
+          "tag": "H3"
+        },
+        {
+          "text": "How do I choose a WebGL or interactive 3D agency?",
+          "tag": "H3"
+        },
+        {
+          "text": "Is Psychoactive a WebGL agency?",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/capturing-the-spirit-of-summer-game-fest",
+      "title": "Capturing the Spirit of Summer Games Fest",
+      "headings": [
+        {
+          "text": "Capturing the Spirit of Summer Game Fest",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/from-unity-to-web-gl-building-high-performance-3d-experiences-for-the-modern-web",
+      "title": "From Unity to WebGL: High-Performance 3D Web",
+      "headings": [
+        {
+          "text": "From Unity to WebGL: Building High-Performance 3D Experiences for the Modern Web",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "How Our Approach to 3D Experiences Has Evolved",
+          "tag": "H2"
+        },
+        {
+          "text": "Unity as a Bridge Into Immersive Web",
+          "tag": "H2"
+        },
+        {
+          "text": "Why We Evolved Beyond Unity",
+          "tag": "H2"
+        },
+        {
+          "text": "When Immersive 3D Makes Sense",
+          "tag": "H2"
+        },
+        {
+          "text": "Our Modern WebGL Pipeline",
+          "tag": "H2"
+        },
+        {
+          "text": "Why This Approach Works Better for Clients",
+          "tag": "H2"
+        },
+        {
+          "text": "Learning From the All Blacks Project",
+          "tag": "H2"
+        },
+        {
+          "text": "Building Confidence and Reducing Risk for Clients",
+          "tag": "H2"
+        },
+        {
+          "text": "A Sustainable Long Term Approach",
+          "tag": "H2"
+        },
+        {
+          "text": "Choosing the Right Tool for the Job",
+          "tag": "H2"
+        },
+        {
+          "text": "Conclusion",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-to-write-high-converting-website-content",
+      "title": "How to Write High-Converting Website Content",
+      "headings": [
+        {
+          "text": "How to Write High-Converting Website Content",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Writing Great Website Content",
+          "tag": "H2"
+        },
+        {
+          "text": "At the heart of collaboration are workshops",
+          "tag": "H2"
+        },
+        {
+          "text": "Here’s what Psychoactive’s clients can expect from our content writing workshops:",
+          "tag": "H3"
+        },
+        {
+          "text": "Content strategy starts on day 1, organised information is key",
+          "tag": "H2"
+        },
+        {
+          "text": "Content helps to Inform the website designs",
+          "tag": "H2"
+        },
+        {
+          "text": "Set internal deadlines to get content completed",
+          "tag": "H2"
+        },
+        {
+          "text": "Keep the page formatting tidy",
+          "tag": "H2"
+        },
+        {
+          "text": "Use text colours to denote differences in content type",
+          "tag": "H2"
+        },
+        {
+          "text": "Use two screens - one for content doc, one for wireframes",
+          "tag": "H2"
+        },
+        {
+          "text": "The best ideas are shared, so get collaborative!",
+          "tag": "H2"
+        },
+        {
+          "text": "Write your meta descriptions and opening paragraph first",
+          "tag": "H2"
+        },
+        {
+          "text": "Write headings that tell a story",
+          "tag": "H2"
+        },
+        {
+          "text": "Use AI tools like ChatGPT & Claude to your advantage",
+          "tag": "H2"
+        },
+        {
+          "text": "Focus on getting the draft content revised ASAP",
+          "tag": "H2"
+        },
+        {
+          "text": "Content doc example to get you started",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-we-built-award-worthy-websites-for-global-events",
+      "title": "Award-Worthy Websites for Global Events",
+      "headings": [
+        {
+          "text": "How We Built Award-Worthy Websites for Global Events",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-we-created-the-sound-for-the-new-psychoactive-website",
+      "title": "How We Created the Sound for the New Psychoactive Website",
+      "headings": [
+        {
+          "text": "How We Created the Sound for the New Psychoactive Website",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "The brief",
+          "tag": "H2"
+        },
+        {
+          "text": "A respectful first encounter",
+          "tag": "H2"
+        },
+        {
+          "text": "Why psytrance was the starting point",
+          "tag": "H2"
+        },
+        {
+          "text": "One sample, everywhere",
+          "tag": "H2"
+        },
+        {
+          "text": "Frame-perfect",
+          "tag": "H2"
+        },
+        {
+          "text": "The weight question",
+          "tag": "H2"
+        },
+        {
+          "text": "A single space",
+          "tag": "H2"
+        },
+        {
+          "text": "Building the system myself",
+          "tag": "H2"
+        },
+        {
+          "text": "What I'd take from this",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-we-designed-psychoactive-3",
+      "title": "How We Designed Psychoactive 3.0",
+      "headings": [
+        {
+          "text": "How We Designed Psychoactive 3.0",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "What stayed",
+          "tag": "H2"
+        },
+        {
+          "text": "What changed",
+          "tag": "H2"
+        },
+        {
+          "text": "Why we went custom (and not Webflow)",
+          "tag": "H2"
+        },
+        {
+          "text": "What it expresses",
+          "tag": "H2"
+        },
+        {
+          "text": "What I learned",
+          "tag": "H2"
+        },
+        {
+          "text": "A note on AI",
+          "tag": "H2"
+        },
+        {
+          "text": "The team",
+          "tag": "H2"
+        },
+        {
+          "text": "Quick answers",
+          "tag": "H2"
+        },
+        {
+          "text": "The longer version",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-we-designed-the-new-psychoactive-visual-system",
+      "title": "How We Designed the New Psychoactive Visual System",
+      "headings": [
+        {
+          "text": "How We Designed the New Psychoactive Visual System",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Cinematic, not static",
+          "tag": "H2"
+        },
+        {
+          "text": "Metamorphosis 2.0",
+          "tag": "H2"
+        },
+        {
+          "text": "A hybrid aesthetic",
+          "tag": "H2"
+        },
+        {
+          "text": "Contrast as the engine",
+          "tag": "H2"
+        },
+        {
+          "text": "Real-time, not pre-rendered",
+          "tag": "H2"
+        },
+        {
+          "text": "Typography",
+          "tag": "H2"
+        },
+        {
+          "text": "Designing with sound, not for it",
+          "tag": "H2"
+        },
+        {
+          "text": "Transitions as design, not glue",
+          "tag": "H2"
+        },
+        {
+          "text": "Working across the world",
+          "tag": "H2"
+        },
+        {
+          "text": "On iteration",
+          "tag": "H2"
+        },
+        {
+          "text": "The showreel",
+          "tag": "H2"
+        },
+        {
+          "text": "What I hope it does",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-we-designed-the-psychoactive-brand-identity",
+      "title": "How We Designed the Psychoactive Brand Identity (2021)",
+      "headings": [
+        {
+          "text": "How We Designed the Psychoactive Brand Identity",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Starting With Our Ethos",
+          "tag": "H2"
+        },
+        {
+          "text": "Hatching a Brand and Its Story",
+          "tag": "H2"
+        },
+        {
+          "text": "Establishing a Visual Identity",
+          "tag": "H2"
+        },
+        {
+          "text": "Designing the Psychoactive Tessellation",
+          "tag": "H2"
+        },
+        {
+          "text": "Animating the Psychoactive Tessellation",
+          "tag": "H2"
+        },
+        {
+          "text": "What came next",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/how-zendetta-was-made-psychoactives-most-awarded-project",
+      "title": "How Zendetta Was Made: Psychoactive’s Most Awarded Project",
+      "headings": [
+        {
+          "text": "How Zendetta Was Made: Psychoactive’s Most Awarded Project",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "What We Did",
+          "tag": "H2"
+        },
+        {
+          "text": "How We Did It",
+          "tag": "H2"
+        },
+        {
+          "text": "Research and Authenticity",
+          "tag": "H2"
+        },
+        {
+          "text": "Back-End Technologies",
+          "tag": "H2"
+        },
+        {
+          "text": "Language Integration",
+          "tag": "H2"
+        },
+        {
+          "text": "Navigation",
+          "tag": "H2"
+        },
+        {
+          "text": "The Palestine Branch",
+          "tag": "H2"
+        },
+        {
+          "text": "Symbolism",
+          "tag": "H2"
+        },
+        {
+          "text": "The Zendetta Grant",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/mosaic-conversation-cards-online",
+      "title": "MOSAIC: Cards for Hard Conversations, Now Fully Online",
+      "headings": [
+        {
+          "text": "MOSAIC: Cards for Hard Conversations, Now Fully Online",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "What MOSAIC is",
+          "tag": "H2"
+        },
+        {
+          "text": "The site we built in 2024",
+          "tag": "H2"
+        },
+        {
+          "text": "The gap we left",
+          "tag": "H2"
+        },
+        {
+          "text": "What we did",
+          "tag": "H2"
+        },
+        {
+          "text": "Where AI came in, and where it didn't",
+          "tag": "H2"
+        },
+        {
+          "text": "Small things that were sitting there",
+          "tag": "H2"
+        },
+        {
+          "text": "The wider point",
+          "tag": "H2"
+        },
+        {
+          "text": "What happens next",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-builds-world-class-gaming-websites",
+      "title": "Psychoactive Builds World-Class Gaming Websites",
+      "headings": [
+        {
+          "text": "Psychoactive Builds World-Class Gaming Websites",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "A Specialist Web Design Agency for Game Studios and Publishers",
+          "tag": "H2"
+        },
+        {
+          "text": "Crafting Digital Worlds for Game Studios and Publishers",
+          "tag": "H2"
+        },
+        {
+          "text": "Webflow as a Foundation for Gaming Websites",
+          "tag": "H2"
+        },
+        {
+          "text": "Evolving Our 3D Web Pipeline",
+          "tag": "H2"
+        },
+        {
+          "text": "AI in Gaming: Sensitivity, Craft, and Community Trust",
+          "tag": "H2"
+        },
+        {
+          "text": "Why Game Companies Choose Psychoactive",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-collaborates-with-oasis-for-ethdam",
+      "title": "Psychoactive Collaborates with Oasis for ETHDam",
+      "headings": [
+        {
+          "text": "Psychoactive Collaborates with Oasis for ETHDam",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "A Strategic Collaboration for ETHDam 2024",
+          "tag": "H2"
+        },
+        {
+          "text": "Translating Complexity into Clarity",
+          "tag": "H2"
+        },
+        {
+          "text": "Motion, Narrative and Technical Depth",
+          "tag": "H2"
+        },
+        {
+          "text": "Refining the Foundation",
+          "tag": "H2"
+        },
+        {
+          "text": "A Milestone at ETHDam",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-leads-early-adoption-of-crypto-payroll-in-new-zealand",
+      "title": "Early Adoption of Crypto Payroll in NZ",
+      "headings": [
+        {
+          "text": "Psychoactive Leads Early Adoption of Crypto Payroll in New Zealand",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "One of the First in New Zealand",
+          "tag": "H2"
+        },
+        {
+          "text": "A Snapshot in Time",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-named-new-zealands-first-webflow-enterprise-partner",
+      "title": "NZ’s First Webflow Enterprise Partner (2022)",
+      "headings": [
+        {
+          "text": "Psychoactive Named New Zealand’s First Webflow Enterprise Partner",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Enterprise Accreditation",
+          "tag": "H2"
+        },
+        {
+          "text": "What Enterprise Means in 2026",
+          "tag": "H2"
+        },
+        {
+          "text": "Enterprise Clients",
+          "tag": "H2"
+        },
+        {
+          "text": "Webflow Enterprise Capability",
+          "tag": "H2"
+        },
+        {
+          "text": "Operating at Enterprise Standard",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-nominated-by-awwwards-for-agency-of-the-year-2022",
+      "title": "Awwwards Agency of the Year Nomination",
+      "headings": [
+        {
+          "text": "Psychoactive Nominated by Awwwards for Agency of the Year 2022",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Nominated for Agency of the Year 2022",
+          "tag": "H2"
+        },
+        {
+          "text": "A Defining Year for the Studio",
+          "tag": "H2"
+        },
+        {
+          "text": "About Awwwards",
+          "tag": "H2"
+        },
+        {
+          "text": "The Impact of Zendetta",
+          "tag": "H2"
+        },
+        {
+          "text": "Community Voting and Jury Selection",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-officially-recognised-as-a-webflow-professional-partner",
+      "title": "Webflow Professional Partner in NZ, Since 2020",
+      "headings": [
+        {
+          "text": "Psychoactive Officially Recognised as a Webflow Professional Partner",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Official Accreditation",
+          "tag": "H2"
+        },
+        {
+          "text": "Webflow Partnership in 2020",
+          "tag": "H2"
+        },
+        {
+          "text": "Early Adoption in New Zealand",
+          "tag": "H2"
+        },
+        {
+          "text": "A Platform We Continue to Build On",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-studios-nominated-at-the-wellington-gold-awards",
+      "title": "Psychoactive Nominated at Wellington Gold Awards",
+      "headings": [
+        {
+          "text": "Psychoactive Studios Nominated at the Wellington Gold Awards",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/psychoactive-studios-sponsors-tedxwellington-2024",
+      "title": "Psychoactive Sponsors TEDxWellington 2024",
+      "headings": [
+        {
+          "text": "Psychoactive Studios Sponsors TEDxWellington 2024",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "TEDxWellington 2024",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/webflow-features-explained-what-it-offers-businesses-in-2026",
+      "title": "Webflow Features Explained for 2026",
+      "headings": [
+        {
+          "text": "Webflow Features Explained: What It Offers Businesses in 2026",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "What Does Webflow Offer?",
+          "tag": "H2"
+        },
+        {
+          "text": "The Webflow Designer",
+          "tag": "H2"
+        },
+        {
+          "text": "The Webflow CMS",
+          "tag": "H2"
+        },
+        {
+          "text": "Ecommerce",
+          "tag": "H2"
+        },
+        {
+          "text": "Interactions and Animations",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/what-is-webflow-a-complete-guide-for-business-owners",
+      "title": "What Is Webflow? A Guide for Business Owners",
+      "headings": [
+        {
+          "text": "What Is Webflow? A Complete Guide for Business Owners",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "What is Webflow?",
+          "tag": "H2"
+        },
+        {
+          "text": "Built for real collaboration",
+          "tag": "H2"
+        },
+        {
+          "text": "Why Psychoactive Studios chose Webflow",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/when-to-build-with-ai-and-when-to-use-webflow-and-custom-code",
+      "title": "AI Website Builder vs Custom Build: When to Use Each",
+      "headings": [
+        {
+          "text": "When to Build with AI and When to Use Webflow & Custom Code",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "AI Can Build a Website. It Can’t Build a System.",
+          "tag": "H2"
+        },
+        {
+          "text": "When AI Makes Sense",
+          "tag": "H2"
+        },
+        {
+          "text": "Where AI Starts to Break Down",
+          "tag": "H2"
+        },
+        {
+          "text": "What Custom Webflow Development Actually Delivers",
+          "tag": "H2"
+        },
+        {
+          "text": "Creative Complexity Still Requires Craft",
+          "tag": "H2"
+        },
+        {
+          "text": "The Hybrid Reality",
+          "tag": "H2"
+        },
+        {
+          "text": "A Simple Test",
+          "tag": "H2"
+        },
+        {
+          "text": "Final Thought",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/why-accessible-healthcare-websites-are-critical-for-patient-trust-and-growth",
+      "title": "Why Accessible Healthcare Websites Are Critical for Patient Trust and Growth",
+      "headings": [
+        {
+          "text": "Why Accessible Healthcare Websites Are Critical for Patient Trust and Growth",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Why Healthcare Websites Carry Greater Responsibility",
+          "tag": "H2"
+        },
+        {
+          "text": "Accessibility as Strategy, Not Compliance",
+          "tag": "H2"
+        },
+        {
+          "text": "Parkinson’s New Zealand – Designing for Dignity",
+          "tag": "H2"
+        },
+        {
+          "text": "Manaaki Tāngata | Victim Support – Clarity in Crisis",
+          "tag": "H2"
+        },
+        {
+          "text": "Q Bio – Making Complex Science Understandable",
+          "tag": "H2"
+        },
+        {
+          "text": "The Standard is Rising",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/why-businesses-are-migrating-to-webflow-performance-flexibility-and-scale",
+      "title": "Why Businesses Are Migrating to Webflow",
+      "headings": [
+        {
+          "text": "Why Businesses Are Migrating to Webflow: Performance, Flexibility and Scale",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "Common Reasons to Move to Webflow",
+          "tag": "H2"
+        },
+        {
+          "text": "Too much reliance on third-party plugins",
+          "tag": "H2"
+        },
+        {
+          "text": "Making changes requires a developer",
+          "tag": "H2"
+        },
+        {
+          "text": "Animations and interactions are limited or clunky",
+          "tag": "H2"
+        },
+        {
+          "text": "SEO controls are surface-level",
+          "tag": "H2"
+        },
+        {
+          "text": "Why Webflow changes the equation",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/content-hub/zendetta-bearing-witness-as-syria-enters-a-new-chapter",
+      "title": "Zendetta: Bearing Witness Through Digital Storytelling",
+      "headings": [
+        {
+          "text": "Zendetta: Bearing Witness as Syria Enters a New Chapter",
+          "tag": "H1"
+        },
+        {
+          "text": "Share:",
+          "tag": "H3"
+        },
+        {
+          "text": "A digital testimony created before the fall, now viewed through a different lens",
+          "tag": "H2"
+        },
+        {
+          "text": "Why the Project Mattered Then",
+          "tag": "H2"
+        },
+        {
+          "text": "Why It Matters Now",
+          "tag": "H2"
+        },
+        {
+          "text": "Recognition and Reach",
+          "tag": "H2"
+        },
+        {
+          "text": "The Responsibility of Digital Work",
+          "tag": "H2"
+        },
+        {
+          "text": "Education and the Future",
+          "tag": "H2"
+        },
+        {
+          "text": "Looking Ahead",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": []
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/industries/events",
+      "title": "Event Website Design | Festival & Conference Sites | Psychoactive",
+      "headings": [
+        {
+          "text": "Event websitesbuilt for show day.And every day after.",
+          "tag": "H1"
+        },
+        {
+          "text": "World ofWearableArt",
+          "tag": "H3"
+        },
+        {
+          "text": "SummerGame Fest",
+          "tag": "H3"
+        },
+        {
+          "text": "SuperAI",
+          "tag": "H3"
+        },
+        {
+          "text": "adidas ×All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "Dates that move.",
+          "tag": "H3"
+        },
+        {
+          "text": "Tickets without leaving the story.",
+          "tag": "H3"
+        },
+        {
+          "text": "A schedule that knows where you are.",
+          "tag": "H3"
+        },
+        {
+          "text": "Show mode and off-season.",
+          "tag": "H3"
+        },
+        {
+          "text": "What we buildfor events.",
+          "tag": "H2"
+        },
+        {
+          "text": "Festival and show websites",
+          "tag": "H3"
+        },
+        {
+          "text": "Conference platforms",
+          "tag": "H3"
+        },
+        {
+          "text": "Broadcast-scale showcase sites",
+          "tag": "H3"
+        },
+        {
+          "text": "Competition and entry systems",
+          "tag": "H3"
+        },
+        {
+          "text": "Launch moments",
+          "tag": "H3"
+        },
+        {
+          "text": "Event websites are our portfolio, not our pitch deck.",
+          "tag": "H2"
+        },
+        {
+          "text": "We've done the show-day traffic",
+          "tag": "H3"
+        },
+        {
+          "text": "We build for the whole year",
+          "tag": "H3"
+        },
+        {
+          "text": "We move at event speed",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Event websites, answered",
+          "tag": "H2"
+        },
+        {
+          "text": "Tell usthe date.",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Can you integrate ticketing and registration?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What happens to the site between events?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Can our team update the schedule during the show?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Will it hold when the lineup drops?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you work with events outside New Zealand?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "How much does an event website cost, and how long does it take?"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/industries/gaming",
+      "title": "Video Game Website Design | Game Launch Sites | Psychoactive",
+      "headings": [
+        {
+          "text": "What we buildfor gaming.",
+          "tag": "H2"
+        },
+        {
+          "text": "Game launch websites",
+          "tag": "H3"
+        },
+        {
+          "text": "Publisher platforms",
+          "tag": "H3"
+        },
+        {
+          "text": "Studio websites",
+          "tag": "H3"
+        },
+        {
+          "text": "Event & showcase platforms",
+          "tag": "H3"
+        },
+        {
+          "text": "Interactive experiences",
+          "tag": "H3"
+        },
+        {
+          "text": "Built forlaunch day.",
+          "tag": "H2"
+        },
+        {
+          "text": "Summer Game Fest",
+          "tag": "H3"
+        },
+        {
+          "text": "Hellboy Web of Wyrd",
+          "tag": "H3"
+        },
+        {
+          "text": "Good Shepherd Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Things Inc",
+          "tag": "H3"
+        },
+        {
+          "text": "Zendetta",
+          "tag": "H3"
+        },
+        {
+          "text": "Specialist video game website design, not a template with a coat of paint.",
+          "tag": "H2"
+        },
+        {
+          "text": "Gaming's in our portfolio, not our pitch deck",
+          "tag": "H3"
+        },
+        {
+          "text": "We design for the launch, not the template",
+          "tag": "H3"
+        },
+        {
+          "text": "Built to scale and move fast",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Balancing Monkey Games",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Balancing Monkey Games",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Balancing Monkey Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Gaming websites, answered",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you design websites for indie games?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Can you integrate Steam wishlists, store links and embeds?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Will the site cope with launch-day traffic?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Where are you based, and do you work with international studios?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "How much does a game website cost?"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/services/build-with-ai",
+      "title": "AI-Era Web Design & Development Agency | Build With AI | Psychoactive",
+      "headings": [
+        {
+          "text": "Build with AI · Web design agency  Much, much better.",
+          "tag": "H1"
+        },
+        {
+          "text": "An AI-era web design studio for brands that want to push the edge of the web.",
+          "tag": "H2"
+        },
+        {
+          "text": "Four things we hold to.",
+          "tag": "H2"
+        },
+        {
+          "text": "People make the work. AI helps them make it.",
+          "tag": "H3"
+        },
+        {
+          "text": "We don’t ship slop.",
+          "tag": "H3"
+        },
+        {
+          "text": "Faster where it should be fast.",
+          "tag": "H3"
+        },
+        {
+          "text": "Bespoke, and yours.",
+          "tag": "H3"
+        },
+        {
+          "text": "The same craft, at every stage. AI just moves us through it faster.",
+          "tag": "H2"
+        },
+        {
+          "text": "Discovery & strategy.",
+          "tag": "H3"
+        },
+        {
+          "text": "Brand & creative direction.",
+          "tag": "H3"
+        },
+        {
+          "text": "Copy & content.",
+          "tag": "H3"
+        },
+        {
+          "text": "Design & motion.",
+          "tag": "H3"
+        },
+        {
+          "text": "Build.",
+          "tag": "H3"
+        },
+        {
+          "text": "QA & launch.",
+          "tag": "H3"
+        },
+        {
+          "text": "We’re open about our tools. Knowing them makes the work easier to trust.",
+          "tag": "H2"
+        },
+        {
+          "text": "Immersive, animated, technically demanding. Since 2018.",
+          "tag": "H2"
+        },
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "Summer Game Fest",
+          "tag": "H3"
+        },
+        {
+          "text": "World of WearableArt",
+          "tag": "H3"
+        },
+        {
+          "text": "Blackbird VC",
+          "tag": "H3"
+        },
+        {
+          "text": "SuperAI Conference",
+          "tag": "H3"
+        },
+        {
+          "text": "Three ways in",
+          "tag": "H2"
+        },
+        {
+          "text": "On a new build",
+          "tag": "H3"
+        },
+        {
+          "text": "As a retrofit",
+          "tag": "H3"
+        },
+        {
+          "text": "Ongoing",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Before you get in touch.",
+          "tag": "H2"
+        },
+        {
+          "text": "Webflow Enterprise",
+          "tag": "H3"
+        },
+        {
+          "text": "WebGL & 3D",
+          "tag": "H3"
+        },
+        {
+          "text": "SEO, AEO & GEO",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-navigation-button",
+          "text": "Close"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-sound-button",
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you build with AI or by hand?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Is this the same as a cheap AI website?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you still build with Webflow?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Who owns the code, content and assets?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you work with AI companies?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Which AI tools do you actually use?"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/services/seo-aeo-geo",
+      "title": "SEO, AEO & GEO Services | Search & AI Visibility | Psychoactive",
+      "headings": [
+        {
+          "text": "SEO · AEO · GEO  We build sites both can read.",
+          "tag": "H1"
+        },
+        {
+          "text": "Three layers ofbeing found.",
+          "tag": "H2"
+        },
+        {
+          "text": "Gets you ranked.",
+          "tag": "H3"
+        },
+        {
+          "text": "Gets you quoted.",
+          "tag": "H3"
+        },
+        {
+          "text": "Gets you cited.",
+          "tag": "H3"
+        },
+        {
+          "text": "Those three layers,on your own site",
+          "tag": "H2"
+        },
+        {
+          "text": "Standard on every build.Not an upsell.",
+          "tag": "H2"
+        },
+        {
+          "text": "Server-rendered, semantic HTML",
+          "tag": "H3"
+        },
+        {
+          "text": "Per-page metadata, written, not templated",
+          "tag": "H3"
+        },
+        {
+          "text": "A structured-data graph",
+          "tag": "H3"
+        },
+        {
+          "text": "Sitemaps fed live from the CMS",
+          "tag": "H3"
+        },
+        {
+          "text": "Performance as a feature",
+          "tag": "H3"
+        },
+        {
+          "text": "Content structured for answers",
+          "tag": "H3"
+        },
+        {
+          "text": "Local search signals where geography matters",
+          "tag": "H3"
+        },
+        {
+          "text": "Three ways in",
+          "tag": "H2"
+        },
+        {
+          "text": "On a new build",
+          "tag": "H3"
+        },
+        {
+          "text": "As a retrofit",
+          "tag": "H3"
+        },
+        {
+          "text": "Ongoing",
+          "tag": "H3"
+        },
+        {
+          "text": "We optimised our own site,so we know it works",
+          "tag": "H2"
+        },
+        {
+          "text": "The brands and events we build for",
+          "tag": "H2"
+        },
+        {
+          "text": "Recognised by the industry",
+          "tag": "H2"
+        },
+        {
+          "text": "Optimisedin production.",
+          "tag": "H2"
+        },
+        {
+          "text": "BurgerFuel",
+          "tag": "H3"
+        },
+        {
+          "text": "World of WearableArt",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "Search and AI visibility, answered",
+          "tag": "H2"
+        },
+        {
+          "text": "Build with AI",
+          "tag": "H3"
+        },
+        {
+          "text": "Webflow Enterprise",
+          "tag": "H3"
+        },
+        {
+          "text": "WebGL & 3D",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-navigation-button",
+          "text": "Close"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "header-sound-button",
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "seo-demo-url",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "See it→"
+        },
+        {
+          "tag": "INPUT",
+          "type": "text",
+          "id": "seo-audit-url",
+          "required": false,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "",
+          "text": "Run audit"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Is SEO included in a Psychoactive build or is it extra?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What’s the difference between SEO and AEO or GEO?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Can you fix our existing site without rebuilding it?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Do you guarantee rankings?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "How do you measure AI search visibility?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Does this work for Webflow sites too?"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/services/webflow-enterprise",
+      "title": "Webflow Enterprise Partner & Agency NZ | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Webflow Enterprise Agency",
+          "tag": "H1"
+        },
+        {
+          "text": "Early Adopter",
+          "tag": "H2"
+        },
+        {
+          "text": "Psychoactive began",
+          "tag": "H3"
+        },
+        {
+          "text": "Certified Partner",
+          "tag": "H2"
+        },
+        {
+          "text": "Psychoactive becomes",
+          "tag": "H3"
+        },
+        {
+          "text": "Certified Partner",
+          "tag": "H2"
+        },
+        {
+          "text": "Psychoactive becomes",
+          "tag": "H3"
+        },
+        {
+          "text": "Premium Partner",
+          "tag": "H2"
+        },
+        {
+          "text": "Psychoactive is",
+          "tag": "H3"
+        },
+        {
+          "text": "End-to-end Webflow capability",
+          "tag": "H2"
+        },
+        {
+          "text": "Woolf University",
+          "tag": "H3"
+        },
+        {
+          "text": "BurgerFuel",
+          "tag": "H3"
+        },
+        {
+          "text": "SuperAI Conference",
+          "tag": "H3"
+        },
+        {
+          "text": "Blackbird VC",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf University",
+          "tag": "H3"
+        },
+        {
+          "text": "BurgerFuel",
+          "tag": "H3"
+        },
+        {
+          "text": "SuperAI Conference",
+          "tag": "H3"
+        },
+        {
+          "text": "Blackbird VC",
+          "tag": "H3"
+        },
+        {
+          "text": "Partner to the world’s leading brands and events",
+          "tag": "H2"
+        },
+        {
+          "text": "Recognised by the industry",
+          "tag": "H2"
+        },
+        {
+          "text": "Working with a Premium Webflow Enterprise Partner",
+          "tag": "H2"
+        },
+        {
+          "text": "Vetted by Webflow itself",
+          "tag": "H3"
+        },
+        {
+          "text": "A direct line into Webflow",
+          "tag": "H3"
+        },
+        {
+          "text": "Looks nothing like Webflow",
+          "tag": "H3"
+        },
+        {
+          "text": "Try our free AI design audit tool",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "Things, Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Woolf",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Wingz",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Big Fan Games",
+          "tag": "H3"
+        },
+        {
+          "text": "0 Reasons enterprise brands choose us",
+          "tag": "H2"
+        },
+        {
+          "text": "Build with AI",
+          "tag": "H3"
+        },
+        {
+          "text": "WebGL & 3D",
+          "tag": "H3"
+        },
+        {
+          "text": "SEO, AEO & GEO",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Webflow Design & Development"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Custom Code & Integrations"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Enterprise Solutions & Scalability"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "SEO & AI Optimisation"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Maintenance & Partnership"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Senior Team & Direct Founder AccessYou work directly with senior people from day one. Our Creative D"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Global Delivery, Four Time ZonesA senior delivery team working remotely across time zones. Projects "
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Award-Winning Creative DirectionLed by Andrew Hillstead, multi-award-winning Creative Director. Stud"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Priority Support & TrainingPremium Enterprise tier means faster escalation paths into Webflow's own "
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Custom Solutions & Advanced IntegrationsThree.js, WebGL, custom code, advanced web animation. We ext"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Advanced Security & PermissionsWebflow's enterprise tier handles SOC 2 Type II, CCPA, and GDPR compl"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "AI Implementation & Future TechnologyAI is part of how we work and what we ship. We use AI tools acr"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Scalability & Future-ProofingSites built to handle whatever scale you grow into. Globally-recognised"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Webflow LocalizationWe've shipped multi-language Webflow sites at enterprise scale using Webflow's l"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Multi-Designer CollaborationPremium Enterprise unlocks features standard Webflow doesn't expose. Mul"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Strategic Business PartnershipWe don't disappear after launch. Regular strategy sessions, market tre"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Performance & ROI FocusThe result is sites that aren't just visually striking. They produce business"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/services/webgl-3d",
+      "title": "WebGL & Interactive 3D Agency | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Partner to the world’s leading brands and events",
+          "tag": "H2"
+        },
+        {
+          "text": "Recognised by the industry",
+          "tag": "H2"
+        },
+        {
+          "text": "Where can 3D for the web be used?",
+          "tag": "H2"
+        },
+        {
+          "text": "Eight years insidereal-time 3D.",
+          "tag": "H2"
+        },
+        {
+          "text": "Brief first.",
+          "tag": "H3"
+        },
+        {
+          "text": "Performance always.",
+          "tag": "H3"
+        },
+        {
+          "text": "Senior team, one room.",
+          "tag": "H3"
+        },
+        {
+          "text": "Featuredimmersive work.",
+          "tag": "H2"
+        },
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "Andrew Hillstead",
+          "tag": "H3"
+        },
+        {
+          "text": "Zendetta",
+          "tag": "H3"
+        },
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "Andrew Hillstead",
+          "tag": "H3"
+        },
+        {
+          "text": "Zendetta",
+          "tag": "H3"
+        },
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "Obvious Brand Partners",
+          "tag": "H3"
+        },
+        {
+          "text": "Hype Entertainment",
+          "tag": "H3"
+        },
+        {
+          "text": "The Game Awards Inc.",
+          "tag": "H3"
+        },
+        {
+          "text": "0 questions on WebGL and real-time 3D projects",
+          "tag": "H2"
+        },
+        {
+          "text": "Build with AI",
+          "tag": "H3"
+        },
+        {
+          "text": "Webflow Enterprise",
+          "tag": "H3"
+        },
+        {
+          "text": "SEO, AEO & GEO",
+          "tag": "H3"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Is Psychoactive a WebGL agency?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What is WebGL, and is it the same as 3D on the web?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Will a 3D experience work on phones?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Will adding 3D slow my site down?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "How long does a WebGL or 3D project take?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Can you add 3D to a Webflow site, or does it have to be a full custom build?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What’s the difference between Three.js, WebGPU, Spline, and Rive?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "Who owns the code and the 3D assets?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "What if we already have 3D assets from another team?"
+        },
+        {
+          "tag": "BUTTON",
+          "type": "button",
+          "id": "",
+          "text": "How do you decide whether 3D is actually right for our project?"
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/all-blacks-jersey-launch",
+      "title": "Adidas × All Blacks 2023 RWC Jersey Launch | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Adidas & All Blacks",
+          "tag": "H1"
+        },
+        {
+          "text": "Every All Blacks jersey marks a new chapter",
+          "tag": "H2"
+        },
+        {
+          "text": "Translating a Physical Event into a Digital Journey",
+          "tag": "H2"
+        },
+        {
+          "text": "The Tunnel & Walk to the Pitch",
+          "tag": "H2"
+        },
+        {
+          "text": "Interactive 3D Jersey Modelling",
+          "tag": "H2"
+        },
+        {
+          "text": "Fey the Wolf & The Meaning in the Fabric",
+          "tag": "H2"
+        },
+        {
+          "text": "Global Media Experience & Toolkit",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/aratek",
+      "title": "Aratek Biometrics: Global Auth Tech Website | Psychoactive",
+      "headings": [
+        {
+          "text": "Aratek Biometrics",
+          "tag": "H1"
+        },
+        {
+          "text": "The Challenge",
+          "tag": "H2"
+        },
+        {
+          "text": "Product Finder",
+          "tag": "H2"
+        },
+        {
+          "text": "Product Architecture",
+          "tag": "H2"
+        },
+        {
+          "text": "Visual Language",
+          "tag": "H2"
+        },
+        {
+          "text": "Motion & Interaction",
+          "tag": "H2"
+        },
+        {
+          "text": "Information Design",
+          "tag": "H2"
+        },
+        {
+          "text": "Global Readiness & Build",
+          "tag": "H2"
+        },
+        {
+          "text": "Designed to make advanced biometric technology easier to understand and engage with.",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/blackbird",
+      "title": "Blackbird VC: Australasia's Largest Venture Fund | Psychoactive",
+      "headings": [
+        {
+          "text": "Blackbird VC",
+          "tag": "H1"
+        },
+        {
+          "text": "Designing for Founders First",
+          "tag": "H2"
+        },
+        {
+          "text": "Rejecting the Expected VC Language",
+          "tag": "H2"
+        },
+        {
+          "text": "Extending a Print-Led Identity",
+          "tag": "H2"
+        },
+        {
+          "text": "Structure Beneath Expression",
+          "tag": "H2"
+        },
+        {
+          "text": "Making Scale Feel Navigable",
+          "tag": "H2"
+        },
+        {
+          "text": "Interaction as Invitation",
+          "tag": "H2"
+        },
+        {
+          "text": "Content as Cultural Signal",
+          "tag": "H2"
+        },
+        {
+          "text": "",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/burgerfuel",
+      "title": "BurgerFuel: Global Burger Brand Refresh | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "BurgerFuel",
+          "tag": "H1"
+        },
+        {
+          "text": "The challenge",
+          "tag": "H2"
+        },
+        {
+          "text": "Enterprise-scale Webflow build",
+          "tag": "H2"
+        },
+        {
+          "text": "Conversion-led homepage strategy",
+          "tag": "H2"
+        },
+        {
+          "text": "Branded product interaction",
+          "tag": "H2"
+        },
+        {
+          "text": "Clear separation of marketing and ordering",
+          "tag": "H2"
+        },
+        {
+          "text": "World of BurgerFuel content ecosystem",
+          "tag": "H2"
+        },
+        {
+          "text": "Radio BurgerFuel as a digital experience",
+          "tag": "H2"
+        },
+        {
+          "text": "Multi-audience platform",
+          "tag": "H2"
+        },
+        {
+          "text": "Performance, longevity, and future-proofing",
+          "tag": "H2"
+        },
+        {
+          "text": "Ongoing partnership",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/good-shepherd-entertainment",
+      "title": "Good Shepherd Entertainment: Game Publisher Sites | Psychoactive",
+      "headings": [
+        {
+          "text": "Good Shepherd Entertainment",
+          "tag": "H1"
+        },
+        {
+          "text": "Good Shepherd / Big Fan Publisher Websites",
+          "tag": "H2"
+        },
+        {
+          "text": "Killer Klowns From Outer Space: The Game",
+          "tag": "H2"
+        },
+        {
+          "text": "A cult classic reimagined as an interactive digital playground.",
+          "tag": "H2"
+        },
+        {
+          "text": "Showgunners",
+          "tag": "H2"
+        },
+        {
+          "text": "The feeling of a live broadcast, captured in a kinetic digital experience.",
+          "tag": "H2"
+        },
+        {
+          "text": "Hard West",
+          "tag": "H2"
+        },
+        {
+          "text": "An atmospheric entry point into the darker edges of the Wild West.",
+          "tag": "H2"
+        },
+        {
+          "text": "Hard West 2",
+          "tag": "H2"
+        },
+        {
+          "text": "The world of Hard West deepened through a bold, content-rich experience.",
+          "tag": "H2"
+        },
+        {
+          "text": "Monster Train",
+          "tag": "H2"
+        },
+        {
+          "text": "Strategy, systems, and character brought to life beyond the game itself.",
+          "tag": "H2"
+        },
+        {
+          "text": "The Eternal Cylinder",
+          "tag": "H2"
+        },
+        {
+          "text": "Exploration and curiosity sit at the centre of this quiet, world-driven experience.",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/hellboy",
+      "title": "Hellboy: Web of Wyrd Game Launch Site | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Hellboy Web of Wyrd",
+          "tag": "H1"
+        },
+        {
+          "text": "Design Led by Mood and Visual Storytelling",
+          "tag": "H2"
+        },
+        {
+          "text": "Narrative Integrated Into the Interface",
+          "tag": "H2"
+        },
+        {
+          "text": "Communicating Combat Through Composition",
+          "tag": "H2"
+        },
+        {
+          "text": "Curated Art as World-Building",
+          "tag": "H2"
+        },
+        {
+          "text": "Conversion Without Breaking Immersion",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/summer-game-fest",
+      "title": "Summer Game Fest: Global Gaming Showcase | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Summer Game Fest",
+          "tag": "H1"
+        },
+        {
+          "text": "Year After Year",
+          "tag": "H2"
+        },
+        {
+          "text": "Making a Splash",
+          "tag": "H2"
+        },
+        {
+          "text": "Never Missing a Moment",
+          "tag": "H2"
+        },
+        {
+          "text": "The Main Event",
+          "tag": "H2"
+        },
+        {
+          "text": "A Full Schedule",
+          "tag": "H2"
+        },
+        {
+          "text": "Brand Asset Evolution",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/super-ai",
+      "title": "SuperAI Conference: Singapore AI Event Site | Psychoactive",
+      "headings": [
+        {
+          "text": "SuperAI Conference",
+          "tag": "H1"
+        },
+        {
+          "text": "Scaling for a Global Audience",
+          "tag": "H2"
+        },
+        {
+          "text": "Designing for Simplicity and Energy",
+          "tag": "H2"
+        },
+        {
+          "text": "Automating Content and Saving Time",
+          "tag": "H2"
+        },
+        {
+          "text": "Powering a Sell-Out Event",
+          "tag": "H2"
+        },
+        {
+          "text": "Designing for event discovery",
+          "tag": "H2"
+        },
+        {
+          "text": "An Ongoing Partnership",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/talent-army",
+      "title": "Talent Army: Tech Talent Agency Website | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Talent Army",
+          "tag": "H1"
+        },
+        {
+          "text": "Platform requirements",
+          "tag": "H2"
+        },
+        {
+          "text": "Storytelling through motion and illustration",
+          "tag": "H2"
+        },
+        {
+          "text": "A job board designed to feel human",
+          "tag": "H2"
+        },
+        {
+          "text": "Culture, place, and inclusivity",
+          "tag": "H2"
+        },
+        {
+          "text": "Designing for a dual marketplace",
+          "tag": "H2"
+        },
+        {
+          "text": "Built to scale on Webflow",
+          "tag": "H2"
+        },
+        {
+          "text": "Recruitment, reimagined as a story-driven digital product.",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/things-inc",
+      "title": "Things Inc: Creative Studio Website | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "Things Inc",
+          "tag": "H1"
+        },
+        {
+          "text": "Here's the Thing",
+          "tag": "H2"
+        },
+        {
+          "text": "Putting Creative Before Everything Else",
+          "tag": "H2"
+        },
+        {
+          "text": "Functionality That Feels Fun",
+          "tag": "H2"
+        },
+        {
+          "text": "Playing Night and Day",
+          "tag": "H2"
+        },
+        {
+          "text": "Hide and Seek",
+          "tag": "H2"
+        },
+        {
+          "text": "In the Room",
+          "tag": "H2"
+        },
+        {
+          "text": "Log 001",
+          "tag": "H2"
+        },
+        {
+          "text": "All the Assets",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/woolf",
+      "title": "Woolf University: Global Higher Ed Platform | Psychoactive",
+      "headings": [
+        {
+          "text": "Woolf University",
+          "tag": "H1"
+        },
+        {
+          "text": "Designing for the University of the Future",
+          "tag": "H2"
+        },
+        {
+          "text": "A Comprehensive Strategic Focus",
+          "tag": "H2"
+        },
+        {
+          "text": "Communicating World-Class Partnerships",
+          "tag": "H2"
+        },
+        {
+          "text": "A Global Community of Students",
+          "tag": "H2"
+        },
+        {
+          "text": "Woolf Labs: Innovative Technology Enhancing Student Experiences",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/world-of-wearableart",
+      "title": "World of WearableArt: Festival Website | Psychoactive Studios",
+      "headings": [
+        {
+          "text": "World of WearableArt",
+          "tag": "H1"
+        },
+        {
+          "text": "Defining a cinematic entry point",
+          "tag": "H2"
+        },
+        {
+          "text": "Translating live spectacle into digital form",
+          "tag": "H2"
+        },
+        {
+          "text": "Preserving WOW’s creative legacy",
+          "tag": "H2"
+        },
+        {
+          "text": "Simplifying a complex global competition journey",
+          "tag": "H2"
+        },
+        {
+          "text": "Creating a platform for ongoing storytelling",
+          "tag": "H2"
+        },
+        {
+          "text": "Reflecting the scale of the people behind WOW",
+          "tag": "H2"
+        },
+        {
+          "text": "Designing moments of delight throughout the experience",
+          "tag": "H2"
+        },
+        {
+          "text": "Balancing multiple audiences with a unified experience",
+          "tag": "H2"
+        },
+        {
+          "text": "Building a platform designed to evolve",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/work/zendetta",
+      "title": "Zendetta: Award-Winning Interactive Documentary | Psychoactive",
+      "headings": [
+        {
+          "text": "Zendetta",
+          "tag": "H1"
+        },
+        {
+          "text": "Illustration-Led Storytelling",
+          "tag": "H2"
+        },
+        {
+          "text": "Research and Sound",
+          "tag": "H2"
+        },
+        {
+          "text": "Interaction for Engagement",
+          "tag": "H2"
+        },
+        {
+          "text": "Motion and Pacing",
+          "tag": "H2"
+        },
+        {
+          "text": "Interaction as Invitation",
+          "tag": "H2"
+        },
+        {
+          "text": "Language and Accessibility",
+          "tag": "H2"
+        },
+        {
+          "text": "Context Beyond the Story",
+          "tag": "H2"
+        },
+        {
+          "text": "Extending the Impact",
+          "tag": "H2"
+        }
+      ],
+      "storage": {
+        "local": [],
+        "session": []
+      },
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "type": "submit",
+          "id": "work-scroll-down-button",
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "api": [
+    {
+      "url": "https://www.psychoactive.co.nz/api/audit-recent",
+      "method": "GET",
+      "status": 200,
+      "requestShape": "null",
+      "responseShape": {
+        "items": {
+          "type": "array",
+          "length": 8,
+          "item": {
+            "hostname": "string",
+            "score": "number",
+            "createdAt": "string"
+          }
+        }
+      },
+      "contentType": "application/json"
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/api/audit",
+      "method": "POST",
+      "status": 400,
+      "requestShape": {
+        "url": "string",
+        "fresh": "boolean"
+      },
+      "responseShape": {
+        "error": "boolean",
+        "url": "string",
+        "statusCode": "number",
+        "statusMessage": "string",
+        "message": "string",
+        "data": {
+          "code": "string"
+        }
+      },
+      "contentType": "application/json"
+    },
+    {
+      "url": "https://www.psychoactive.co.nz/api/audit",
+      "method": "POST",
+      "status": 200,
+      "requestShape": {
+        "url": "string",
+        "fresh": "boolean"
+      },
+      "responseShape": {
+        "auditId": "string",
+        "url": "string",
+        "cached": "boolean",
+        "cachedAgeMs": "number",
+        "heroImageUrl": "null",
+        "pageTitle": "string",
+        "report": {
+          "summary": "string",
+          "categories": {
+            "content_craft": {
+              "score": "number",
+              "findings": {
+                "type": "array",
+                "length": 2,
+                "item": {
+                  "text": "string",
+                  "type": "string",
+                  "quote": "null"
+                }
+              },
+              "next_action": "string"
+            },
+            "credibility_trust": {
+              "score": "number",
+              "findings": {
+                "type": "array",
+                "length": 2,
+                "item": {
+                  "text": "string",
+                  "type": "string",
+                  "quote": "null"
+                }
+              },
+              "next_action": "string"
+            },
+            "value_proposition": {
+              "score": "number",
+              "findings": {
+                "type": "array",
+                "length": 2,
+                "item": {
+                  "text": "string",
+                  "type": "string",
+                  "quote": "string"
+                }
+              },
+              "next_action": "string"
+            },
+            "structural_hierarchy": {
+              "score": "number",
+              "findings": {
+                "type": "array",
+                "length": 2,
+                "item": {
+                  "text": "string",
+                  "type": "string",
+                  "quote": "null"
+                }
+              },
+              "next_action": "string"
+            },
+            "conversion_architecture": {
+              "score": "number",
+              "findings": {
+                "type": "array",
+                "length": 2,
+                "item": {
+                  "text": "string",
+                  "type": "string",
+                  "quote": "null"
+                }
+              },
+              "next_action": "string"
+            }
+          },
+          "page_title": "string",
+          "overall_score": "number",
+          "hero_image_url": "null"
+        }
+      },
+      "contentType": "application/json"
+    }
+  ],
+  "protocols": [
+    "h2",
+    "h3"
+  ],
+  "interactionStates": [
+    {
+      "name": "audit-empty",
+      "url": "https://www.psychoactive.co.nz/design-audit",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "audit-url",
+          "text": "",
+          "type": "text",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Audit my site→",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        }
+      ],
+      "localKeys": [],
+      "sessionKeys": []
+    },
+    {
+      "name": "audit-invalid",
+      "url": "https://www.psychoactive.co.nz/design-audit",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "header-navigation-button",
+          "text": "Close",
+          "type": "submit",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "header-sound-button",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "audit-url",
+          "text": "",
+          "type": "text",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Audit my site→",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Try a different URL",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        }
+      ],
+      "localKeys": [],
+      "sessionKeys": []
+    },
+    {
+      "name": "audit-processing",
+      "url": "https://www.psychoactive.co.nz/design-audit",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "header-navigation-button",
+          "text": "Close",
+          "type": "submit",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "header-sound-button",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "audit-url",
+          "text": "",
+          "type": "text",
+          "disabled": true,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Auditing…",
+          "type": "submit",
+          "disabled": true,
+          "expanded": null,
+          "selected": null
+        }
+      ],
+      "localKeys": [],
+      "sessionKeys": []
+    },
+    {
+      "name": "audit-result",
+      "url": "https://www.psychoactive.co.nz/design-audit",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "header-navigation-button",
+          "text": "Close",
+          "type": "submit",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "header-sound-button",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Run another?",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "audit-url",
+          "text": "",
+          "type": "text",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Audit another→",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "?",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "?",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "?",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "?",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "?",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Post on X",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Share on LinkedIn",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Copy link",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "text-field-v-0-1",
+          "text": "",
+          "type": "email",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "text-field-v-0-2",
+          "text": "",
+          "type": "text",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "text-field-v-0-3",
+          "text": "",
+          "type": "text",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Show me the full reportShow me the full report",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        }
+      ],
+      "localKeys": [],
+      "sessionKeys": []
+    },
+    {
+      "name": "feed-resources",
+      "url": "https://www.psychoactive.co.nz/content-hub?type=resource",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "All",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Resources",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Announcements",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Case Studies",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "INPUT",
+          "id": "promo-audit-url",
+          "text": "",
+          "type": "text",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Run audit",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        }
+      ],
+      "localKeys": [],
+      "sessionKeys": []
+    },
+    {
+      "name": "about-faq-open",
+      "url": "https://www.psychoactive.co.nz/about",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "submit",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "",
+          "type": "button",
+          "disabled": false,
+          "expanded": null,
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Where is Psychoactive based?Wellington, New Zealand, since 2018. We’re remote-first, so we work with",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Do you only work with New Zealand brands?No. We’re a New Zealand studio at heart, but most of our wo",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "What kind of brands do you work with?Ambitious ones, across a lot of categories: global events and f",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Do you build with Webflow or custom code?Both. We were New Zealand’s first Premium Webflow Enterpris",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "What makes you different from other New Zealand web design agencies?Craft. We’ve picked up 50+ inter",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "What does “Digital Amphibians” mean?Frogs live in water and air; we live between disciplines — strat",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "How do I start a project with you?Tell us what you’re trying to do. The best first step is a convers",
+          "type": "button",
+          "disabled": false,
+          "expanded": "false",
+          "selected": null
+        }
+      ],
+      "localKeys": [],
+      "sessionKeys": []
+    }
+  ],
+  "uiObservations": {
+    "auditExample": {
+      "url": "https://example.com/",
+      "overall": 8,
+      "ratings": [
+        3,
+        0,
+        4,
+        1,
+        0
+      ],
+      "wins": 1,
+      "issues": 9,
+      "opportunities": 0,
+      "unlocked": false
+    },
+    "homePreviewScores": [
+      42,
+      87
+    ],
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "desktopViewport": [
+      1440,
+      900
+    ],
+    "menuEscape": "No visible closing in observed CUA sequence",
+    "contact": "Start a project -> required name/email; no submission"
+  }
+}

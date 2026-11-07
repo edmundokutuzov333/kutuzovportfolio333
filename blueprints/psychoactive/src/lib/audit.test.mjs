@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizePublicUrl, mockAudit, auditReducer, initialAuditState } from "./audit.mjs";
+import { normalizePublicUrl, mockAudit, mockAuditResponse, toAuditView, auditReducer, initialAuditState } from "./audit.mjs";
 test("normalizes a public domain and removes fragments", () => {
   assert.equal(normalizePublicUrl(" exemplo.pt/path#section "), "https://exemplo.pt/path");
   assert.equal(normalizePublicUrl("https://exemplo.pt/?a=1"), "https://exemplo.pt/?a=1");
@@ -27,4 +27,14 @@ test("ignores results after reset", () => {
   const pending = auditReducer(initialAuditState, { type: "START", url: "https://example.com/" });
   const reset = auditReducer(pending, { type: "RESET" });
   assert.equal(auditReducer(reset, { type: "SUCCESS", result: {} }).status, "idle");
+});
+
+test("preserves the captured API field names independently from the UI model", () => {
+  const raw = mockAuditResponse("https://example.com/");
+  assert.deepEqual(Object.keys(raw.report.categories).sort(), [
+    "content_craft","conversion_architecture","credibility_trust","structural_hierarchy","value_proposition",
+  ]);
+  assert.equal(raw.report.overall_score,42);
+  assert.equal(raw.heroImageUrl,null);
+  assert.equal(toAuditView(raw).categories.length,5);
 });

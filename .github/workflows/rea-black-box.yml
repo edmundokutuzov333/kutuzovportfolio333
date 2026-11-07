@@ -1,6 +1,11 @@
 name: REA black-box evidence
 on:
   workflow_dispatch:
+    inputs:
+      full_capture:
+        description: 'Recolher sitemap e evidência REA completos'
+        type: boolean
+        default: true
   push:
     branches: [main]
     paths:
@@ -22,6 +27,11 @@ jobs:
           mkdir -p "$RUNNER_TEMP/rea-tools"
           npm install --prefix "$RUNNER_TEMP/rea-tools" --no-audit --no-fund rea-agents@6.8.0 playwright@1.58.2
           "$RUNNER_TEMP/rea-tools/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Capture complete sitemap with REA
+        if: github.event_name == 'workflow_dispatch' && inputs.full_capture
+        env:
+          TOOL_ROOT: ${{ runner.temp }}/rea-tools
+        run: node research/psychoactive/capture.mjs
       - name: Capture observable behaviour
         env:
           TOOL_ROOT: ${{ runner.temp }}/rea-tools

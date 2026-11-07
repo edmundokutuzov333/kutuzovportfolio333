@@ -42,12 +42,33 @@ export async function mockAudit(url, { signal, onStage = () => {}, scenario = "s
   for (let stage = 0; stage < 3; stage++) { onStage(stage); await delay(delayMs, signal); }
   if (scenario === "timeout") throw new DOMException("O serviço excedeu o tempo de espera.", "TimeoutError");
   if (scenario === "error") throw new Error("O serviço está temporariamente indisponível.");
+  const response = mockAuditResponse(url);
+  return toAuditView(response);
+}
+export function mockAuditResponse(url) {
+  const keys = ["value_proposition", "conversion_architecture", "content_craft", "structural_hierarchy", "credibility_trust"];
+  const scores = [9, 8, 7, 10, 8];
   return {
-    id: "mock-v1", url, score: 42, maxScore: 100, mock: true,
-    categories: [
-      { key: "clarity", score: 9 }, { key: "conversion", score: 8 },
-      { key: "copy", score: 7 }, { key: "structure", score: 10 }, { key: "trust", score: 8 },
-    ],
-    counts: { wins: 2, issues: 6, opportunities: 3 },
+    auditId: "mock-v1", url, cached: false, cachedAgeMs: 0, heroImageUrl: null, pageTitle: "Demonstração",
+    report: {
+      summary: "Relatório simulado para demonstrar a interface.", overall_score: 42,
+      page_title: "Demonstração", hero_image_url: null,
+      categories: Object.fromEntries(keys.map((key,index)=>[key,{
+        score:scores[index],
+        findings:[{text:"Observação de exemplo, sem analisar o endereço.",type:"issue",quote:null}],
+        next_action:"Defina uma melhoria concreta e volte a medir.",
+      }])),
+    },
+  };
+}
+export function toAuditView(response) {
+  const mapping = [
+    ["clarity","value_proposition"],["conversion","conversion_architecture"],
+    ["copy","content_craft"],["structure","structural_hierarchy"],["trust","credibility_trust"],
+  ];
+  return {
+    id: response.auditId, url: response.url, score: response.report.overall_score, maxScore: 100, mock: true,
+    categories: mapping.map(([key,source])=>({key,score:response.report.categories[source].score})),
+    counts: {wins:0,issues:5,opportunities:0},
   };
 }
