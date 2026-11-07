@@ -23,7 +23,7 @@ A aquisição limita-se à interface, DOM renderizado, acessibilidade, estilos c
 | E07 | [network.json](research/psychoactive/network.json): pedidos e respostas com método, origem, caminho, nomes de parâmetros, status e MIME; valores de parâmetros de CDN não foram conservados. |
 | E08 | [Arquitetura do portefólio, snapshot inicial](https://github.com/edmundokutuzov333/kutuzovportfolio333/tree/78cde4a3586ea9c374a023a344d321ea13524fa8). `package.json`, `src/routes`, `src/components`, `src/lib/cms`, `src/lib/public-assets.ts`. |
 | E09 | Leitura HTTP anónima do CMS autorizado: [public-config.ts](https://github.com/edmundokutuzov333/kutuzovportfolio333/blob/78cde4a3586ea9c374a023a344d321ea13524fa8/src/lib/cms/public-config.ts), `GET /rest/v1/projects`, `clients`, `pages`, `services`, `page_sections`, `site_settings`: HTTP 200. Contratos no blueprint. |
-| E10 | [Verificação da implementação de referência](https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42348274622): cinco testes unitários, compilação e testes de navegador. Não mede igualdade de píxeis com o original. |
+| E10 | [Verificação da implementação de referência](https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42395078119): seis testes unitários, compilação e testes de navegador. Não mede igualdade de píxeis com o original. |
 
 REA declarou `attach_limited` e `policy_filtered`; não recuperou eventos anteriores à ligação CDP, origens excluídas nem fontes de scripts. A captura inicial tem cerca de 576 kB de evidência, retida como artefacto de Actions durante sete dias. Os resumos e inventários neste repositório preservam os factos usados. Uma falha inicial de timeout na medição de hover ficou registada; o sucesso de uma execução não elimina essa lacuna.
 

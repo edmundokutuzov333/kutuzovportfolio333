@@ -1,0 +1,68 @@
+{
+  "verified_at": "2026-11-07T17:19:32Z",
+  "repository": "edmundokutuzov333/kutuzovportfolio333",
+  "branch": "main",
+  "verified_code_commit": "b23eaa1894c46179e5bb9bd4ab892269c27c48fa",
+  "commit_method": "GitHub Git Data API; atualização fast-forward com expected_sha",
+  "reference": {
+    "url": "https://edmundokutuzov333.github.io/kutuzovportfolio333/",
+    "workflow_run": 42395078119,
+    "workflow_url": "https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42395078119",
+    "conclusion": "success",
+    "build_job": 128470583032,
+    "deploy_job": 128470754954,
+    "unit_tests": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "browser_smoke": {
+      "auditValidation": true,
+      "auditMock42": true,
+      "menuEscape": true,
+      "mobileOverflow": false,
+      "pageErrors": []
+    },
+    "live_visual_check": "Página inicial publicada; conteúdo do CMS, navegação, grelha de projetos e auditoria simulada visíveis.",
+    "screenshot_local": "outputs/REPLICA-PUBLICADA.png",
+    "hosting_setup": "GitHub Pages ativado na interface web; código e documentação gravados pela API.",
+    "scope": "Referência estática independente com mock; não substitui a homepage SSR existente."
+  },
+  "original_portfolio_ci": {
+    "workflow_run": 42395078028,
+    "workflow_url": "https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42395078028",
+    "job": 128470582889,
+    "conclusion": "failure",
+    "typecheck": "success",
+    "lint": "success",
+    "unit_tests": "success",
+    "public_data_contracts": "success",
+    "production_build": "success",
+    "failure_step": "Verify original project artwork is publicly reachable",
+    "reachable_artworks": 249,
+    "total_artworks": 256,
+    "projects": 155,
+    "downstream_e2e": "skipped",
+    "note": "Sete recursos publicados falharam a verificação de disponibilidade; não foram substituídos por imagens inventadas."
+  },
+  "black_box_evidence": {
+    "rea_version": "6.8.0",
+    "rea_initial_run": 42326260072,
+    "full_sitemap_run": 42326588430,
+    "routes_loaded": 52,
+    "interaction_contracts_run": 42348274567,
+    "latest_interactions_run": 42395078056,
+    "latest_interactions_conclusion": "success",
+    "asset_url_inventory_count": 416,
+    "source_code_or_assets_reused": false
+  },
+  "open_limits": [
+    "U01–U12 de CLONE_SPEC.md permanecem abertos.",
+    "Igualdade de píxeis, animações exatas, todas as variantes móveis e todos os ramos de formulário: UNKNOWN.",
+    "O resultado 42/100 é um mock determinístico, não uma análise real por IA.",
+    "Relatórios persistidos, desbloqueio por email e envio real de contacto não foram exercitados.",
+    "Fontes, áudio, vídeo, modelos 3D e recursos gráficos da Psychoactive não foram copiados.",
+    "Divergência entre o projeto Supabase público e supabase/config.toml por reconciliar antes de migrações.",
+    "Nenhuma alteração de base de dados foi executada."
+  ]
+}

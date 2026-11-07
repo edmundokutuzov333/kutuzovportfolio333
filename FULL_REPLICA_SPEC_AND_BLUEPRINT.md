@@ -1510,3 +1510,11 @@ Todos os valores abaixo pertencem a E02; aplicação de cada valor a cada compon
 ## 12. Verificação e cobertura
 
 Build e testes remotos estão associados aos commits e aos runs de Actions, não ao estado de uma máquina local. A evidência de inspeção do original e os resultados de teste da referência são conjuntos diferentes. O relatório final de execução em research/psychoactive/verification.json regista o commit, os testes executados e a publicação. As limitações U01–U12 permanecem abertas mesmo com um pipeline verde.
+
+
+
+## 12. Verificação da publicação
+
+Referência publicada: [abrir demonstração](https://edmundokutuzov333.github.io/kutuzovportfolio333/). O commit de código `b23eaa1894c46179e5bb9bd4ab892269c27c48fa` passou seis testes unitários, compilação e verificações Playwright de validação de URL, mock 42/100, Escape no menu e ausência de overflow horizontal móvel. Não ocorreram erros de página nessa bateria. [Execução e publicação bem-sucedidas](https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42395078119).
+
+A CI geral do portefólio passou typecheck, lint, testes e build, mas falhou na disponibilidade de sete das 256 imagens verificadas em 155 projetos; os testes E2E subsequentes foram omitidos pela própria CI. [Execução com a falha de recursos](https://github.com/edmundokutuzov333/kutuzovportfolio333/actions/runs/42395078028). Este resultado não equivale a uma certificação de réplica integral. Registo estruturado: [verification.json](research/psychoactive/verification.json).
