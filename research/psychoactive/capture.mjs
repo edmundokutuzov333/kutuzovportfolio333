@@ -18,11 +18,13 @@ page.on("response", response => {
   requests.push({ method: response.request().method(), origin: url.origin, path: url.pathname, queryKeys: [...url.searchParams.keys()], status: response.status(), contentType: response.headers()["content-type"] });
 });
 const report = { capturedAt: new Date().toISOString(), tool: "rea-agents@6.8.0", pages: [], requests };
-const paths = ["/", "/work", "/about", "/services", "/clients", "/content-hub", "/contact", "/work/super-ai"];
+const sitemap = await fetch("https://www.psychoactive.co.nz/sitemap.xml").then(r=>r.text());
+const paths = [...new Set([...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>new URL(m[1]).pathname))];
+report.sitemapPaths = paths;
 try {
   for (const path of paths) {
     await page.goto("https://www.psychoactive.co.nz" + path, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(1200);
     const observation = await page.evaluate(() => ({
       url: location.href,
       title: document.title,
@@ -54,6 +56,7 @@ try {
   }
 } finally {
   await writeFile(join(output,"observations.json"),JSON.stringify(report,null,2));
+  report.requests = [...new Map(requests.map(r=>[JSON.stringify(r),r])).values()];
   console.log("OBSERVATIONS " + JSON.stringify(report));
   await browser.close();
 }

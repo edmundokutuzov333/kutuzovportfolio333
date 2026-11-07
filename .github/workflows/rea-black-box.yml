@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/rea-black-box.yml'
-      - 'research/psychoactive/capture.mjs'
+      - 'research/psychoactive/*.mjs'
 permissions:
   contents: read
 jobs:
@@ -25,7 +25,9 @@ jobs:
       - name: Capture observable behaviour
         env:
           TOOL_ROOT: ${{ runner.temp }}/rea-tools
-        run: node research/psychoactive/capture.mjs
+        run: |
+          node research/psychoactive/capture.mjs
+          node research/psychoactive/interactions.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
