@@ -6,6 +6,7 @@ const { chromium } = require("playwright");
 const browser = await chromium.launch({headless:true});
 const context = await browser.newContext({viewport:{width:1440,height:900}});
 const page = await context.newPage();
+page.setDefaultTimeout(15000);
 const output = "research/psychoactive/evidence";
 await mkdir(output,{recursive:true});
 const report = { capturedAt:new Date().toISOString(), states:[], api:[], protocols:[] };
@@ -33,28 +34,6 @@ async function state(name) {
   }))});
 }
 try {
-  await page.goto("https://www.psychoactive.co.nz/");
-  await page.waitForTimeout(2000);
-  report.rootTokens = await page.evaluate(()=>{const s=getComputedStyle(document.documentElement);return Object.fromEntries([...s].filter(k=>k.startsWith("--")).map(k=>[k,s.getPropertyValue(k)]));});
-  const title = page.locator('h3 a[href="/work/super-ai"]');
-  report.card = await title.evaluate(e=>{const nodes=[];for(let n=e.parentElement;n&&nodes.length<5;n=n.parentElement){const s=getComputedStyle(n),r=n.getBoundingClientRect();nodes.push({tag:n.tagName,class:n.className,width:r.width,height:r.height,gap:s.gap,padding:s.padding,radius:s.borderRadius,columns:s.gridTemplateColumns});}return nodes;});
-  const sample = async()=>page.locator('h3 a[href="/work/super-ai"]').evaluate(e=>{const n=e.closest("article")||e.parentElement.parentElement;return [...n.querySelectorAll("*")].slice(0,35).map(x=>{const s=getComputedStyle(x);return {tag:x.tagName,class:x.className,transform:s.transform,transition:s.transition,opacity:s.opacity,filter:s.filter};});});
-  report.hoverBefore = await sample();
-  await title.hover();
-  await page.waitForTimeout(900);
-  report.hoverAfter = await sample();
-  await page.screenshot({path:join(output,"desktop-home.png")});
-  await page.getByRole("tab",{name:/Awwwards/}).click();
-  await state("awwwards-tab");
-  await page.getByRole("button",{name:/Next awards/}).click();
-  await state("awwwards-next");
-  for(const width of [390,768,1024,1440]){
-    await page.setViewportSize({width,height:900});
-    report.states.push({name:"viewport-"+width,data:await page.evaluate(()=>({
-      nav:[...document.querySelectorAll("header button")].filter(e=>e.getBoundingClientRect().width>0).map(e=>({text:e.textContent.trim(),label:e.getAttribute("aria-label"),rect:e.getBoundingClientRect().toJSON()})),
-      audit:document.querySelector("#promo-audit-url")?.getBoundingClientRect().toJSON()
-    }))});
-  }
   await page.goto("https://www.psychoactive.co.nz/design-audit");
   await page.waitForTimeout(1500);
   await state("audit-empty");
