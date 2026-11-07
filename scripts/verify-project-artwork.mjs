@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { inspectArtworkBytes } from "./lib/project-media.mjs";
 
 const root = process.cwd();
 const configPath = path.join(root, "src/lib/cms/public-config.ts");
@@ -99,6 +100,7 @@ function resolveAsset(source) {
 
 const failures = [];
 let verified = 0;
+const counts = { image: 0, video: 0 };
 
 for (let start = 0; start < artwork.length; start += 4) {
   const batch = artwork.slice(start, start + 4);
@@ -108,25 +110,18 @@ for (let start = 0; start < artwork.length; start += 4) {
         const response = await fetch(resolveAsset(source), {
           redirect: "follow",
           signal: AbortSignal.timeout(20000),
-          headers: { Accept: "image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8" },
+          headers: { Accept: "image/avif,image/webp,image/png,image/jpeg,video/mp4,*/*;q=0.8" },
         });
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        const contentType = (response.headers.get("content-type") ?? "")
-          .split(";")[0]
-          .trim();
-        if (!contentType.startsWith("image/")) {
-          throw new Error(`expected image bytes, received ${contentType || "unknown content type"}`);
-        }
-
+        const contentType = response.headers.get("content-type") ?? "";
         const bytes = new Uint8Array(await response.arrayBuffer());
         const manifest = manifestByUrl.get(source);
-        if (manifest && bytes.byteLength !== manifest.size) {
-          throw new Error(`expected ${manifest.size} bytes, received ${bytes.byteLength}`);
-        }
+        const kind = inspectArtworkBytes(source, contentType, bytes, manifest?.size);
+        counts[kind] += 1;
 
         return true;
       } catch (error) {
@@ -140,7 +135,7 @@ for (let start = 0; start < artwork.length; start += 4) {
 }
 
 console.log(
-  `Verified ${verified}/${artwork.length} published project artworks across ${projects.length} projects using ${new URL(assetOrigin).origin}.`,
+  `Verified ${verified}/${artwork.length} published project artworks (${counts.image} images, ${counts.video} videos) across ${projects.length} projects using ${new URL(assetOrigin).origin}.`,
 );
 
 if (failures.length > 0) {

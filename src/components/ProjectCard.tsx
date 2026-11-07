@@ -1,22 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import type { Project } from "@/lib/cms/types";
-import { SafeAssetImage } from "./SafeAssetImage";
+import { ProjectMedia } from "./ProjectMedia";
 
 export function ArtSlot({ project, className }: { project: Project; className?: string }) {
   if (project.cover) {
-    if (project.projectType === "video") {
-      return <video src={project.cover} className={`block h-auto w-full ${className ?? ""}`} controls={false} muted playsInline preload="metadata" aria-label={project.coverAlt} />;
-    }
-    return (
-      <SafeAssetImage
-        src={project.cover}
-        alt={project.coverAlt}
-        className={`block h-auto w-full ${className ?? ""}`}
-        fallbackClassName={`flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center ${className ?? ""}`}
-        fallbackLabel="Cover unavailable"
-        loading="eager"
-      />
-    );
+    return <ProjectMedia src={project.cover} alt={project.coverAlt || project.title}
+      className={`block h-auto w-full ${className ?? ""}`} loading="eager" />;
   }
   return (
     <div

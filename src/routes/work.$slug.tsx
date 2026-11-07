@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { PageHero, Reveal } from "@/components/Reveal";
 import { ArtSlot } from "@/components/ProjectCard";
-import { SafeAssetImage } from "@/components/SafeAssetImage";
+import { ProjectMedia } from "@/components/ProjectMedia";
 import { loadProjectDetailContent } from "@/lib/cms/loaders";
 import { PUBLIC_SITE_URL } from "@/lib/cms/public-client";
 import { seoFromPage, noIndexSeo } from "@/lib/seo";
@@ -92,13 +92,9 @@ function CaseStudy() {
         {project.gallery.map((source, imageIndex) => (
           <Reveal key={source}>
             <div className="overflow-hidden rounded-sm">
-              {project.projectType === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(source) ? <video src={source} className="block h-auto w-full" controls playsInline preload="metadata" aria-label={project.galleryAlt[imageIndex] || project.title} /> : <SafeAssetImage
-                src={source}
-                alt={project.galleryAlt[imageIndex] || `${project.title}, image ${imageIndex + 1}`}
-                className="block h-auto w-full"
-                fallbackClassName="flex h-full w-full items-center justify-center border border-dashed border-border bg-card p-6 text-center"
-                fallbackLabel="Image unavailable"
-              />}
+              <ProjectMedia src={source} controls
+                alt={project.galleryAlt[imageIndex] || project.title}
+                className="block h-auto w-full" />
             </div>
           </Reveal>
         ))}

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Link } from "@tanstack/react-router";
 
+import { ProjectMedia } from "./ProjectMedia";
 import type { ProjectArtwork } from "@/lib/project-artwork";
 import {
   getFanHeightMultiplier,
@@ -406,12 +407,10 @@ export function ProjectCardFan({ cards }: ProjectCardFanProps) {
                     aria-label={`Open project: ${item.projectTitle}. ${item.alt}`}
                     draggable={false}
                   >
-                    <img
+                    <ProjectMedia
                       src={item.src}
                       alt={item.alt}
                       loading={slot === centerSlot ? "eager" : "lazy"}
-                      decoding="async"
-                      draggable={false}
                       className="block h-full w-full select-none object-cover"
                     />
                   </Link>
