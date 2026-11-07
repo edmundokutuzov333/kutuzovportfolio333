@@ -1,0 +1,32 @@
+export const copy = {
+  disclaimer: "Estudo de interface. Gráficos originais. Auditoria simulada.",
+  brand: "Edmundo Kutuzov",
+  menu: "Menu", close: "Fechar", skip: "Saltar para o conteúdo",
+  nav: [
+    { path: "/", label: "Início" }, { path: "/work", label: "Trabalho" },
+    { path: "/about", label: "Sobre" }, { path: "/services", label: "Serviços" },
+    { path: "/clients", label: "Clientes" }, { path: "/content-hub", label: "Conteúdos" },
+    { path: "/contact", label: "Contacto" },
+  ],
+  work: "Trabalhos recentes", clients: "Marcas com quem trabalhei",
+  services: "Estratégia, desenho e execução", feed: "Do estúdio",
+  contact: "Vamos construir o próximo projeto.",
+  audit: {
+    title: "O que comunica o seu site nos primeiros segundos?",
+    intro: "Experimente o fluxo de auditoria. Esta demonstração não analisa páginas reais.",
+    label: "Endereço do site", run: "Iniciar auditoria", reset: "Analisar outro site",
+    steps: ["A ler a página", "A avaliar cinco categorias", "A preparar os resultados"],
+    categories: ["Clareza", "Conversão", "Texto", "Estrutura", "Confiança"],
+    details: ["Explique a proposta principal.", "Destaque a próxima ação.", "Use exemplos concretos.", "Organize os títulos.", "Apresente provas verificáveis."],
+  },
+  articles: [
+    { slug: "sistemas-visuais", category: "Recursos", title: "Construir um sistema visual coerente", text: "Um sistema começa por uma decisão clara e por regras que a equipa consegue aplicar." },
+    { slug: "processo-criativo", category: "Novidades", title: "Do conceito ao trabalho publicado", text: "Organizar pesquisa, propostas e validação ajuda a manter a intenção ao longo do projeto." },
+    { slug: "medir-resultados", category: "Recursos", title: "Ligar decisões visuais a resultados", text: "Defina primeiro o comportamento esperado e escolha depois como o medir." },
+  ],
+  testimonials: [],
+  awards: [],
+  assetUnavailable: "Imagem indisponível",
+  missingProof: "Não há testemunhos ou prémios verificados no CMS para apresentar.",
+  unavailable: "Não foi possível carregar o conteúdo. Tente novamente.",
+};

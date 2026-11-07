@@ -1,0 +1,70 @@
+name: Replica reference
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'blueprints/psychoactive/**'
+      - '.github/workflows/replica-reference.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: replica-reference
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+      - name: Install existing locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Test audit boundaries
+        run: node --test blueprints/psychoactive/src/lib/audit.test.mjs
+      - name: Build standalone reference
+        run: node node_modules/vite/bin/vite.js build --config blueprints/psychoactive/vite.config.mjs
+      - name: Install browser checks
+        run: |
+          npm install --prefix "$RUNNER_TEMP/replica-tools" --no-audit --no-fund playwright@1.58.2
+          "$RUNNER_TEMP/replica-tools/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Verify interactions
+        env:
+          TOOL_ROOT: ${{ runner.temp }}/replica-tools
+        run: |
+          node node_modules/vite/bin/vite.js preview --config blueprints/psychoactive/vite.config.mjs --host 127.0.0.1 --port 4178 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4178/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node blueprints/psychoactive/smoke.mjs
+      - name: Rebuild with deployment base path
+        env:
+          REPLICA_BASE_PATH: /${{ github.event.repository.name }}/
+        run: node node_modules/vite/bin/vite.js build --config blueprints/psychoactive/vite.config.mjs
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist-replica
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/deploy-pages@v4
+        id: deployment
