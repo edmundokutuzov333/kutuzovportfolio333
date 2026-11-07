@@ -18,7 +18,7 @@ export function ProjectMedia(props: ProjectMediaProps) {
 
 function MediaContent({ src, alt, className, controls = false, loading = "lazy" }: ProjectMediaProps) {
   const [failed, setFailed] = useState(false);
-  if (!isVideoSource(src)) return <SafeAssetImage src={src} alt={alt} className={className} loading={loading} />;
+  if (!isVideoSource(src)) return <SafeAssetImage src={src} alt={alt} className={className ?? ""} loading={loading} />;
   if (failed) return <div className={className} role="img" aria-label={alt} data-asset-state="unavailable" />;
   return <video src={src} aria-label={alt} className={className} controls={controls}
     muted={!controls} playsInline preload="metadata" onError={() => setFailed(true)} data-media-kind="video" />;
