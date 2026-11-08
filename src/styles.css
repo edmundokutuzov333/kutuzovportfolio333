@@ -166,7 +166,8 @@
     0 5px 18px rgba(0, 0, 0, 0.24);
 }
 
-.fan-card img {
+.fan-card img,
+.fan-card video {
   display: block;
   width: 100%;
   height: auto;

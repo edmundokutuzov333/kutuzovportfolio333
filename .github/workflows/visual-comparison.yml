@@ -1,0 +1,33 @@
+name: Visual comparison
+on:
+  push:
+    branches: [main]
+    paths: [research/psychoactive/compare.mjs, .github/workflows/visual-comparison.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.22.1"
+      - name: Install isolated runner
+        run: |
+          mkdir -p /tmp/replica-visual
+          cp research/psychoactive/compare.mjs /tmp/replica-visual/compare.mjs
+          npm install --prefix /tmp/replica-visual --no-audit --no-fund playwright@1.64.1
+          /tmp/replica-visual/node_modules/.bin/playwright install --with-deps chromium
+      - name: Capture matching viewports
+        run: node /tmp/replica-visual/compare.mjs
+        env:
+          OUTPUT_DIR: ${{ github.workspace }}/reports/visual-comparison
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-comparison-${{ github.sha }}
+          path: reports/visual-comparison
+          retention-days: 30

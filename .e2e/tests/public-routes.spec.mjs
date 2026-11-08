@@ -3,7 +3,6 @@ import { test, expect } from "@playwright/test";
 const publicRoutes = [
   "/",
   "/work",
-  "/work/diga-yes",
   "/about",
   "/services",
   "/process",
@@ -24,6 +23,16 @@ for (const route of publicRoutes) {
     expect(pageErrors, `unhandled browser errors at ${route}: ${pageErrors.join("; ")}`).toEqual([]);
   });
 }
+
+test("a currently published project opens from the work index", async ({ page }) => {
+  await page.goto("/work");
+  const link = page.locator('a[href^="/work/"]').first();
+  await expect(link).toBeVisible();
+  const href = await link.getAttribute("href");
+  const response = await page.goto(href);
+  expect(response.status()).toBe(200);
+  await expect(page.locator("h1")).toBeVisible();
+});
 
 test("contact page keeps the real submission action behind its form flow", async ({ page }) => {
   await page.goto("/contact", { waitUntil: "domcontentloaded" });
@@ -122,7 +131,7 @@ test("Admin uses the dark site palette without effects and restores a native cur
 
 
 
-test("homepage renders a five-card desktop fan and a three-position mobile fan with strict 4:5 artwork", async ({ page }) => {
+test("homepage renders a five-card desktop fan and a three-position mobile fan with natural artwork proportions", async ({ page }) => {
   test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
 
@@ -159,14 +168,17 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
 
     const fan = page.locator("[data-project-fan]");
     await expect(fan).toBeVisible();
-    await expect(fan).toHaveAttribute("data-project-fan-count", "22");
+    const publishedCount = await page.request.get("/work").then(response => response.text())
+      .then(html => new Set([...html.matchAll(new RegExp('href="(/work/[^"]+)"', "g"))].map(match => match[1])).size);
+    expect(publishedCount).toBeGreaterThan(0);
+    await expect(fan).toHaveAttribute("data-project-fan-count", String(publishedCount));
     const visibleCount = viewport.width < 768 ? 3 : 5;
     const centerSlot = Math.floor(visibleCount / 2);
     await expect(fan).toHaveAttribute("data-project-fan-viewport-ready", "true");
     await expect(fan).toHaveAttribute("data-project-fan-mode", viewport.width < 768 ? "mobile" : "desktop");
     await expect(fan).toHaveAttribute("data-project-fan-visible", String(visibleCount));
     await expect(fan).toHaveAttribute("data-project-fan-center-slot", String(centerSlot));
-    await expect(fan).toHaveAttribute("data-project-fan-ratio", "4:5");
+    await expect(fan).toHaveAttribute("data-project-fan-ratio", "natural");
 
     const cards = fan.locator("[data-project-fan-card]");
     await expect(cards).toHaveCount(visibleCount);
@@ -181,7 +193,8 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
         return {
           width: card.offsetWidth,
           ratio: card.offsetWidth / card.offsetHeight,
-          declaredRatio: Number(card.getAttribute("data-card-aspect-ratio")),
+          declaredRatio: card.getAttribute("data-card-aspect-ratio"),
+          naturalRatio: image ? image.naturalWidth / image.naturalHeight : 0,
           source: card.getAttribute("data-project-artwork-src"),
           href: link?.getAttribute("href"),
           imageLoaded: Boolean(image && image.complete && image.naturalWidth > 0),
@@ -198,8 +211,8 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
     if (viewport.width >= 1536) {
       expect(cardMetrics.find((card) => card.slot === centerSlot)?.width).toBeGreaterThan(350);
     }
-    expect(cardMetrics.every((card) => Math.abs(card.ratio - 0.8) < 0.02)).toBe(true);
-    expect(cardMetrics.every((card) => card.declaredRatio === 0.8)).toBe(true);
+    expect(cardMetrics.every((card) => Math.abs(card.ratio - card.naturalRatio) < 0.02)).toBe(true);
+    expect(cardMetrics.every((card) => card.declaredRatio === "natural")).toBe(true);
     expect(new Set(cardMetrics.map((card) => card.source)).size).toBe(visibleCount);
     expect(cardMetrics.every((card) => card.href?.startsWith("/work/"))).toBe(true);
 
