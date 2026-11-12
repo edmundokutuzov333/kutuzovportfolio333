@@ -191,10 +191,21 @@ export const Route=createFileRoute("/api/jarvis/probe")({
             const mode=url.searchParams.get("mode")||"minimal";
             const voice={speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}}};
             const speech={systemInstruction:{parts:[{text:"Responde em português europeu com voz masculina."}]}};
+            const full=mode==="full"||mode==="complete";
             const init={model:"models/gemini-3.8-live",
               generationConfig:{responseModalities:["AUDIO"],
-                ...(mode==="voice"||mode==="full"?voice:{})},
-              ...(mode==="full"?speech:{})};
+                ...(mode==="voice"||full?voice:{})},
+              ...(full?speech:{}),
+              ...(mode==="complete"?{
+                inputAudioTranscription:{},
+                outputAudioTranscription:{},
+                sessionResumption:{},
+                contextWindowCompression:{slidingWindow:{}},
+                tools:[{functionDeclarations:[{
+                  name:"get_contact",description:"Official portfolio contact",
+                  parameters:{type:"OBJECT",properties:{}},
+                }]}],
+              }:{})};
             socket.send(JSON.stringify({setup:init}));
           });
           socket.addEventListener("message",(event)=>{
