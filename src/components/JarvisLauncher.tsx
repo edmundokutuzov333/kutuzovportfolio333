@@ -173,7 +173,15 @@ function useConversation() {
     setPending(false);
   }, []);
 
-  return { messages, pending, error, send, reset };
+  const remember = useCallback((role: Msg["role"], raw: string) => {
+    const content = raw.trim().slice(0, 1900);
+    if (!content) return;
+    const updated = [...current.current, { role, content }].slice(-100);
+    current.current = updated;
+    setMessages(updated);
+  }, []);
+
+  return { messages, pending, error, send, reset, remember };
 }
 
 /** The SVG bars take a real microphone RMS level from the Web Audio API. */
@@ -582,6 +590,12 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         .then(({ connectJarvisLive }) => connectJarvisLive(stream, {
           onMic: () => {},
           onState: (next) => { if (voiceSession.current === session) setVoice(next); },
+          onUserTranscript: (text) => {
+            if (voiceSession.current === session) convo.remember("user", text);
+          },
+          onAssistantTranscript: (text) => {
+            if (voiceSession.current === session) convo.remember("assistant", text);
+          },
           onError: (message) => {
             if (voiceSession.current !== session) return;
             liveRef.current?.stop();
