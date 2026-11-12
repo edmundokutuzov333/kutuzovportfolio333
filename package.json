@@ -17,7 +17,11 @@
     "import:cms": "bun run scripts/import-static-content.ts",
     "test:contracts": "bun run scripts/verify-public-contracts.ts",
     "test:e2e": "playwright test --config .e2e/playwright.config.mjs",
-    "assets:verify": "node scripts/verify-project-artwork.mjs"
+    "assets:verify": "node scripts/verify-project-artwork.mjs",
+    "kb:audit": "node scripts/kb.mjs audit",
+    "kb:sync": "node scripts/kb.mjs sync",
+    "kb:ingest": "node scripts/kb.mjs ingest",
+    "kb:eval": "node scripts/kb.mjs eval"
   },
   "overrides": {
     "rolldown": "1.2.1",
