@@ -551,7 +551,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       // Native Gemini Live is an opt-in transport. A 404 or provider issue falls
       // through to the proven browser speech / transcription path without losing
       // the microphone or disturbing the visual design.
-      const live = await import("@/lib/jarvis/live-browser")
+      const live = import.meta.env.VITE_JARVIS_LIVE_ENABLED === "true"
+        ? await import("@/lib/jarvis/live-browser")
         .then(({ connectJarvisLive }) => connectJarvisLive(stream, {
           onMic: () => {},
           onState: (next) => { if (voiceSession.current === session) setVoice(next); },
@@ -563,7 +564,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
             setVoice("unavailable");
             setVoiceMessage(message);
           },
-        })).catch(() => null);
+        })).catch(() => null) : null;
       if (voiceSession.current !== session) {
         live?.stop(); stream.getTracks().forEach(track => track.stop()); return;
       }
