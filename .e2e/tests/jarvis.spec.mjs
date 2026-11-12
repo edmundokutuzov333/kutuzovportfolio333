@@ -217,3 +217,51 @@ test("JARVIS stream route rejects invalid payloads without exposing secrets", as
   });
   expect(invalid.status()).toBe(400);
 });
+
+
+test("JARVIS never submits a lead before explicit consent and DB acknowledgement", async ({ page }) => {
+  await page.route("**/api/jarvis/stream", async route => {
+    await route.fulfill({status:200,contentType:"text/event-stream",
+      body:'event: chunk\ndata: {"text":"Podemos preparar um briefing."}\n\n'
+        +'event: done\ndata: {}\n\n'});
+  });
+  let submissions=0;
+  await page.route("**/api/jarvis/lead",async route=>{
+    const payload=route.request().postDataJSON();
+    expect(payload.consent).toBe(true);
+    expect(payload.name).toBe("Teste de Interface");
+    submissions++;
+    await route.fulfill({status:200,contentType:"application/json",
+      body:JSON.stringify({ok:true,reference:"ed53bf0d-3695-44fe-82ca-6c34991f49ca"})});
+  });
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready","true",{timeout:30_000});
+  await page.evaluate(()=>window.dispatchEvent(new Event("ek:jarvis-open")));
+  await page.getByRole("button",{name:"Abrir conversa escrita"}).click();
+  await page.locator("#jv-input").fill("Quero contratar para um projecto.");
+  await page.getByRole("button",{name:"Enviar mensagem"}).click();
+  const form=page.locator(".jv-lead__form");
+  await expect(form).toBeVisible();
+  await expect(form.getByRole("button",{name:"Enviar briefing"})).toBeDisabled();
+  expect(submissions).toBe(0);
+  await form.getByLabel("Nome").fill("Teste de Interface");
+  await form.getByLabel("Email ou WhatsApp").fill("teste@example.net");
+  await form.getByLabel("Resumo do projecto").fill("Identidade visual para campanha.");
+  await form.getByRole("checkbox").check();
+  await form.getByRole("button",{name:"Enviar briefing"}).click();
+  await expect(page.locator(".jv-lead__success")).toContainText("Pedido recebido");
+  expect(submissions).toBe(1);
+});
+
+test("JARVIS lead API rejects missing consent and cross-origin calls",async ({request,baseURL})=>{
+  const payload={name:"Teste de Interface",contact:"teste@example.net",
+    brief:"Uma campanha real com prazo definido.",consent:false};
+  const invalid=await request.post("/api/jarvis/lead",{
+    data:payload,headers:{origin:new URL(baseURL).origin}
+  });
+  expect(invalid.status()).toBe(400);
+  const crossOrigin=await request.post("/api/jarvis/lead",{
+    data:{...payload,consent:true},headers:{origin:"https://evil.example"}
+  });
+  expect(crossOrigin.status()).toBe(403);
+});
