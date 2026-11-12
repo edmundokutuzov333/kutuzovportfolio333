@@ -169,7 +169,7 @@ async function generate(contents: Content[], instruction: string): Promise<Gemin
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: instruction }] },
-          contents, generationConfig: { maxOutputTokens: 220, thinkingConfig: { thinkingLevel: "MINIMAL" } },
+          contents, generationConfig: { maxOutputTokens: 220, ...(model.startsWith("gemini-3.5") || model.startsWith("gemini-3.6") ? { thinkingConfig: { thinkingLevel: "MINIMAL" } } : {}) },
         }),
         signal: AbortSignal.timeout(12_000),
       });
