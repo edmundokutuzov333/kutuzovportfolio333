@@ -29,8 +29,10 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
             +"\\nFala em frases curtas. Em contactos invoca sempre get_contact.";
 
           const config={
-            responseModalities:["AUDIO"],
-            speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}},
+            generationConfig:{
+              responseModalities:["AUDIO"],
+              speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}},
+            },
             inputAudioTranscription:{},
             outputAudioTranscription:{},
             sessionResumption:{},
@@ -44,9 +46,8 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
           const response=await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens",{
             method:"POST",headers:{"x-goog-api-key":apiKey,"Content-Type":"application/json"},
             body:JSON.stringify({uses:1,
-              expireTime:new Date(Date.now()+36*60_000).toISOString(),
-              newSessionExpireTime:new Date(Date.now()+60_000).toISOString(),
-              liveConnectConstraints:{model,config}}),
+              expireTime:new Date(Date.now()+30*60_000).toISOString(),
+              newSessionExpireTime:new Date(Date.now()+60_000).toISOString()}),
             signal:AbortSignal.timeout(8500),cache:"no-store",
           });
           if(!response.ok){
