@@ -63,3 +63,10 @@ export async function reindexKnowledge() {
     method: "POST",body:{},timeoutMs:10000,
   });
 }
+
+/** Manually backfill up to 24 approved chunks per invocation (admin-only). */
+export async function embedKnowledgeAdmin() {
+  await requireAdmin();
+  const { embedPendingChunks } = await import("./jarvis-embed.server");
+  return embedPendingChunks(24);
+}

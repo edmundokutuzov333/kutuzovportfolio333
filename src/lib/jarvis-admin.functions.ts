@@ -32,3 +32,8 @@ export const reindexKnowledgeFn = createServerFn({ method: "POST" }).handler(asy
   const { reindexKnowledge } = await import("./server/jarvis-admin.server");
   return reindexKnowledge();
 });
+
+export const embedKnowledgeFn = createServerFn({ method: "POST" }).handler(async () => {
+  const { embedKnowledgeAdmin } = await import("./server/jarvis-admin.server");
+  return embedKnowledgeAdmin();
+});

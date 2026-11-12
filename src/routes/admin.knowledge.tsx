@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { getAdminSessionFn } from "@/lib/admin-auth.functions";
 import {
-  loadKnowledgeFn, saveKnowledgeFn, rollbackKnowledgeFn, reindexKnowledgeFn,
+  loadKnowledgeFn, saveKnowledgeFn, rollbackKnowledgeFn, reindexKnowledgeFn, embedKnowledgeFn,
 } from "@/lib/jarvis-admin.functions";
 
 export const Route = createFileRoute("/admin/knowledge")({ component: KnowledgePage });
@@ -15,6 +15,7 @@ function KnowledgePage() {
   const save = useServerFn(saveKnowledgeFn);
   const rollback = useServerFn(rollbackKnowledgeFn);
   const reindex = useServerFn(reindexKnowledgeFn);
+  const embed = useServerFn(embedKnowledgeFn);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [selected, setSelected] = useState<Fact | null>(null);
@@ -55,6 +56,10 @@ function KnowledgePage() {
       <div className="mx-auto max-w-7xl pt-7">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm text-blue-200">Versão {workspace?.version ?? "—"} · {workspace?.facts.length ?? 0} factos · {workspace?.documents ?? 0} documentos</p>
+          <button type="button" disabled={busy} onClick={() => void execute(async () => { const result=await embed(); setError("Embeddings gerados: "+result.processed+". Restantes: "+result.remaining); })}
+            className="rounded-full border border-blue-300/50 px-5 py-3 text-sm hover:bg-blue-500/15 disabled:opacity-50">
+            Gerar embeddings (24)
+          </button>
           <button type="button" disabled={busy} onClick={() => void execute(async () => { await reindex(); })}
             className="rounded-full border border-blue-300/50 px-5 py-3 text-sm hover:bg-blue-500/15 disabled:opacity-50">
             Reindexar trabalhos publicados

@@ -100,12 +100,12 @@ async function embeddingFor(text: string): Promise<number[] | null> {
   if (queryEmbeddingCache.has(key)) return queryEmbeddingCache.get(key) ?? null;
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) return null;
-  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent", {
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent", {
     method: "POST", headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "models/gemini-embedding-001",
-      content: { parts: [{ text: key }] },
-      taskType: "RETRIEVAL_QUERY", outputDimensionality: 768,
+      model: "models/gemini-embedding-2",
+      content: { parts: [{ text: "task: question answering | query: " + key }] },
+      outputDimensionality: 768,
     }),
     signal: AbortSignal.timeout(5000),
   });
