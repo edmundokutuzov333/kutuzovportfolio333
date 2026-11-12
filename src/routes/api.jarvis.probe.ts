@@ -7,6 +7,18 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     if(!process.env["JARVIS_TEST_TOKEN"]||
       url.searchParams.get("token")!==process.env["JARVIS_TEST_TOKEN"])
       return new Response(null,{status:404,headers:{"Cache-Control":"no-store"}});
+    // A single explicit, authenticated backfill call, never invoked by public traffic.
+    if(url.searchParams.get("action")==="embed"){
+      try{
+        const {embedPendingChunks}=await import("@/lib/server/jarvis-embed.server");
+        const result=await embedPendingChunks(24);
+        return Response.json({status:"ok",...result},{headers:{"Cache-Control":"no-store, private"}});
+      }catch(error){
+        return Response.json({status:"error",message:error instanceof Error?
+          error.message.slice(0,180):"unknown"},{status:503,
+          headers:{"Cache-Control":"no-store, private"}});
+      }
+    }
     const key=process.env["GEMINI_API_KEY"];
     if(!key)return Response.json({ok:false,error:"gemini_not_configured"},{status:503});
     const result:Record<string,unknown>={provider:"Gemini",model:"gemini-3.8-live"};
@@ -118,9 +130,10 @@ export const Route=createFileRoute("/api/jarvis/probe")({
       result["websocketSupported"]=true;
       try{
         const audio=await new Promise<{setup:boolean;firstAudioMs:number|null;bytes:number;code?:number;reason?:string}>((resolve)=>{
-          let settled=false,setup=false,firstAudioMs:number|null=null,bytes=0;
+          let settled=false,setup=false,opened=false,firstAudioMs:number|null=null,bytes=0;
           const deadline=setTimeout(()=>finish(),12000);
           const finish=(code?:number,reason?:string)=>{
+            result["socketOpened"]=opened;
             if(settled)return;settled=true;clearTimeout(deadline);
             try{socket.close();}catch{/* already closed */}
             resolve({setup,firstAudioMs,bytes,...(code===undefined?{}:{code}),...(reason?{reason:reason.slice(0,280)}:{})});
@@ -128,6 +141,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
           const apiVersion=url.searchParams.get("socketVersion")==="v1alpha"?"v1alpha":"v1beta";
           const socket=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage."+apiVersion+".GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
           socket.addEventListener("open",()=>{
+            opened=true;
             const mode=url.searchParams.get("mode")||"minimal";
             const voice={speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}}};
             const speech={systemInstruction:{parts:[{text:"Responde em português europeu com voz masculina."}]}};
