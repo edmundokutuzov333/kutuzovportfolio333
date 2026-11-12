@@ -7,6 +7,23 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     if(!process.env["JARVIS_TEST_TOKEN"]||
       url.searchParams.get("token")!==process.env["JARVIS_TEST_TOKEN"])
       return new Response(null,{status:404,headers:{"Cache-Control":"no-store"}});
+    if(url.searchParams.get("action")==="tts"){
+      const started=Date.now();
+      try{
+        const reply=await fetch("https://edmundokutuzov.art/api/jarvis/tts",{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({text:"Olá. Sou o JARVIS do Kutuzov."}),
+          signal:AbortSignal.timeout(18000),
+        });
+        const bytes=new Uint8Array(await reply.arrayBuffer());
+        return Response.json({http:reply.status,ms:Date.now()-started,
+          bytes:bytes.length,validWav:bytes.length>44&&
+            String.fromCharCode(...bytes.slice(0,4))==="RIFF"},{headers:{"Cache-Control":"no-store, private"}});
+      }catch(error){
+        return Response.json({error:error instanceof Error?error.name:"unknown",ms:Date.now()-started},
+          {status:503,headers:{"Cache-Control":"no-store, private"}});
+      }
+    }
     if(url.searchParams.get("action")==="smoke"){
       const results=[];
       for(const [locale,query] of [
@@ -16,7 +33,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
       ]){
         const begin=Date.now();
         try{
-          const rsp=await fetch(new URL("/api/jarvis/stream",request.url),{
+          const rsp=await fetch("https://edmundokutuzov.art/api/jarvis/stream",{
             method:"POST",headers:{"Content-Type":"application/json"},
             body:JSON.stringify({messages:[{role:"user",content:query}]}),
             signal:AbortSignal.timeout(13000),cache:"no-store",

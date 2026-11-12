@@ -16,11 +16,20 @@ export async function embedPendingChunks(limit=24):Promise<{processed:number;rem
       +" | text: "+chunk.content.slice(0,1400)}]},
     outputDimensionality:768,
   }));
-  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":batchEmbedContents",{
-    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},
-    body:JSON.stringify({requests}),signal:AbortSignal.timeout(16000),cache:"no-store",
-  });
-  if(!response.ok)throw Error("Gemini embeddings HTTP "+response.status);
+  let response:Response|null=null;
+  for(let attempt=0;attempt<2;attempt++){
+    response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":batchEmbedContents",{
+      method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},
+      body:JSON.stringify({requests}),signal:AbortSignal.timeout(16000),cache:"no-store",
+    });
+    if(response.status!==429)break;
+    // Respect provider quota. One bounded retry, never hammer its API.
+    if(attempt===0){
+      const retry=Number(response.headers.get("Retry-After")||"2");
+      await new Promise(resolve=>setTimeout(resolve,Math.min(5000,Math.max(2000,retry*1000))));
+    }
+  }
+  if(!response?.ok)throw Error("Gemini embeddings HTTP "+(response?.status??"unavailable"));
   const body=await response.json() as BatchResponse;
   if(!body.embeddings||body.embeddings.length!==chunks.length)throw Error("Embedding count mismatch");
   const rows=chunks.map((chunk,index)=>{
