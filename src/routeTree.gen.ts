@@ -23,6 +23,7 @@ import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkSlugRouteImport } from './routes/work.$slug'
 import { Route as ApiJarvisHealthRouteImport } from './routes/api.jarvis.health'
 import { Route as ApiJarvisLiveTokenRouteImport } from './routes/api.jarvis.live-token'
+import { Route as ApiJarvisStreamRouteImport } from './routes/api.jarvis.stream'
 import { Route as ApiJarvisSyncRouteImport } from './routes/api.jarvis.sync'
 
 const IndexRoute = IndexRouteImport.update({
@@ -95,6 +96,11 @@ const ApiJarvisLiveTokenRoute = ApiJarvisLiveTokenRouteImport.update({
   path: '/api/jarvis/live-token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiJarvisStreamRoute = ApiJarvisStreamRouteImport.update({
+  id: '/api/jarvis/stream',
+  path: '/api/jarvis/stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiJarvisSyncRoute = ApiJarvisSyncRouteImport.update({
   id: '/api/jarvis/sync',
   path: '/api/jarvis/sync',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/work/': typeof WorkIndexRoute
   '/api/jarvis/health': typeof ApiJarvisHealthRoute
   '/api/jarvis/live-token': typeof ApiJarvisLiveTokenRoute
+  '/api/jarvis/stream': typeof ApiJarvisStreamRoute
   '/api/jarvis/sync': typeof ApiJarvisSyncRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/work': typeof WorkIndexRoute
   '/api/jarvis/health': typeof ApiJarvisHealthRoute
   '/api/jarvis/live-token': typeof ApiJarvisLiveTokenRoute
+  '/api/jarvis/stream': typeof ApiJarvisStreamRoute
   '/api/jarvis/sync': typeof ApiJarvisSyncRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/work/': typeof WorkIndexRoute
   '/api/jarvis/health': typeof ApiJarvisHealthRoute
   '/api/jarvis/live-token': typeof ApiJarvisLiveTokenRoute
+  '/api/jarvis/stream': typeof ApiJarvisStreamRoute
   '/api/jarvis/sync': typeof ApiJarvisSyncRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/work/'
     | '/api/jarvis/health'
     | '/api/jarvis/live-token'
+    | '/api/jarvis/stream'
     | '/api/jarvis/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/work'
     | '/api/jarvis/health'
     | '/api/jarvis/live-token'
+    | '/api/jarvis/stream'
     | '/api/jarvis/sync'
   id:
     | '__root__'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/work/'
     | '/api/jarvis/health'
     | '/api/jarvis/live-token'
+    | '/api/jarvis/stream'
     | '/api/jarvis/sync'
   fileRoutesById: FileRoutesById
 }
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   WorkIndexRoute: typeof WorkIndexRoute
   ApiJarvisHealthRoute: typeof ApiJarvisHealthRoute
   ApiJarvisLiveTokenRoute: typeof ApiJarvisLiveTokenRoute
+  ApiJarvisStreamRoute: typeof ApiJarvisStreamRoute
   ApiJarvisSyncRoute: typeof ApiJarvisSyncRoute
 }
 
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiJarvisLiveTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/jarvis/stream': {
+      id: '/api/jarvis/stream'
+      path: '/api/jarvis/stream'
+      fullPath: '/api/jarvis/stream'
+      preLoaderRoute: typeof ApiJarvisStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/jarvis/sync': {
       id: '/api/jarvis/sync'
       path: '/api/jarvis/sync'
@@ -358,6 +378,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkIndexRoute: WorkIndexRoute,
   ApiJarvisHealthRoute: ApiJarvisHealthRoute,
   ApiJarvisLiveTokenRoute: ApiJarvisLiveTokenRoute,
+  ApiJarvisStreamRoute: ApiJarvisStreamRoute,
   ApiJarvisSyncRoute: ApiJarvisSyncRoute,
 }
 export const routeTree = rootRouteImport
