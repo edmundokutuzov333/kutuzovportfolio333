@@ -6,7 +6,9 @@ export async function embedPendingChunks(limit=24):Promise<{processed:number;rem
   const key=process.env["GEMINI_API_KEY"];
   if(!key)throw Error("Gemini embedding key unavailable");
   const count=Math.max(1,Math.min(40,Math.floor(limit)));
-  const chunks=await db<PendingChunk[]>("kb_chunks?select=id,content,metadata&embedding=is.null&limit="+count);
+  const approvedQuery="kb_chunks?select=id,content,metadata,kb_documents!inner(status,visibility)"
+    +"&kb_documents.status=eq.verified&kb_documents.visibility=eq.public&embedding=is.null";
+  const chunks=await db<PendingChunk[]>(approvedQuery+"&limit="+count);
   if(!chunks.length)return {processed:0,remaining:0};
   const requests=chunks.map(chunk=>({
     model:"models/"+MODEL,
@@ -31,6 +33,6 @@ export async function embedPendingChunks(limit=24):Promise<{processed:number;rem
   const processed=await db<number>("rpc/kb_store_embeddings",{
     method:"POST",body:{p_rows:rows},timeoutMs:8000,
   });
-  const remainingRows=await db<Array<{id:string}>>("kb_chunks?select=id&embedding=is.null&limit=1",{timeoutMs:1600});
+  const remainingRows=await db<Array<{id:string}>>(approvedQuery.replace("id,content,metadata","id")+"&limit=1",{timeoutMs:1600});
   return {processed,remaining:remainingRows.length};
 }
