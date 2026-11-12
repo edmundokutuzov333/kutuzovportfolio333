@@ -7,6 +7,33 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     if(!process.env["JARVIS_TEST_TOKEN"]||
       url.searchParams.get("token")!==process.env["JARVIS_TEST_TOKEN"])
       return new Response(null,{status:404,headers:{"Cache-Control":"no-store"}});
+    if(url.searchParams.get("action")==="smoke"){
+      const results=[];
+      for(const [locale,query] of [
+        ["pt","Qual é o email oficial do Edmundo?"],
+        ["en","What is Edmundo's official email?"],
+        ["pt","Fala-me de um projecto da Toyota."]
+      ]){
+        const begin=Date.now();
+        try{
+          const rsp=await fetch(new URL("/api/jarvis/stream",request.url),{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({messages:[{role:"user",content:query}]}),
+            signal:AbortSignal.timeout(13000),cache:"no-store",
+          });
+          const text=await rsp.text();
+          const fragments=[...text.matchAll(/event: chunk\ndata: (.+)/g)]
+            .map(match=>{try{return (JSON.parse(match[1]||"") as {text:string}).text;}catch{return "";}});
+          const timings=[...text.matchAll(/event: timing\ndata: (.+)/g)]
+            .map(match=>{try{return JSON.parse(match[1]||"");}catch{return null;}});
+          results.push({locale,http:rsp.status,totalMs:Date.now()-begin,
+            chars:fragments.join("").length,hasVerifiedEmail:fragments.join("").includes("contact@edmundokutuzov.art"),
+            safe:!fragments.join("").includes("edmundokutuzov.mz@gmail.com"),
+            timing:timings.at(-1)??null});
+        }catch(e){results.push({locale,totalMs:Date.now()-begin,error:e instanceof Error?e.name:"unknown"});}
+      }
+      return Response.json({results},{headers:{"Cache-Control":"no-store, private"}});
+    }
     // A single explicit, authenticated backfill call, never invoked by public traffic.
     if(url.searchParams.get("action")==="embed"){
       try{
