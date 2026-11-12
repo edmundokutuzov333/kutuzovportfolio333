@@ -338,6 +338,9 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const recRef = useRef<SpeechRec | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const liveRef = useRef<{stop:()=>void} | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsUrlRef = useRef<string | null>(null);
+  const ttsAbortRef = useRef<AbortController | null>(null);
   const voiceSession = useRef(0);
   const microphone = useRef<MediaStream | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
@@ -414,6 +417,12 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       try { if (recorder.state !== "inactive") recorder.stop(); } catch { /* Already stopped. */ }
     }
     stopMeter();
+    ttsAbortRef.current?.abort();
+    ttsAbortRef.current=null;
+    ttsAudioRef.current?.pause();
+    ttsAudioRef.current=null;
+    if(ttsUrlRef.current)URL.revokeObjectURL(ttsUrlRef.current);
+    ttsUrlRef.current=null;
     window.speechSynthesis?.cancel();
     setVoice("idle");
     setVoiceMessage(null);
@@ -490,48 +499,75 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     liveRef.current = null;
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     stopMeter();
+    ttsAbortRef.current?.abort();
+    ttsAudioRef.current?.pause();
+    if(ttsUrlRef.current)URL.revokeObjectURL(ttsUrlRef.current);
     window.speechSynthesis?.cancel();
   }, [stopMeter]);
 
   const speak = async (text: string, session: number) => {
-    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
-      setVoice("unavailable");
-      setVoiceMessage("Este navegador não permite reproduzir voz.");
-      return;
-    }
-    const synthesis = window.speechSynthesis;
-    let voices = synthesis.getVoices();
-    // Some browsers populate the speech catalogue shortly after hydration.
-    if (!voices.length) {
-      await new Promise<void>((resolve) => {
-        const finish = () => { synthesis.removeEventListener?.("voiceschanged", finish); resolve(); };
-        synthesis.addEventListener?.("voiceschanged", finish, { once: true });
-        window.setTimeout(finish, 600);
+    const speech=window.speechSynthesis;
+    let voices=speech?.getVoices()??[];
+    if(speech && !voices.length){
+      await new Promise<void>(resolve=>{
+        const done=()=>{speech.removeEventListener?.("voiceschanged",done);resolve();};
+        speech.addEventListener?.("voiceschanged",done,{once:true});
+        window.setTimeout(done,450);
       });
-      voices = synthesis.getVoices();
+      voices=speech.getVoices();
     }
-    if (voiceSession.current !== session) return;
-    const selected = choosePortugueseMaleVoice(voices);
-    if (!selected) {
-      setVoice("unavailable");
-      setVoiceMessage(describeVoiceFallback(voices));
+    if(voiceSession.current!==session)return;
+    const selected=choosePortugueseMaleVoice(voices);
+    if(selected && speech && typeof SpeechSynthesisUtterance!=="undefined"){
+      const utterance=new SpeechSynthesisUtterance(spokenJarvisText(text));
+      utterance.voice=selected;
+      utterance.lang=selected.lang;
+      utterance.rate=1.02;
+      utterance.pitch=.91;
+      utterance.onend=()=>{if(voiceSession.current===session)setVoice("idle");};
+      utterance.onerror=()=>{if(voiceSession.current===session){
+        setVoice("unavailable");setVoiceMessage("Não foi possível reproduzir a resposta em voz.");
+      }};
+      speech.cancel();
+      setVoice("speaking");speech.speak(utterance);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text));
-    utterance.voice = selected;
-    utterance.lang = selected.lang;
-    utterance.rate = 1.02;
-    utterance.pitch = 0.91;
-    utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
-    utterance.onerror = () => {
-      if (voiceSession.current === session) {
+    // Male PT/MZ speech unavailable locally: use the verified Google Orus
+    // audio endpoint. Preserve text-only graceful fallback on unsupported devices.
+    const controller=new AbortController();
+    ttsAbortRef.current=controller;
+    setVoice("processing");
+    try{
+      const response=await fetch("/api/jarvis/tts",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({text:text.slice(0,650)}),signal:controller.signal,
+      });
+      if(!response.ok)throw Error("tts_unavailable");
+      const audioBlob=await response.blob();
+      if(voiceSession.current!==session||controller.signal.aborted)return;
+      if(audioBlob.type!=="audio/wav"||audioBlob.size<44)throw Error("invalid_tts_audio");
+      const objectUrl=URL.createObjectURL(audioBlob);
+      ttsUrlRef.current=objectUrl;
+      const audio=new Audio(objectUrl);
+      ttsAudioRef.current=audio;
+      audio.onended=()=>{
+        if(ttsUrlRef.current===objectUrl){URL.revokeObjectURL(objectUrl);ttsUrlRef.current=null;}
+        if(voiceSession.current===session){setVoice("idle");ttsAudioRef.current=null;}
+      };
+      audio.onerror=()=>{
+        if(voiceSession.current===session){setVoice("unavailable");
+          setVoiceMessage("Não foi possível reproduzir o áudio. Pode continuar por escrito.");}
+      };
+      await audio.play();
+      if(voiceSession.current===session)setVoice("speaking");
+    }catch{
+      if(voiceSession.current===session && !controller.signal.aborted){
         setVoice("unavailable");
-        setVoiceMessage("Não foi possível reproduzir a resposta em voz neste dispositivo.");
+        setVoiceMessage(describeVoiceFallback(voices)??"Não foi possível obter voz masculina neste momento. A resposta está na conversa escrita.");
       }
-    };
-    synthesis.cancel();
-    setVoice("speaking");
-    synthesis.speak(utterance);
+    }finally {
+      if(ttsAbortRef.current===controller)ttsAbortRef.current=null;
+    }
   };
 
   const handleSpeech = async (text: string, session: number) => {
