@@ -129,7 +129,7 @@ async function searchKnowledge(query: string): Promise<{ chunks: SearchResult[];
   });
   const searchMs = Date.now() - start;
   // Strong lexical matches avoid the network round trip to the embedding model.
-  if (lexical.length >= 2 || lexical[0]?.score >= 0.0162)
+  if (lexical.length >= 2 || (lexical[0]?.score ?? 0) >= 0.0162)
     return { chunks: lexical, embedMs: 0, searchMs };
   const embedStart = Date.now();
   const embedding = await embeddingFor(query).catch(() => null);
