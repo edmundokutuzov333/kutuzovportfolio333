@@ -699,7 +699,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
           ) : !hasMessages ? (
             <div className="jv-chat-welcome">
               <p className="jv-chat-available"><span /> DISPONÍVEL</p>
-              <h3>Olá. Sou o Kutuzov.</h3>
+              <h3>Olá. Sou o JARVIS.</h3>
               <p className="jv-chat-intro">Sou a versão IA do Edmundo. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
               <div className="jv-suggestions">
                 {SUGGESTIONS.map((suggestion) => (
