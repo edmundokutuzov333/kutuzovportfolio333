@@ -74,10 +74,9 @@ async function findRelevant(query:string,locale:JarvisLocale):Promise<string> {
   if(process.env["KB_ENABLED"]!=="true" || !/(?:project|portfolio|campaign|work|case|marca|cliente|projecto|trabalho|campanha|design)/i.test(query))
     return "";
   try {
-    const found=await db<Array<{content:string}>>("rpc/kb_hybrid_search", {
-      method:"POST",body:{q_text:query.slice(0,160),q_emb:null,q_locale:locale,k:4},timeoutMs:1800,
-    });
-    return found.map(x=>x.content.slice(0,410)).join("\n").slice(0,1450);
+    const {searchKnowledge}=await import("./jarvis-kb.server");
+    const result=await searchKnowledge(query,locale);
+    return result.chunks.slice(0,4).map(x=>x.content.slice(0,410)).join("\n").slice(0,1450);
   }catch {return "";}
 }
 function bodyFor(model:string,instruction:string,messages:Message[]) {

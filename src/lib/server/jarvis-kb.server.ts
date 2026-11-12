@@ -96,37 +96,50 @@ async function logQuery(data: {
   } catch { /* telemetry must never block the assistant */ }
 }
 
+let embeddingCooldownUntil = 0;
+/** Optional semantic fallback, intentionally bounded: never delay a strong lexical hit. */
 async function embeddingFor(text: string): Promise<number[] | null> {
+  if (Date.now() < embeddingCooldownUntil) return null;
   const key = text.toLowerCase().trim().slice(0, 200);
   if (queryEmbeddingCache.has(key)) return queryEmbeddingCache.get(key) ?? null;
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) return null;
-  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent", {
-    method: "POST", headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "models/gemini-embedding-2",
-      content: { parts: [{ text: "task: question answering | query: " + key }] },
-      outputDimensionality: 768,
-    }),
-    signal: AbortSignal.timeout(5000),
-  });
-  if (!res.ok) return null;
-  const result = await res.json() as { embedding?: { values?: number[] } };
-  const values = result.embedding?.values;
-  if (!values || values.length !== 768) return null;
-  const norm = Math.hypot(...values);
-  const normalized = norm ? values.map(v => v / norm) : values;
-  queryEmbeddingCache.set(key, normalized);
-  if (queryEmbeddingCache.size > 100) queryEmbeddingCache.delete(queryEmbeddingCache.keys().next().value ?? key);
-  return normalized;
+  try {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent", {
+      method: "POST", headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "models/gemini-embedding-2",
+        content: { parts: [{ text: "task: question answering | query: " + key }] },
+        outputDimensionality: 768,
+      }),
+      signal: AbortSignal.timeout(1800),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      if (res.status===429 || res.status===503) embeddingCooldownUntil=Date.now()+60_000;
+      return null;
+    }
+    const result=await res.json() as {embedding?:{values?:number[]}};
+    const values=result.embedding?.values;
+    if (!values || values.length!==768 || values.some(v=>!Number.isFinite(v))) return null;
+    const norm=Math.hypot(...values);
+    if (!norm) return null;
+    const normalized=values.map(v=>v/norm);
+    queryEmbeddingCache.set(key,normalized);
+    if (queryEmbeddingCache.size>100) queryEmbeddingCache.delete(queryEmbeddingCache.keys().next().value??key);
+    return normalized;
+  }catch {
+    embeddingCooldownUntil=Date.now()+10_000;
+    return null;
+  }
 }
 
 type SearchResult = { id: string; content: string; metadata: Record<string, unknown>; score: number };
-async function searchKnowledge(query: string): Promise<{ chunks: SearchResult[]; embedMs: number; searchMs: number }> {
+export async function searchKnowledge(query: string, locale: JarvisLocale = shortLocale(query)): Promise<{ chunks: SearchResult[]; embedMs: number; searchMs: number }> {
   if (process.env["KB_ENABLED"] !== "true") return { chunks: [], embedMs: 0, searchMs: 0 };
   const start = Date.now();
   const lexical = await db<SearchResult[]>("rpc/kb_hybrid_search", {
-    method: "POST", body: { q_text: query.slice(0, 200), q_emb: null, q_locale: shortLocale(query), k: 5 },
+    method: "POST", body: { q_text: query.slice(0, 200), q_emb: null, q_locale: locale, k: 5 },
     timeoutMs: 2500,
   });
   const searchMs = Date.now() - start;
@@ -149,7 +162,7 @@ async function searchKnowledge(query: string): Promise<{ chunks: SearchResult[];
   const combined = await db<SearchResult[]>("rpc/kb_hybrid_search", {
     method: "POST",
     body: { q_text: query.slice(0, 200), q_emb: "[" + embedding.join(",") + "]",
-      q_locale: shortLocale(query), k: 5 }, timeoutMs: 2500,
+      q_locale: locale, k: 5 }, timeoutMs: 2500,
   });
   return { chunks: combined, embedMs, searchMs: searchMs + Date.now() - embedStart - embedMs };
 }
