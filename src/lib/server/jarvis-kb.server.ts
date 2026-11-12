@@ -66,15 +66,11 @@ export async function acquireQuota(): Promise<boolean> {
     (process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "jarvis") + "|" + origin.slice(0, 100),
   ));
   const hash = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, "0")).join("");
-  const rate = await db<boolean>("rpc/kb_acquire_rate_slot", {
-    method: "POST", body: { p_bucket: "ip:" + hash, p_max: 20, p_window_seconds: 60 },
+  return db<boolean>("rpc/kb_acquire_quotas", {
+    method: "POST", timeoutMs: 2500, body: {
+      p_bucket: hash, p_daily: Math.max(1, Math.min(1000, Number(process.env["JARVIS_DAILY_REQUEST_LIMIT"] || "300"))),
+    },
   });
-  if (!rate) return false;
-  const daily = await db<boolean>("rpc/kb_acquire_rate_slot", {
-    method: "POST", body: { p_bucket: "daily:global:" + new Date().toISOString().slice(0, 10),
-      p_max: Number(process.env["JARVIS_DAILY_REQUEST_LIMIT"] || "300"), p_window_seconds: 86400 },
-  });
-  return daily;
 }
 
 function shortLocale(text: string): JarvisLocale {
