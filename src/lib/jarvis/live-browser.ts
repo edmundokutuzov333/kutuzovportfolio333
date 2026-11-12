@@ -169,12 +169,17 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
       if(!established){settle(false);try{socket.close();}catch{/* ignore */}}
     },7000);
     const socket=new WebSocket(LIVE_SOCKET+encodeURIComponent(token.token));
+    socket.binaryType="arraybuffer";
     ws=socket;ready=false;
     socket.onopen=()=>{socket.send(JSON.stringify(setup(resume)));};
     socket.onmessage=event=>{
       if(closed)return;
       let message:LiveEvent;
-      try{message=JSON.parse(String(event.data)) as LiveEvent;}catch{return;}
+      try{
+        const raw=typeof event.data==="string"?event.data
+          :event.data instanceof ArrayBuffer?new TextDecoder().decode(event.data):"";
+        message=JSON.parse(raw) as LiveEvent;
+      }catch{return;}
       if(message.setupComplete){
         established=true;retries=0;ready=true;
         window.clearTimeout(timeout);settle(true);

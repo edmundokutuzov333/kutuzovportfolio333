@@ -167,6 +167,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
           };
           const apiVersion=url.searchParams.get("socketVersion")==="v1alpha"?"v1alpha":"v1beta";
           const socket=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage."+apiVersion+".GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
+          socket.binaryType="arraybuffer";
           socket.addEventListener("open",()=>{
             opened=true;
             const mode=url.searchParams.get("mode")||"minimal";
@@ -180,7 +181,9 @@ export const Route=createFileRoute("/api/jarvis/probe")({
           });
           socket.addEventListener("message",(event)=>{
             try{
-              const data=JSON.parse(String(event.data)) as {
+              const raw=typeof event.data==="string"?event.data:
+                event.data instanceof ArrayBuffer?new TextDecoder().decode(event.data):"";
+              const data=JSON.parse(raw) as {
                 setupComplete?:Record<string,unknown>,
                 serverContent?:{modelTurn?:{parts?:Array<{inlineData?:{data?:string}}>}}
               };
