@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, MessageSquare, Plus, Send, X } from "lucide-r
 import { EKMark } from "./EKMark";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
+import { spokenJarvisText } from "@/lib/jarvis/speech";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
@@ -422,7 +423,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       setVoice("idle");
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text));
     utterance.lang = "pt-PT";
     utterance.rate = 1.04;
     utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };

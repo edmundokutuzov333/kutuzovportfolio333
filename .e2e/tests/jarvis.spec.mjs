@@ -166,3 +166,17 @@ test("mobile project gallery starts at the heading and scrolls both directions",
 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
 });
+
+
+test("JARVIS private maintenance endpoints reject unauthenticated visitors", async ({ request }) => {
+  const sync = await request.get("/api/jarvis/sync");
+  expect(sync.status()).toBe(401);
+
+  const health = await request.get("/api/jarvis/health");
+  expect([200, 503]).toContain(health.status());
+  expect(health.headers()["cache-control"]).toContain("no-store");
+  const publicHealth = await health.json();
+  expect(["ready", "unavailable"]).toContain(publicHealth.status);
+  expect(JSON.stringify(publicHealth)).not.toContain("GEMINI_API_KEY");
+  expect(JSON.stringify(publicHealth)).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+});
