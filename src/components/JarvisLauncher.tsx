@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, MessageSquare, Plus, Send, X } from "lucide-react";
 import { EKMark } from "./EKMark";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
@@ -636,10 +636,26 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
   const hasMessages = convo.messages.length > 0;
 
   useEffect(() => { textarea.current?.focus(); }, []);
+
+  // Switching to projects must always start at the first artwork, never at the
+  // bottom of the old conversation. Focus makes native keyboard scrolling work.
+  useLayoutEffect(() => {
+    const scrollArea = content.current;
+    if (!scrollArea) return;
+    if (showWorks) {
+      scrollArea.scrollTop = 0;
+      scrollArea.focus({ preventScroll: true });
+    } else if (!hasMessages) {
+      scrollArea.scrollTop = 0;
+    }
+  }, [showWorks, hasMessages]);
+
+  // Only the transcript auto-follows new messages. Never move the gallery.
   useEffect(() => {
-    if (!content.current) return;
-    content.current.scrollTop = content.current.scrollHeight;
-  }, [convo.messages.length, convo.pending, showWorks]);
+    const scrollArea = content.current;
+    if (showWorks || !hasMessages || !scrollArea) return;
+    scrollArea.scrollTop = scrollArea.scrollHeight;
+  }, [convo.messages.length, convo.pending, showWorks, hasMessages]);
 
   const resize = () => {
     const element = textarea.current;
@@ -669,7 +685,14 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
           </div>
         </header>
 
-        <div ref={content} className={"jv-chat-content" + (showWorks ? " jv-chat-content--gallery" : "")}>
+        <div
+          ref={content}
+          className={"jv-chat-content" + (showWorks ? " jv-chat-content--gallery" : "")}
+          tabIndex={showWorks ? 0 : undefined}
+          role={showWorks ? "region" : undefined}
+          aria-label={showWorks ? "Galeria de projectos" : undefined}
+          data-lenis-prevent={showWorks ? "" : undefined}
+        >
           {showWorks ? (
             <WorksPanel onPick={onCloseAll} />
           ) : !hasMessages ? (

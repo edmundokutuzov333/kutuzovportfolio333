@@ -490,10 +490,39 @@ html.jarvis-active .grain > .pointer-events-none.fixed.left-0.top-0 { visibility
 .jv-chat-typing i:nth-child(2) { animation-delay: .2s; }
 .jv-chat-typing i:nth-child(3) { animation-delay: .4s; }
 .jv-chat-error { color: #ffb8b8; font-size: 13px; line-height: 1.55; margin: 20px 0 0; }
-.jv-chat-content--gallery { padding-top: 25px !important; }
-
+.jv-root .jv-chat-content--gallery {
+  /* One real scrollport shared by wheel, trackpad, keyboard and touch. */
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+  padding-top: 0 !important;
+}
+.jv-root .jv-chat-content--gallery:focus-visible {
+  outline: 1px solid rgba(136, 194, 255, .4);
+  outline-offset: -2px;
+}
 .jv-works { width: 100%; padding-bottom: 18px; }
-.jv-works__top { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 17px; color: #9bb4d8; font: 11px var(--font-mono),monospace; letter-spacing: .24em; border-bottom: 1px solid rgba(107,158,228,.22); }
+.jv-works__top {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 69px;
+  gap: 20px;
+  padding: 20px 0 15px;
+  color: #9bb4d8;
+  font: 11px var(--font-mono), monospace;
+  letter-spacing: .24em;
+  border-bottom: 1px solid rgba(107,158,228,.22);
+  background: linear-gradient(180deg, #091731 75%, rgba(9,23,49,.94));
+  box-shadow: 0 8px 14px rgba(3, 12, 32, .18);
+}
 .jv-works__top span:last-child { color: #6da7ff; letter-spacing: .1em; }
 .jv-works__grid { display: block; columns: 3; column-gap: 17px; margin: 26px 0 0; padding: 0; list-style: none; }
 .jv-works__grid > li { display: inline-block; width: 100%; margin: 0 0 20px; vertical-align: top; break-inside: avoid; }
@@ -548,6 +577,7 @@ html.jarvis-active .grain > .pointer-events-none.fixed.left-0.top-0 { visibility
   .jv-root .jv-chat-close { width: 40px; height: 40px; }
   .jv-root .jv-chat-reset { width: 34px; height: 34px; }
   .jv-root .jv-chat-content { padding-top: 41px; }
+  .jv-root .jv-chat-content--gallery { padding-top: 0 !important; scrollbar-gutter: auto; }
   .jv-root .jv-chat-available { margin-bottom: 18px; font-size: 11px; }
   .jv-root .jv-chat-welcome h3 { font-size: clamp(32px, 8vw, 45px); }
   .jv-root .jv-chat-intro { font-size: 15px; }
