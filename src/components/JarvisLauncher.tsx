@@ -324,6 +324,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const transcribe = useServerFn(transcribeJarvisAudio);
   const recRef = useRef<SpeechRec | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const liveRef = useRef<{stop:()=>void} | null>(null);
   const voiceSession = useRef(0);
   const microphone = useRef<MediaStream | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
@@ -391,6 +392,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       rec.onend = null;
       try { rec.abort(); } catch { /* Recognition may already have ended. */ }
     }
+    liveRef.current?.stop();
+    liveRef.current = null;
     const recorder = recorderRef.current;
     recorderRef.current = null;
     if (recorder) {
@@ -470,6 +473,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   useEffect(() => () => {
     voiceSession.current += 1;
     recRef.current?.abort();
+    liveRef.current?.stop();
+    liveRef.current = null;
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     stopMeter();
     window.speechSynthesis?.cancel();
@@ -511,6 +516,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
 
   const startVoice = async () => {
     if (voice === "listening") {
+      if (liveRef.current) { stopVoice(); return; }
       const recorder = recorderRef.current;
       if (recorder && recorder.state === "recording") {
         recorder.stop();
@@ -541,6 +547,27 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       }
       microphone.current = stream;
       startMeter(stream);
+
+      // Native Gemini Live is an opt-in transport. A 404 or provider issue falls
+      // through to the proven browser speech / transcription path without losing
+      // the microphone or disturbing the visual design.
+      const live = await import("@/lib/jarvis/live-browser")
+        .then(({ connectJarvisLive }) => connectJarvisLive(stream, {
+          onMic: () => {},
+          onState: (next) => { if (voiceSession.current === session) setVoice(next); },
+          onError: (message) => {
+            if (voiceSession.current !== session) return;
+            liveRef.current?.stop();
+            liveRef.current = null;
+            stopMeter();
+            setVoice("unavailable");
+            setVoiceMessage(message);
+          },
+        })).catch(() => null);
+      if (voiceSession.current !== session) {
+        live?.stop(); stream.getTracks().forEach(track => track.stop()); return;
+      }
+      if (live) { liveRef.current = live; return; }
 
       const recognition = getRecognition();
       if (recognition) {
