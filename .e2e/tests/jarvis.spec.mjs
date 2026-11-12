@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("JARVIS keeps the reference voice stage and native pointer navigation", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1448, height: 1086 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
@@ -33,6 +34,7 @@ test("JARVIS keeps the reference voice stage and native pointer navigation", asy
 
 test("JARVIS presents published project links and live artwork instead of the old four static covers", async ({ page }) => {
   test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1448, height: 1086 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
@@ -57,6 +59,7 @@ test("JARVIS presents published project links and live artwork instead of the ol
 });
 
 test("mobile JARVIS chat does not scroll sideways and keeps a usable composer", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
