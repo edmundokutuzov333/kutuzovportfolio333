@@ -792,9 +792,30 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
 }) {
   const [draft, setDraft] = useState("");
   const [showWorks, setShowWorks] = useState(false);
+  const [lead, setLead] = useState({name:"",contact:"",brief:"",deadline:"",budget:"",consent:false});
+  const [leadSending,setLeadSending] = useState(false);
+  const [leadReference,setLeadReference] = useState<string|null>(null);
+  const [leadError,setLeadError] = useState("");
+
   const textarea = useRef<HTMLTextAreaElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const hasMessages = convo.messages.length > 0;
+  const wantsLead = convo.messages.some(message => message.role==="user"
+    && /(?:contratar|orçamento|orcamento|briefing|hire|iniciar (?:um )?projecto|quero trabalhar com)/i.test(message.content));
+  const submitLead = async () => {
+    if(leadSending||!lead.consent)return;
+    setLeadSending(true);setLeadError("");
+    try{
+      const reply=await fetch("/api/jarvis/lead",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(lead),
+      });
+      const data=await reply.json() as {ok?:boolean;reference?:string;error?:string};
+      if(!reply.ok||data.ok!==true||!data.reference)throw Error(data.error||"Sem confirmação da base de dados.");
+      setLeadReference(data.reference);
+    }catch(error){setLeadError(error instanceof Error?error.message:"Falha ao enviar. Tente novamente.");}
+    finally{setLeadSending(false);}
+  };
 
   useEffect(() => { textarea.current?.focus(); }, []);
 
@@ -891,6 +912,45 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
             </ol>
           )}
           {convo.error && !showWorks && <p className="jv-chat-error" role="alert">{convo.error}</p>}
+          {wantsLead && !showWorks && (
+            <section className="jv-lead" aria-label="Pedir projecto com consentimento">
+              {leadReference ? (
+                <p className="jv-lead__success" role="status">Pedido recebido e confirmado. Referência: {leadReference.slice(0,8).toUpperCase()}.</p>
+              ) : (
+                <form className="jv-lead__form" onSubmit={event=>{event.preventDefault();void submitLead();}}>
+                  <p className="jv-lead__eyebrow">NOVO PROJECTO</p>
+                  <h3>Tem uma ideia? Vamos dar-lhe forma.</h3>
+                  <p className="jv-lead__intro">Deixe os dados do briefing. O envio só acontece após a sua autorização.</p>
+                  <div className="jv-lead__grid">
+                    <label>Nome<input required minLength={2} maxLength={120} value={lead.name}
+                      onChange={event=>setLead(value=>({...value,name:event.target.value}))}
+                      placeholder="Como devemos tratar?" /></label>
+                    <label>Email ou WhatsApp<input required minLength={5} maxLength={160} value={lead.contact}
+                      onChange={event=>setLead(value=>({...value,contact:event.target.value}))}
+                      placeholder="Contacto para resposta" /></label>
+                    <label>Prazo (opcional)<input maxLength={100} value={lead.deadline}
+                      onChange={event=>setLead(value=>({...value,deadline:event.target.value}))}
+                      placeholder="Quando pretende iniciar?" /></label>
+                    <label>Orçamento (opcional)<input maxLength={100} value={lead.budget}
+                      onChange={event=>setLead(value=>({...value,budget:event.target.value}))}
+                      placeholder="Intervalo estimado" /></label>
+                  </div>
+                  <label className="jv-lead__brief">Resumo do projecto<textarea required minLength={10} maxLength={2000}
+                    value={lead.brief} onChange={event=>setLead(value=>({...value,brief:event.target.value}))}
+                    placeholder="O que pretende criar?" rows={3}/></label>
+                  <label className="jv-lead__consent">
+                    <input type="checkbox" checked={lead.consent}
+                      onChange={event=>setLead(value=>({...value,consent:event.target.checked}))} required/>
+                    <span>Autorizo a guardar estes dados para contacto profissional sobre este projecto.</span>
+                  </label>
+                  <button className="jv-lead__submit" type="submit" disabled={leadSending||!lead.consent}>
+                    {leadSending?"A enviar…":"Enviar briefing"} <ArrowRight size={16} aria-hidden="true"/>
+                  </button>
+                  {leadError && <p className="jv-lead__error" role="alert">{leadError}</p>}
+                </form>
+              )}
+            </section>
+          )}
         </div>
 
         <form className="jv-chat-composer" onSubmit={(event) => { event.preventDefault(); void submit(); }}>

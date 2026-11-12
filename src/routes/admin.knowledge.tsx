@@ -113,6 +113,22 @@ function KnowledgePage() {
             </div>
           </section>
         </div>
+        <section className="mt-8 rounded-2xl border border-white/15 bg-white/[.025] p-5" aria-label="Briefings do JARVIS">
+          <h2 className="mb-3 text-xl">Briefings recebidos pelo JARVIS</h2>
+          <p className="mb-4 text-xs text-blue-200/70">Dados enviados apenas após consentimento explícito. Acesso exclusivo ao administrador.</p>
+          <div className="max-h-[450px] space-y-3 overflow-y-auto">
+            {workspace?.leads.length ? workspace.leads.map(lead=><article key={lead.id} className="rounded-xl border border-white/10 p-4">
+              <div className="flex flex-wrap justify-between gap-3 text-xs">
+                <strong>{lead.name}</strong><span className="text-blue-200">{new Date(lead.created_at).toLocaleString("pt-MZ")}</span>
+              </div>
+              <p className="mt-2 break-all text-xs text-blue-200">{lead.contact}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm">{lead.brief}</p>
+              {(lead.deadline||lead.budget)&&<p className="mt-2 text-xs text-blue-200/70">
+                {lead.deadline?"Prazo: "+lead.deadline:""} {lead.budget?"Orçamento: "+lead.budget:""}
+              </p>}
+            </article>):<p className="text-sm text-blue-200/60">Ainda sem briefings submetidos.</p>}
+          </div>
+        </section>
         <section className="mt-8 rounded-2xl border border-white/15 bg-white/[.025] p-5">
           <h2 className="mb-3 text-xl">Histórico e reversão</h2>
           <div className="grid gap-2">

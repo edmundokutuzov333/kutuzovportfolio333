@@ -7,16 +7,18 @@ type Revision = { id: number; fact_key: string; locale: string; operation: strin
   changed_at: string; old_fact: Partial<FactRecord> | null; new_fact: Partial<FactRecord> | null };
 type Flag = { id: number; ts: string; query_redacted: string | null; flag_reason: string | null;
   answered: boolean | null; tier_used: string | null };
+type LeadRecord={id:string;created_at:string;name:string;contact:string;brief:string;deadline:string|null;budget:string|null;status:string};
 export async function loadKnowledgeAdmin() {
   await requireAdmin();
-  const [facts, revisions, flags, state, documents] = await Promise.all([
+  const [facts, revisions, flags, state, documents, leads] = await Promise.all([
     db<FactRecord[]>("kb_facts?select=*&order=priority.asc,key.asc&limit=250"),
     db<Revision[]>("kb_fact_revisions?select=*&order=changed_at.desc&limit=45"),
     db<Flag[]>("kb_query_log?select=id,ts,query_redacted,flag_reason,answered,tier_used&or=(answered.eq.false,flagged.eq.true)&order=ts.desc&limit=40"),
     db<Array<{ version: number }>>("kb_state?select=version&id=eq.1"),
     db<Array<{ id: string }>>("kb_documents?select=id&status=eq.verified&limit=250"),
+    db<LeadRecord[]>("kb_leads?select=id,created_at,name,contact,brief,deadline,budget,status&order=created_at.desc&limit=40"),
   ]);
-  return { facts, revisions, flags, version: state[0]?.version ?? 0, documents: documents.length };
+  return { facts, revisions, flags, leads, version: state[0]?.version ?? 0, documents: documents.length };
 }
 
 export type FactMutation = {
