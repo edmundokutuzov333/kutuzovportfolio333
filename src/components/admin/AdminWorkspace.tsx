@@ -872,7 +872,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
           <span className="hidden max-w-[200px] truncate text-xs text-[#666b76] md:inline">{email}</span>
           <span className="hidden items-center gap-1.5 rounded-full bg-[#eaf6ee] px-2.5 py-1 text-[11px] font-medium text-[#17653b] sm:inline-flex"><ShieldCheck size={13} /> Sessão autenticada</span>
           <button type="button" onClick={() => void refresh()} disabled={loading || saving} className="inline-flex size-9 items-center justify-center rounded-lg border border-[#e0e2e8] text-[#464b56] hover:bg-[#f2f3f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50" aria-label="Actualizar dados do Admin" title="Actualizar dados"><RefreshCw size={16} /></button>
-          <button type="button" onClick={onLogout} disabled={saving} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e0e2e8] px-3 text-xs font-medium text-[#454954] hover:bg-[#f2f3f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50"><LogOut size={14} /><span className="hidden sm:inline">Sair</span></button>
+          <a href="/admin/knowledge" className="inline-flex h-9 items-center rounded-lg border border-[#ccd5ec] px-3 text-xs font-medium text-[#253c8d] hover:bg-[#eff3ff]">Conhecimento</a>
+           <button type="button" onClick={onLogout} disabled={saving} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e0e2e8] px-3 text-xs font-medium text-[#454954] hover:bg-[#f2f3f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50"><LogOut size={14} /><span className="hidden sm:inline">Sair</span></button>
         </div>
       </header>
 
