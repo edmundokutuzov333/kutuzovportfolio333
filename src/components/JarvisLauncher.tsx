@@ -751,6 +751,12 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
 
   const submit = async (text = draft) => {
     if (!text.trim() || convo.pending) return;
+    // A direct gallery request is resolved instantly with published site artwork.
+    if (/^(?:mostra(?:-me)?|mostrar|ver|explorar|show|see)\s+(?:(?:os|meus|the|some)\s+)?(?:trabalhos|projectos|projects|portfolio)(?:\s+(?:do site|de arte|criativos))?[.!?]*$/i.test(text.trim())) {
+      setDraft("");
+      setShowWorks(true);
+      return;
+    }
     setShowWorks(false);
     setDraft("");
     requestAnimationFrame(resize);

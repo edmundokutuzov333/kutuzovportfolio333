@@ -19,7 +19,7 @@ function answerKnown(query:string, facts:Awaited<ReturnType<typeof getVerifiedFa
     const values=filtered.filter(f=>f.key.startsWith("service.")).slice(0,5);
     if(values.length)return (locale==="en"?"Services: ":"Serviços: ")+values.map(f=>f.value.split(":")[0]).join(", ")+".";
   }
-  if(/^(?:quais (?:são )?os clientes|com que marcas (?:já )?trabalhou|what clients|which brands)[?.! ]*$/i.test(q)){
+  if(/^(?:quais (?:são )?os clientes|com que marcas (?:já )?(?:trabalhou|trabalhaste|colaborou)|com que clientes (?:já )?trabalhaste|what clients|which brands)[?.! ]*$/i.test(q)){
     const names=filtered.filter(f=>f.key.startsWith("client.")).slice(0,12).map(f=>f.value);
     if(names.length)return (locale==="en"?"Clients include: ":"Entre os clientes estão: ")+names.join(", ")+".";
   }
