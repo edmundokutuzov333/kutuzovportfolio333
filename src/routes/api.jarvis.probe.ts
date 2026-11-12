@@ -43,28 +43,41 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     }
     const start=Date.now();
     let token="";
-    try{
-      const res=await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens",{
-        method:"POST",headers,
-        body:JSON.stringify({uses:1,newSessionExpireTime:new Date(Date.now()+60_000).toISOString(),
+    const configs=[
+      {version:"v1beta",locked:true},
+      {version:"v1alpha",locked:true},
+      {version:"v1beta",locked:false},
+    ];
+    const errors:Array<{version:string;locked:boolean;code:number;status?:string;message?:string}>=[];
+    for(const mode of configs){
+      try{
+        const body={
+          uses:1,newSessionExpireTime:new Date(Date.now()+60_000).toISOString(),
           expireTime:new Date(Date.now()+180_000).toISOString(),
-          liveConnectConstraints:{model:"models/gemini-3.8-live",config:{
-            responseModalities:["AUDIO"],
-            speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}},
-          }}}),
-        signal:AbortSignal.timeout(7500),cache:"no-store",
-      });
-      result["tokenHTTP"]=res.status;
-      result["tokenLatencyMs"]=Date.now()-start;
-      if(res.ok)token=(await res.json() as {name?:string}).name||"";
-      else {
-        const problem=await res.json().catch(()=>null) as {error?:{code?:number;status?:string;message?:string}}|null;
-        result["tokenErrorStatus"]=problem?.error?.status||"unknown";
-        result["tokenErrorMessage"]=String(problem?.error?.message||"").slice(0,260);
+          ...(mode.locked?{liveConnectConstraints:{model:"models/gemini-3.8-live",
+            config:{responseModalities:["AUDIO"],
+              speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}}}}}:{}),
+        };
+        const res=await fetch("https://generativelanguage.googleapis.com/"+mode.version+"/auth_tokens",{
+          method:"POST",headers,body:JSON.stringify(body),signal:AbortSignal.timeout(5000),cache:"no-store",
+        });
+        if(res.ok){
+          token=(await res.json() as {name?:string}).name||"";
+          result["tokenHTTP"]=res.status;
+          result["tokenMode"]=mode;
+          result["tokenLatencyMs"]=Date.now()-start;
+          break;
+        }
+        const problem=await res.json().catch(()=>null) as {error?:{status?:string;message?:string}}|null;
+        errors.push({version:mode.version,locked:mode.locked,code:res.status,
+          ...(problem?.error?.status?{status:problem.error.status}:{}),
+          ...(problem?.error?.message?{message:problem.error.message.slice(0,260)}:{})});
+      }catch(error){
+        errors.push({version:mode.version,locked:mode.locked,code:0,
+          message:error instanceof Error?error.name:"unknown"});
       }
-    }catch(error){
-      result["tokenError"]=error instanceof Error?error.name:"unknown";
     }
+    result["tokenAttemptFailures"]=errors;
     if(token&&typeof WebSocket!=="undefined"){
       result["websocketSupported"]=true;
       try{
