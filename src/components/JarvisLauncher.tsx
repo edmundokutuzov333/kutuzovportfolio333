@@ -588,7 +588,6 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       const live = import.meta.env["VITE_JARVIS_LIVE_ENABLED"] === "true"
         ? await import("@/lib/jarvis/live-browser")
         .then(({ connectJarvisLive }) => connectJarvisLive(stream, {
-          onMic: () => {},
           onState: (next) => { if (voiceSession.current === session) setVoice(next); },
           onUserTranscript: (text) => {
             if (voiceSession.current === session) convo.remember("user", text);

@@ -58,7 +58,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
           const finish=(code?:number)=>{
             if(settled)return;settled=true;clearTimeout(deadline);
             try{socket.close();}catch{/* already closed */}
-            resolve({setup,firstAudioMs,bytes,code});
+            resolve({setup,firstAudioMs,bytes,...(code===undefined?{}:{code})});
           };
           const socket=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
           socket.addEventListener("open",()=>socket.send(JSON.stringify({setup:{
