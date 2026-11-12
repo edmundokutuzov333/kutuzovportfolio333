@@ -131,8 +131,10 @@ export const Route=createFileRoute("/api/jarvis/probe")({
             const mode=url.searchParams.get("mode")||"minimal";
             const voice={speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}}};
             const speech={systemInstruction:{parts:[{text:"Responde em português europeu com voz masculina."}]}};
-            const init={model:"models/gemini-3.8-live",responseModalities:["AUDIO"],
-              ...(mode==="voice"||mode==="full"?voice:{}),...(mode==="full"?speech:{})};
+            const init={model:"models/gemini-3.8-live",
+              generationConfig:{responseModalities:["AUDIO"],
+                ...(mode==="voice"||mode==="full"?voice:{})},
+              ...(mode==="full"?speech:{})};
             socket.send(JSON.stringify({setup:init}));
           });
           socket.addEventListener("message",(event)=>{
