@@ -21,7 +21,10 @@ export const Route=createFileRoute("/api/jarvis/stream")({
     }catch{return new Response(null,{status:400});}
     const encoder=new TextEncoder();
     const stream=new ReadableStream<Uint8Array>({
-      async start(controller) {
+      start(controller) {
+        // Never return the async generation promise from start(): the
+        // response must be readable before Gemini finishes generating.
+        void (async () => {
         let closed=false;
         const write=(kind:"chunk"|"done"|"error"|"timing",payload:Record<string,unknown>)=>{
           if(closed||request.signal.aborted)return;
@@ -33,6 +36,7 @@ export const Route=createFileRoute("/api/jarvis/stream")({
           await streamJarvis(data.messages,write,request.signal);
         }catch{write("error",{message:"Ocorreu um erro temporário ao responder."});}
         finally {if(!closed){closed=true;controller.close();}}
+        })();
       },cancel(){/* request.signal propagates on disconnect */},
     });
     return new Response(stream,{headers});
