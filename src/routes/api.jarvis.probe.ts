@@ -42,6 +42,41 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     }catch(error){
       result["textError"]=error instanceof Error?error.name:"unknown";
     }
+    // One inexpensive real embedding batch, no user data and no DB writes.
+    try{
+      const embed=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:batchEmbedContents",{
+        method:"POST",headers,body:JSON.stringify({requests:[{
+          model:"models/gemini-embedding-2",
+          content:{parts:[{text:"title: teste | text: produção de identidade visual em Maputo"}]},
+          outputDimensionality:768,
+        }]}),signal:AbortSignal.timeout(7000),cache:"no-store",
+      });
+      result["embeddingHTTP"]=embed.status;
+      const data=await embed.json().catch(()=>null) as {
+        embeddings?:Array<{values?:number[]}>,error?:{status?:string;message?:string}}|null;
+      result["embeddingDim"]=data?.embeddings?.[0]?.values?.length||0;
+      if(!embed.ok)result["embeddingError"]=String(data?.error?.message||"").slice(0,200);
+    }catch(e){result["embeddingError"]=e instanceof Error?e.name:"unknown";}
+    // 3.8 TTS is optional fallback for browsers without masculine PT/MZ speech.
+    try{
+      const tts=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+        method:"POST",headers,body:JSON.stringify({
+          model:"gemini-3.8-flash-lite-tts",
+          input:[{type:"user_input",content:[{type:"text",text:"Olá.",
+            annotations:[{type:"speech_metadata",style:
+              "Adult masculine voice speaking Portuguese from Mozambique/Portugal, never Brazilian."}]}]}],
+          response_format:{type:"audio"},
+          generation_config:{speech_config:[{voice:"Orus"}]},
+        }),signal:AbortSignal.timeout(8500),cache:"no-store",
+      });
+      result["ttsHTTP"]=tts.status;
+      const data=await tts.json().catch(()=>null) as {
+        steps?:Array<{content?:Array<{type?:string;data?:string}>}>,
+        error?:{status?:string;message?:string}}|null;
+      result["ttsAudioBytes"]=(data?.steps??[]).flatMap(step=>step.content??[])
+        .filter(part=>part.type==="audio").reduce((total,part)=>total+(part.data?.length||0)*0.75,0);
+      if(!tts.ok)result["ttsError"]=String(data?.error?.message||"").slice(0,220);
+    }catch(e){result["ttsError"]=e instanceof Error?e.name:"unknown";}
     const start=Date.now();
     let token="";
     const configs=[
