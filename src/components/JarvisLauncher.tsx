@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, Mic, MessageSquare, Plus, Send, X } from "luc
 import { EKMark } from "./EKMark";
 import { askJarvis } from "@/lib/jarvis.functions";
 import { jarvisWorks } from "@/lib/jarvis-works";
+import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
 export const openJarvis = () => window.dispatchEvent(new Event(JARVIS_OPEN_EVENT));
@@ -79,23 +80,100 @@ function useConversation() {
   return { messages, pending, error, send, reset };
 }
 
+
+const WAVEFORM = [2, 3, 4, 8, 14, 23, 34, 47, 57, 47, 35, 25, 16, 9, 5, 3, 2];
+
+function JarvisVoiceVisual({ voice, onToggle }: { voice: VoiceState; onToggle: () => void }) {
+  return (
+    <div className="jv-visual" data-state={voice}>
+      <svg className="jv-visual__svg" viewBox="0 0 660 250" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="jv-outline" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#16315f" />
+            <stop offset="48%" stopColor="#317eff" />
+            <stop offset="100%" stopColor="#0b2353" />
+          </linearGradient>
+          <radialGradient id="jv-sphere" cx="35%" cy="23%" r="86%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="34%" stopColor="#edf6ff" />
+            <stop offset="73%" stopColor="#a4c6ff" />
+            <stop offset="100%" stopColor="#659aff" />
+          </radialGradient>
+          <filter id="jv-softglow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
+          <filter id="jv-waveglow" x="-100%" y="-200%" width="300%" height="500%">
+            <feGaussianBlur stdDeviation="3.5" />
+          </filter>
+        </defs>
+
+        <path className="jv-visual__horizontal" d="M4 125H656" />
+        <g className="jv-visual__waves">
+          {WAVEFORM.map((height, i) => {
+            const x = 96 + i * 8;
+            return (
+              <g key={i}>
+                <path className="jv-visual__bar-glow" d={'M'+x+' '+(125-height/2)+'V'+(125+height/2)} filter="url(#jv-waveglow)" />
+                <path className="jv-visual__bar" d={'M'+x+' '+(125-height/2)+'V'+(125+height/2)} style={{ animationDelay: i * -0.09 + 's' }} />
+                <path className="jv-visual__bar-glow" d={'M'+(660-x)+' '+(125-height/2)+'V'+(125+height/2)} filter="url(#jv-waveglow)" />
+                <path className="jv-visual__bar" d={'M'+(660-x)+' '+(125-height/2)+'V'+(125+height/2)} style={{ animationDelay: i * -0.09 + 's' }} />
+              </g>
+            );
+          })}
+        </g>
+        <circle cx="330" cy="125" r="119" className="jv-visual__dots" />
+        <circle cx="330" cy="125" r="101" className="jv-visual__outer-glow" />
+        <circle cx="330" cy="125" r="100" className="jv-visual__outer" />
+        <circle cx="330" cy="125" r="87" className="jv-visual__middle" />
+        <circle cx="330" cy="125" r="76" className="jv-visual__ring-glow" filter="url(#jv-softglow)" />
+        <circle cx="330" cy="125" r="76" className="jv-visual__ring" />
+        <circle cx="330" cy="125" r="76" className="jv-visual__arc" />
+        <path className="jv-visual__crosshair" d="M330 15V39M330 211V235M218 125H242M418 125H442" />
+        <circle cx="330" cy="125" r="45" className="jv-visual__sphere-glow" filter="url(#jv-softglow)" />
+        <circle cx="330" cy="125" r="36" fill="url(#jv-sphere)" className="jv-visual__sphere" />
+      </svg>
+      <button
+        type="button"
+        className="jv-orbit-hit"
+        onClick={onToggle}
+        disabled={voice === "processing"}
+        aria-pressed={voice === "listening"}
+        aria-label={voice === "listening" ? "Parar de ouvir" : voice === "speaking" ? "Parar resposta falada" : "Falar com Kutuzov por voz"}
+      />
+    </div>
+  );
+}
+
 export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefined }) {
   const [open, setOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [voice, setVoice] = useState<VoiceState>("idle");
   const convo = useConversation();
   const recRef = useRef<SpeechRec | null>(null);
+  const voiceSession = useRef(0);
   const returnFocus = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  const close = useCallback(() => {
-    recRef.current?.stop();
+  const stopVoice = useCallback(() => {
+    voiceSession.current += 1;
+    const rec = recRef.current;
+    recRef.current = null;
+    if (rec) {
+      rec.onresult = null;
+      rec.onerror = null;
+      rec.onend = null;
+      try { rec.stop(); } catch { /* Recognition may already have ended. */ }
+    }
     if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    setVoice("idle");
+  }, []);
+
+  const close = useCallback(() => {
+    stopVoice();
     setChatOpen(false);
     setOpen(false);
-    setVoice("idle");
-    returnFocus.current?.focus?.();
-  }, []);
+    requestAnimationFrame(() => returnFocus.current?.focus?.());
+  }, [stopVoice]);
 
   useEffect(() => {
     const onOpen = () => { returnFocus.current = document.activeElement as HTMLElement; setOpen(true); };
@@ -116,37 +194,53 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
   }, [open, chatOpen, close]);
 
-  const speak = (text: string) => {
+  const speak = (text: string, session: number) => {
     const synth = window.speechSynthesis;
-    if (!synth) { setVoice("idle"); return; }
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "pt-PT";
-    u.onend = () => setVoice("idle");
-    u.onerror = () => setVoice("idle");
+    if (!synth || typeof SpeechSynthesisUtterance === "undefined") {
+      setVoice("idle");
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "pt-PT";
+    utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
+    utterance.onerror = () => { if (voiceSession.current === session) setVoice("idle"); };
     setVoice("speaking");
-    synth.speak(u);
+    synth.cancel();
+    synth.speak(utterance);
   };
 
   const toggleVoice = () => {
-    if (voice === "listening") { recRef.current?.stop(); return; }
-    if (voice === "speaking") { window.speechSynthesis?.cancel(); setVoice("idle"); return; }
+    if (voice === "listening" || voice === "speaking") { stopVoice(); return; }
     if (voice === "processing") return;
+
     const rec = getRecognition();
     if (!rec) { setVoice("unavailable"); return; }
+    stopVoice();
+    const session = voiceSession.current;
     recRef.current = rec;
     rec.lang = "pt-PT";
     rec.interimResults = false;
     let heard = "";
+    let failed = false;
     rec.onresult = (e) => { heard = Array.from(e.results).map((r) => r[0]?.transcript ?? "").join(" "); };
-    rec.onerror = () => setVoice("unavailable");
+    rec.onerror = () => {
+      failed = true;
+      if (voiceSession.current !== session) return;
+      recRef.current = null;
+      setVoice("unavailable");
+    };
     rec.onend = async () => {
-      if (!heard.trim()) { setVoice((v) => (v === "listening" ? "idle" : v)); return; }
+      if (voiceSession.current !== session || failed) return;
+      recRef.current = null;
+      if (!heard.trim()) { setVoice("idle"); return; }
       setVoice("processing");
       const reply = await convo.send(heard);
-      if (reply) speak(reply); else setVoice("unavailable");
+      if (voiceSession.current !== session) return;
+      if (reply) speak(reply, session);
+      else setVoice("unavailable");
     };
-    setVoice("listening");
-    try { rec.start(); } catch { setVoice("unavailable"); }
+    try { rec.start(); setVoice("listening"); }
+    catch { recRef.current = null; setVoice("unavailable"); }
   };
 
   if (!open) return null;
@@ -158,73 +252,49 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       role="dialog"
       aria-modal="true"
       aria-label="Kutuzov, assistente de IA de Edmundo Kutuzov"
-      className="jv-root fixed inset-0 z-[70] overflow-y-auto overflow-x-hidden bg-background text-foreground outline-none"
+      className="jv-root"
     >
-      {/* Layer 0–1: background + technical grid (decorative) */}
-      <div aria-hidden className="jv-grid pointer-events-none fixed inset-0" />
-
-      <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] grid-rows-[auto_minmax(0,1fr)_auto] px-[clamp(1rem,4vw,3rem)] pt-[max(env(safe-area-inset-top),0px)] pb-[env(safe-area-inset-bottom)]">
-        {/* HEADER */}
-        <header className="flex items-center justify-between gap-4 py-5">
-          <Link to="/" onClick={close} className="flex min-w-0 items-center gap-3 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-            <EKMark className="h-5 w-auto shrink-0 text-foreground" />
-            <span className="truncate font-mono text-[11px] uppercase tracking-[0.22em]">Edmundo Kutuzov</span>
+      <div className="jv-atmosphere" aria-hidden="true"><span className="jv-horizon" /></div>
+      <div className="jv-frame">
+        <header className="jv-header">
+          <Link to="/" onClick={close} className="jv-brand" aria-label="Edmundo Kutuzov, página inicial">
+            <EKMark className="jv-brand__mark" />
+            <span>EDMUNDO KUTUZOV</span>
           </Link>
-          <div className="flex shrink-0 items-center gap-4">
-            <span aria-hidden className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_var(--primary)]" />
-            <button type="button" onClick={close} aria-label="Fechar" className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-              <X className="h-4 w-4" />
-            </button>
+          <div className="jv-header__actions">
+            <span className="jv-header__light" aria-hidden="true" />
+            <button type="button" onClick={close} aria-label="Fechar" className="jv-close"><X size={16} strokeWidth={1.4} /></button>
           </div>
         </header>
 
-        {/* MAIN HERO */}
-        <main className="flex flex-col items-center justify-center gap-[clamp(1.25rem,3svh,2.25rem)] py-[clamp(1rem,4svh,3rem)] text-center">
-          {/* Orbital visual system — decorative, own container */}
-          <div aria-hidden className="jv-orbit pointer-events-none relative aspect-square w-[clamp(160px,24vw,340px)] shrink-0" data-state={voice}>
-            <span className="jv-ring absolute inset-0 rounded-full" />
-            <span className="jv-ring jv-ring-2 absolute inset-[12%] rounded-full" />
-            <span className="jv-ring jv-ring-3 absolute inset-[-10%] rounded-full" />
-            <span className="jv-core absolute inset-[26%] rounded-full" />
-          </div>
-
-          <div className="flex max-w-[34rem] flex-col items-center gap-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Kutuzov · IA de Edmundo</p>
-            <h2 className="font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.95] tracking-tight">Estou por aqui.</h2>
-            <p className="max-w-[28rem] text-[clamp(0.95rem,1.4vw,1.05rem)] leading-relaxed text-muted-foreground">
-              Fala comigo. Explora o meu trabalho. Abre uma janela para cada ideia.
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={toggleVoice}
-              aria-pressed={voice === "listening"}
-              aria-label={voice === "listening" ? "Parar de ouvir" : "Falar com Kutuzov por voz"}
-              className="jv-voice group relative grid h-20 w-20 place-items-center overflow-hidden rounded-full border border-primary/50 bg-card transition hover:border-primary active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-              data-state={voice}
-            >
-              <span aria-hidden className="flex h-7 items-center gap-[3px]">
-                {[0, 1, 2, 3, 4].map((i) => <span key={i} className="jv-bar w-[3px] rounded-full bg-primary" style={{ animationDelay: `${i * 0.09}s` }} />)}
+        <main className="jv-main">
+          <section className="jv-panel" aria-labelledby="jv-title">
+            <p className="jv-eyebrow">KUTUZOV · IA DE EDMUNDO</p>
+            <h1 id="jv-title">Estou por aqui.</h1>
+            <p className="jv-description">Fala comigo. Explora o meu trabalho. Abre uma janela para cada ideia.</p>
+            <JarvisVoiceVisual voice={voice} onToggle={toggleVoice} />
+            <div className="jv-voice-meta">
+              <button type="button" className="jv-voice-caption" onClick={toggleVoice} disabled={voice === "processing"}>
+                FALAR COM KUTUZOV
+              </button>
+              <span className="jv-voice-state" role="status" aria-live="polite">
+                <span className="jv-voice-state__dot" aria-hidden="true" />
+                {VOICE_LABEL[voice]}
               </span>
+            </div>
+            <button type="button" className="jv-chat-button" onClick={() => setChatOpen(true)}>
+              <MessageSquare size={21} strokeWidth={1.5} aria-hidden="true" />
+              Abrir conversa escrita
             </button>
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-foreground">Falar com Kutuzov</span>
-            <span role="status" aria-live="polite" className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{VOICE_LABEL[voice]}</span>
-          </div>
-
-          <button type="button" onClick={() => setChatOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-            <MessageSquare className="h-4 w-4" /> Abrir conversa escrita
-          </button>
+          </section>
         </main>
 
-        {/* FOOTER */}
-        <footer className="flex flex-col gap-3 border-t border-border py-5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>Prefere falar com o Edmundo real?</span>
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
-            {whatsapp && <a href={whatsapp} target="_blank" rel="noreferrer" className="text-foreground hover:text-primary">WhatsApp ↗</a>}
-            <Link to="/contact" onClick={close} className="text-foreground hover:text-primary">Enviar briefing →</Link>
-          </div>
+        <footer className="jv-footer">
+          <span>PREFERE FALAR COM O EDMUNDO REAL?</span>
+          <nav aria-label="Contactos" className="jv-footer__links">
+            {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer">WHATSAPP ↗</a>}
+            <Link to="/contact" onClick={close}>ENVIAR BRIEFING →</Link>
+          </nav>
         </footer>
       </div>
 
@@ -272,8 +342,8 @@ function ChatWindow({ convo, onClose, onCloseAll, onVoice }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-stretch justify-center bg-background/70 backdrop-blur-sm md:items-center md:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="jv-chat-title" className="flex h-[100svh] w-full flex-col overflow-hidden bg-card md:h-[min(86svh,780px)] md:max-w-[880px] md:rounded-2xl md:border md:border-border md:shadow-2xl">
+    <div className="jv-chat-overlay fixed inset-0 z-[80] flex items-stretch justify-center bg-background/70 backdrop-blur-sm md:items-center md:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="jv-chat-title" className="jv-chat-card flex h-[100svh] w-full flex-col overflow-hidden bg-card md:h-[min(86svh,780px)] md:max-w-[880px] md:rounded-2xl md:border md:border-border md:shadow-2xl">
         {/* WINDOW HEADER */}
         <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border px-4 pt-[env(safe-area-inset-top)] md:px-5">
           <span aria-hidden className="flex gap-1.5">
