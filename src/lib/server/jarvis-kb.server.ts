@@ -42,7 +42,8 @@ export async function db<T>(resource: string, options: { method?: string; body?:
     cache: "no-store",
   });
   if (!response.ok) throw new Error("JARVIS_DB_HTTP_" + response.status);
-  return response.json() as Promise<T>;
+  const body = await response.text();
+  return (body ? JSON.parse(body) : null) as T;
 }
 
 export async function getVerifiedFacts(): Promise<Fact[]> {
@@ -216,7 +217,12 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
       }));
       const model = await generate(recent, prompt);
       reply = model.reply;
-      if (!reply) return model;
+      if (!reply) {
+        await logQuery({ query, locale, answer: false, tier,
+          flagged: false, reasons: ["provider_unavailable"],
+          tTotal: Date.now() - start, tSearch: searchMs, tEmbed: embedMs });
+        return model;
+      }
     }
     const safe = validateContacts(cleanJarvisReply(reply), facts, locale);
     flagged = safe.flagged; flags = safe.reasons;
