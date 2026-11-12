@@ -20,7 +20,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
       if(modelsResponse.ok){
         const listing=await modelsResponse.json() as {models?:Array<{name?:string}>};
         result["availableModels"]=(listing.models??[]).map(m=>m.name||"").filter(
-          name=>/gemini-(2\\.5|3\\.5|3\\.8|embedding)/.test(name)).slice(0,35);
+          name=>name.includes('gemini-')).slice(0,35);
       }
     }catch(error){result["modelsError"]=error instanceof Error?error.name:"unknown";}
     try {

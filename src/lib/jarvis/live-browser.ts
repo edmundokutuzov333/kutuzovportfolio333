@@ -76,7 +76,8 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
   source.connect(capture);capture.connect(mute);mute.connect(context.destination);
   const playing=new Set<AudioBufferSourceNode>();
   let ws:WebSocket|null=null,closed=false,ready=false,nextAudioTime=0,handle="";
-  let retries=0,startedAt=Date.now(),reconnectTimer=0;
+  let retries=0,reconnectTimer=0;
+  const startedAt=Date.now();
   let inputTranscript="",outputTranscript="",correctionRequested=false;
 
   const clearPlayback=()=>{
