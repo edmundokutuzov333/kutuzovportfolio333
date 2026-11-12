@@ -50,12 +50,12 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
     const pcm=new Int16Array(count);
     for(let i=0;i<count;i++){
       const left=Math.floor(i*factor),right=Math.min(input.length,Math.floor((i+1)*factor));
-      let sum=0;for(let j=left;j<right;j++)sum+=input[j];
+      let sum=0;for(let j=left;j<right;j++)sum+=(input[j]??0);
       const value=Math.max(-1,Math.min(1,sum/Math.max(1,right-left)));
       pcm[i]=Math.round(value<0?value*32768:value*32767);
     }
     const bytes=new Uint8Array(pcm.buffer);
-    let binary="";for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
+    let binary="";for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]??0);
     return btoa(binary);
   }
   processor.onaudioprocess=event=>{
