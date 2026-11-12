@@ -6,6 +6,8 @@ import { EKMark } from "./EKMark";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
+import { choosePortugueseMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
+import { buildJarvisHistory } from "@/lib/jarvis/history";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
@@ -77,7 +79,8 @@ function useConversation() {
     if (!content || busy.current) return null;
     busy.current = true;
     const version = ++epoch.current;
-    const next: Msg[] = [...current.current, { role: "user" as const, content }].slice(-12);
+    const next: Msg[] = [...current.current, { role: "user" as const, content }].slice(-100);
+    const modelHistory = buildJarvisHistory(next);
     current.current = next;
     setMessages(next);
     setPending(true);
@@ -88,8 +91,10 @@ function useConversation() {
     streamingController.current = controller;
     const addText = (fragment: string) => {
       if (epoch.current !== version || !fragment) return;
-      reply += fragment;
-      const displayed = [...next, { role: "assistant" as const, content: cleanJarvisReply(reply) }].slice(-24);
+      // Sentence-level server chunks are cleaned separately, so restore word
+      // spacing between neighbouring sentences in the visible transcript.
+      reply += (reply && !/\s$/.test(reply) && !/^[\s.,;!?]/.test(fragment) ? " " : "") + fragment;
+      const displayed = [...next, { role: "assistant" as const, content: cleanJarvisReply(reply) }].slice(-100);
       current.current = displayed;
       setMessages(displayed);
     };
@@ -97,7 +102,7 @@ function useConversation() {
       const response = await fetch("/api/jarvis/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: modelHistory }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error("stream_unavailable");
@@ -137,7 +142,7 @@ function useConversation() {
       }
       // Older browsers / route incompatibilities: preserve original server function.
       try {
-        const response = await ask({ data: { messages: next } });
+        const response = await ask({ data: { messages: modelHistory } });
         if (epoch.current !== version) return null;
         if (response.reply) {
           addText(cleanJarvisReply(response.reply));
@@ -480,24 +485,45 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     window.speechSynthesis?.cancel();
   }, [stopMeter]);
 
-  const speak = (text: string, session: number) => {
+  const speak = async (text: string, session: number) => {
     if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
-      setVoice("idle");
+      setVoice("unavailable");
+      setVoiceMessage("Este navegador não permite reproduzir voz.");
+      return;
+    }
+    const synthesis = window.speechSynthesis;
+    let voices = synthesis.getVoices();
+    // Some browsers populate the speech catalogue shortly after hydration.
+    if (!voices.length) {
+      await new Promise<void>((resolve) => {
+        const finish = () => { synthesis.removeEventListener?.("voiceschanged", finish); resolve(); };
+        synthesis.addEventListener?.("voiceschanged", finish, { once: true });
+        window.setTimeout(finish, 600);
+      });
+      voices = synthesis.getVoices();
+    }
+    if (voiceSession.current !== session) return;
+    const selected = choosePortugueseMaleVoice(voices);
+    if (!selected) {
+      setVoice("unavailable");
+      setVoiceMessage(describeVoiceFallback(voices));
       return;
     }
     const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text));
-    utterance.lang = "pt-PT";
-    utterance.rate = 1.04;
+    utterance.voice = selected;
+    utterance.lang = selected.lang;
+    utterance.rate = 1.02;
+    utterance.pitch = 0.91;
     utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
     utterance.onerror = () => {
       if (voiceSession.current === session) {
         setVoice("unavailable");
-        setVoiceMessage("Não foi possível reproduzir a resposta em voz.");
+        setVoiceMessage("Não foi possível reproduzir a resposta em voz neste dispositivo.");
       }
     };
-    window.speechSynthesis.cancel();
+    synthesis.cancel();
     setVoice("speaking");
-    window.speechSynthesis.speak(utterance);
+    synthesis.speak(utterance);
   };
 
   const handleSpeech = async (text: string, session: number) => {
@@ -507,7 +533,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     setVoice("processing");
     const response = await convo.send(text.trim());
     if (voiceSession.current !== session) return;
-    if (response) speak(response, session);
+    if (response) void speak(response, session);
     else {
       setVoice("unavailable");
       setVoiceMessage("Não foi possível obter resposta. Abra a conversa escrita para tentar novamente.");
