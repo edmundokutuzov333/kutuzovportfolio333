@@ -169,7 +169,7 @@ async function generate(contents: Content[], instruction: string): Promise<Gemin
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: instruction }] },
-          contents, generationConfig: { temperature: 0.25, maxOutputTokens: 320 },
+          contents, generationConfig: { maxOutputTokens: 220, thinkingConfig: { thinkingLevel: "MINIMAL" } },
         }),
         signal: AbortSignal.timeout(12_000),
       });
@@ -193,9 +193,10 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
   let flags: string[] = [];
   let flagged = false, tier = "core", searchMs = 0, embedMs = 0;
   try {
-    const facts = await getVerifiedFacts();
+    // Concurrent independent I/O: quota and KB fetch must not add their latencies.
+    const [facts, quota] = await Promise.all([getVerifiedFacts(), acquireQuota()]);
     if (!approved(facts, "pt").some(x => x.key === "contact.email")) throw Error("MISSING_VERIFIED_CONTACT");
-    if (!await acquireQuota()) return { reply: null, error: "Limite de pedidos atingido. Tente mais tarde." };
+    if (!quota) return { reply: null, error: "Limite de pedidos atingido. Tente mais tarde." };
     const locale = shortLocale(query);
     let reply = answerContactQuestion(query, facts, locale);
     if (!reply) {
@@ -220,7 +221,7 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
       const model = await generate(recent, prompt);
       reply = model.reply;
       if (!reply) {
-        await logQuery({ query, locale, answer: false, tier,
+        void logQuery({ query, locale, answer: false, tier,
           flagged: false, reasons: ["provider_unavailable"],
           tTotal: Date.now() - start, tSearch: searchMs, tEmbed: embedMs });
         return model;
@@ -228,7 +229,7 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
     }
     const safe = validateContacts(cleanJarvisReply(reply), facts, locale);
     flagged = safe.flagged; flags = safe.reasons;
-    await logQuery({ query, locale, answer: true, tier, flagged, reasons: flags,
+    void logQuery({ query, locale, answer: true, tier, flagged, reasons: flags,
       tTotal: Date.now() - start, tSearch: searchMs, tEmbed: embedMs });
     return { reply: safe.text, error: null };
   } catch (error) {
