@@ -181,18 +181,46 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     return () => window.removeEventListener(JARVIS_OPEN_EVENT, onOpen);
   }, []);
 
+  const closeChat = useCallback(() => {
+    setChatOpen(false);
+    requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLButtonElement>(".jv-chat-button")?.focus());
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    dialogRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (chatOpen) setChatOpen(false); else close();
+    if (chatOpen) dialogRef.current?.querySelector<HTMLTextAreaElement>("#jv-input")?.focus();
+    else dialogRef.current?.focus();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (chatOpen) closeChat(); else close();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const scope = chatOpen
+        ? dialogRef.current?.querySelector<HTMLElement>(".jv-chat-card")
+        : dialogRef.current;
+      if (!scope) return;
+      const focusable = Array.from(scope.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === scope)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
-  }, [open, chatOpen, close]);
+  }, [open, chatOpen, close, closeChat]);
 
   const speak = (text: string, session: number) => {
     const synth = window.speechSynthesis;
@@ -301,9 +329,9 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       {chatOpen && (
         <ChatWindow
           convo={convo}
-          onClose={() => setChatOpen(false)}
+          onClose={closeChat}
           onCloseAll={close}
-          onVoice={() => { setChatOpen(false); toggleVoice(); }}
+          onVoice={() => { setChatOpen(false); requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLButtonElement>(".jv-orbit-hit")?.focus()); toggleVoice(); }}
         />
       )}
     </div>
