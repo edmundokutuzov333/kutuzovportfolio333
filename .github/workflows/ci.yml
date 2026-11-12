@@ -66,6 +66,9 @@ jobs:
       - name: Unit tests
         run: bun run test
 
+      - name: Golden knowledge evaluation dataset (PT and EN)
+        run: bun run kb:eval
+
       - name: Public data and anonymous permission contract tests
         run: bun run test:contracts
 
