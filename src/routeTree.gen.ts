@@ -16,10 +16,14 @@ import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ProcessRouteImport } from './routes/process'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as AdminKnowledgeRouteImport } from './routes/admin.knowledge'
 import { Route as NewsletterConfirmRouteImport } from './routes/newsletter.confirm'
 import { Route as NewsletterUnsubscribeRouteImport } from './routes/newsletter.unsubscribe'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkSlugRouteImport } from './routes/work.$slug'
+import { Route as ApiJarvisHealthRouteImport } from './routes/api.jarvis.health'
+import { Route as ApiJarvisLiveTokenRouteImport } from './routes/api.jarvis.live-token'
+import { Route as ApiJarvisSyncRouteImport } from './routes/api.jarvis.sync'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -56,6 +60,11 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminKnowledgeRoute = AdminKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => AdminRoute,
+} as any)
 const NewsletterConfirmRoute = NewsletterConfirmRouteImport.update({
   id: '/newsletter/confirm',
   path: '/newsletter/confirm',
@@ -76,46 +85,73 @@ const WorkSlugRoute = WorkSlugRouteImport.update({
   path: '/work/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiJarvisHealthRoute = ApiJarvisHealthRouteImport.update({
+  id: '/api/jarvis/health',
+  path: '/api/jarvis/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiJarvisLiveTokenRoute = ApiJarvisLiveTokenRouteImport.update({
+  id: '/api/jarvis/live-token',
+  path: '/api/jarvis/live-token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiJarvisSyncRoute = ApiJarvisSyncRouteImport.update({
+  id: '/api/jarvis/sync',
+  path: '/api/jarvis/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/clients': typeof ClientsRoute
   '/contact': typeof ContactRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
+  '/admin/knowledge': typeof AdminKnowledgeRoute
   '/newsletter/confirm': typeof NewsletterConfirmRoute
   '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/work/$slug': typeof WorkSlugRoute
   '/work/': typeof WorkIndexRoute
+  '/api/jarvis/health': typeof ApiJarvisHealthRoute
+  '/api/jarvis/live-token': typeof ApiJarvisLiveTokenRoute
+  '/api/jarvis/sync': typeof ApiJarvisSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/clients': typeof ClientsRoute
   '/contact': typeof ContactRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
+  '/admin/knowledge': typeof AdminKnowledgeRoute
   '/newsletter/confirm': typeof NewsletterConfirmRoute
   '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/work/$slug': typeof WorkSlugRoute
   '/work': typeof WorkIndexRoute
+  '/api/jarvis/health': typeof ApiJarvisHealthRoute
+  '/api/jarvis/live-token': typeof ApiJarvisLiveTokenRoute
+  '/api/jarvis/sync': typeof ApiJarvisSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/clients': typeof ClientsRoute
   '/contact': typeof ContactRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
+  '/admin/knowledge': typeof AdminKnowledgeRoute
   '/newsletter/confirm': typeof NewsletterConfirmRoute
   '/newsletter/unsubscribe': typeof NewsletterUnsubscribeRoute
   '/work/$slug': typeof WorkSlugRoute
   '/work/': typeof WorkIndexRoute
+  '/api/jarvis/health': typeof ApiJarvisHealthRoute
+  '/api/jarvis/live-token': typeof ApiJarvisLiveTokenRoute
+  '/api/jarvis/sync': typeof ApiJarvisSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,10 +163,14 @@ export interface FileRouteTypes {
     | '/contact'
     | '/process'
     | '/services'
+    | '/admin/knowledge'
     | '/newsletter/confirm'
     | '/newsletter/unsubscribe'
     | '/work/$slug'
     | '/work/'
+    | '/api/jarvis/health'
+    | '/api/jarvis/live-token'
+    | '/api/jarvis/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,10 +180,14 @@ export interface FileRouteTypes {
     | '/contact'
     | '/process'
     | '/services'
+    | '/admin/knowledge'
     | '/newsletter/confirm'
     | '/newsletter/unsubscribe'
     | '/work/$slug'
     | '/work'
+    | '/api/jarvis/health'
+    | '/api/jarvis/live-token'
+    | '/api/jarvis/sync'
   id:
     | '__root__'
     | '/'
@@ -153,16 +197,20 @@ export interface FileRouteTypes {
     | '/contact'
     | '/process'
     | '/services'
+    | '/admin/knowledge'
     | '/newsletter/confirm'
     | '/newsletter/unsubscribe'
     | '/work/$slug'
     | '/work/'
+    | '/api/jarvis/health'
+    | '/api/jarvis/live-token'
+    | '/api/jarvis/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ClientsRoute: typeof ClientsRoute
   ContactRoute: typeof ContactRoute
   ProcessRoute: typeof ProcessRoute
@@ -171,6 +219,9 @@ export interface RootRouteChildren {
   NewsletterUnsubscribeRoute: typeof NewsletterUnsubscribeRoute
   WorkSlugRoute: typeof WorkSlugRoute
   WorkIndexRoute: typeof WorkIndexRoute
+  ApiJarvisHealthRoute: typeof ApiJarvisHealthRoute
+  ApiJarvisLiveTokenRoute: typeof ApiJarvisLiveTokenRoute
+  ApiJarvisSyncRoute: typeof ApiJarvisSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -224,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/knowledge': {
+      id: '/admin/knowledge'
+      path: '/knowledge'
+      fullPath: '/admin/knowledge'
+      preLoaderRoute: typeof AdminKnowledgeRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/newsletter/confirm': {
       id: '/newsletter/confirm'
       path: '/newsletter/confirm'
@@ -252,13 +310,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/jarvis/health': {
+      id: '/api/jarvis/health'
+      path: '/api/jarvis/health'
+      fullPath: '/api/jarvis/health'
+      preLoaderRoute: typeof ApiJarvisHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/jarvis/live-token': {
+      id: '/api/jarvis/live-token'
+      path: '/api/jarvis/live-token'
+      fullPath: '/api/jarvis/live-token'
+      preLoaderRoute: typeof ApiJarvisLiveTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/jarvis/sync': {
+      id: '/api/jarvis/sync'
+      path: '/api/jarvis/sync'
+      fullPath: '/api/jarvis/sync'
+      preLoaderRoute: typeof ApiJarvisSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminKnowledgeRoute: typeof AdminKnowledgeRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminKnowledgeRoute: AdminKnowledgeRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   ClientsRoute: ClientsRoute,
   ContactRoute: ContactRoute,
   ProcessRoute: ProcessRoute,
@@ -267,6 +356,9 @@ const rootRouteChildren: RootRouteChildren = {
   NewsletterUnsubscribeRoute: NewsletterUnsubscribeRoute,
   WorkSlugRoute: WorkSlugRoute,
   WorkIndexRoute: WorkIndexRoute,
+  ApiJarvisHealthRoute: ApiJarvisHealthRoute,
+  ApiJarvisLiveTokenRoute: ApiJarvisLiveTokenRoute,
+  ApiJarvisSyncRoute: ApiJarvisSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
