@@ -131,6 +131,13 @@ async function searchKnowledge(query: string): Promise<{ chunks: SearchResult[];
   // Strong lexical matches avoid the network round trip to the embedding model.
   if (lexical.length >= 2 || (lexical[0]?.score ?? 0) >= 0.0162)
     return { chunks: lexical, embedMs: 0, searchMs };
+  // No embedding calls while the approved document index has no vectors.
+  // This prevents unnecessary model costs and delay during the initial lexical-only phase.
+  try {
+    const vectors = await db<Array<{ id: string }>>(
+      "kb_chunks?select=id&embedding=not.is.null&limit=1", { timeoutMs: 1100 });
+    if (!vectors.length) return { chunks: lexical, embedMs: 0, searchMs };
+  } catch { return { chunks: lexical, embedMs: 0, searchMs }; }
   const embedStart = Date.now();
   const embedding = await embeddingFor(query).catch(() => null);
   const embedMs = Date.now() - embedStart;
