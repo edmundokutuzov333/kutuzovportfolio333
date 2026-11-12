@@ -210,6 +210,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
       if (event.shiftKey && (document.activeElement === first || document.activeElement === scope)) {
         event.preventDefault();
         last.focus();
