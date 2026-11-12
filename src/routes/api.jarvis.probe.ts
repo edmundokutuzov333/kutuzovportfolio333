@@ -157,10 +157,11 @@ export const Route=createFileRoute("/api/jarvis/probe")({
       result["websocketSupported"]=true;
       try{
         const audio=await new Promise<{setup:boolean;firstAudioMs:number|null;bytes:number;code?:number;reason?:string}>((resolve)=>{
-          let settled=false,setup=false,opened=false,firstAudioMs:number|null=null,bytes=0;
+          let settled=false,setup=false,opened=false,firstAudioMs:number|null=null,bytes=0,audioChunks=0;
           const deadline=setTimeout(()=>finish(),12000);
           const finish=(code?:number,reason?:string)=>{
             result["socketOpened"]=opened;
+            result["audioChunks"]=audioChunks;
             if(settled)return;settled=true;clearTimeout(deadline);
             try{socket.close();}catch{/* already closed */}
             resolve({setup,firstAudioMs,bytes,...(code===undefined?{}:{code}),...(reason?{reason:reason.slice(0,280)}:{})});
@@ -185,7 +186,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
                 event.data instanceof ArrayBuffer?new TextDecoder().decode(event.data):"";
               const data=JSON.parse(raw) as {
                 setupComplete?:Record<string,unknown>,
-                serverContent?:{modelTurn?:{parts?:Array<{inlineData?:{data?:string}}>}}
+                serverContent?:{turnComplete?:boolean;modelTurn?:{parts?:Array<{inlineData?:{data?:string;mimeType?:string}}>}}
               };
               if(data.setupComplete&&!setup){
                 setup=true;socket.send(JSON.stringify({realtimeInput:{text:"Olá, diga uma frase curta."}}));
@@ -194,9 +195,12 @@ export const Route=createFileRoute("/api/jarvis/probe")({
                 if(part.inlineData?.data){
                   firstAudioMs??=Date.now()-start;
                   bytes+=part.inlineData.data.length*0.75;
-                  finish();
+                  audioChunks++;
+                  result["audioMimeType"]=part.inlineData.mimeType||"unknown";
+                  if(bytes>3000)finish();
                 }
               }
+              if(data.serverContent?.turnComplete && audioChunks)finish();
             }catch{/* not a JSON data event */}
           });
           socket.addEventListener("close",event=>finish(event.code,event.reason));
