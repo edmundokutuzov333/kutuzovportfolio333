@@ -4,5 +4,11 @@
   "buildCommand": "bun run build",
   "regions": [
     "fra1"
+  ],
+  "crons": [
+    {
+      "path": "/api/jarvis/sync",
+      "schedule": "0 2 * * *"
+    }
   ]
 }
