@@ -728,6 +728,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
         </div>
 
         <form className="jv-chat-composer" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+          <div className="jv-chat-composer__stack">
           <div className="jv-chat-input-wrap">
             <label htmlFor="jv-input" className="sr-only">Mensagem para Kutuzov</label>
             <textarea id="jv-input" ref={textarea} rows={1} maxLength={2000} value={draft}
@@ -737,11 +738,13 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
                   event.preventDefault(); void submit();
                 }
               }}
-              placeholder="Escreva-me uma mensagem…" />
+              placeholder="Escreva-me uma mensagem…" aria-describedby="jv-privacy" />
             <button type="submit" className="jv-chat-send" aria-label="Enviar mensagem"
               disabled={!draft.trim() || convo.pending}>
               {convo.pending ? <span className="jv-chat-spinner" /> : <Send size={22} strokeWidth={1.8} />}
             </button>
+          </div>
+          <p id="jv-privacy" className="jv-privacy-note">IA Google Gemini · Registos sem emails, telefones ou links.</p>
           </div>
         </form>
       </section>
