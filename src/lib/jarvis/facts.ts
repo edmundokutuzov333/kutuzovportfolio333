@@ -12,6 +12,7 @@ export type Fact = {
 
 export const approved = (facts: Fact[], locale: JarvisLocale): Fact[] =>
   facts.filter((fact) => fact.status === "verified" && fact.visibility === "public"
+    && !fact.key.includes(".candidate.")
     && (fact.locale === "all" || fact.locale === locale))
     .sort((a, b) => a.priority - b.priority || a.key.localeCompare(b.key));
 
@@ -58,7 +59,8 @@ export function validateContacts(answer: string, facts: Fact[], locale: JarvisLo
   const allowedPhones = new Set([contact.phone, contact.whatsapp].filter((v): v is string => !!v)
     .map(normaliseDigits));
   const approvedUrls = approved(facts, locale)
-    .map((fact) => fact.value).filter(v => /^https:\/\//.test(v));
+    .filter(fact => /^(?:contact\.(?:site|whatsapp)|social\.(?:linkedin|instagram|facebook))$/.test(fact.key))
+    .map(fact => fact.value).filter(v => /^https:\/\//.test(v));
   const officialSite = contact.site;
   let flagged = false;
   const reasons = new Set<string>();

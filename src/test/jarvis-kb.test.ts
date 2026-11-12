@@ -34,6 +34,14 @@ describe("JARVIS facts and contact security", () => {
     const message="Veja https://www.edmundokutuzov.art/work/diga-yes e https://wa.me/258876013121";
     expect(validateContacts(message,seed).text).toBe(message);
   });
+  it("never exposes ambiguous Facebook candidates even after a mistaken approval", () => {
+    const mistakenlyApproved = seed.map(f => f.key.includes(".candidate.")
+      ? { ...f, status: "verified" as const } : f);
+    expect(buildFactsBlock(mistakenlyApproved)).not.toContain("facebook.com");
+    expect(validateContacts("https://www.facebook.com/edmundoku/", mistakenlyApproved).text)
+      .not.toContain("facebook.com");
+    expect(getContact(mistakenlyApproved).facebook).toBe(null);
+  });
   it("redacts private data before observability writes", () => {
     expect(redactQuery("ola email a@b.com https://example.com")).not.toContain("a@b.com");
   });
