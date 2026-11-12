@@ -50,11 +50,12 @@ export async function getVerifiedFacts(): Promise<Fact[]> {
   if (cache && Date.now() < cache.expires) return cache.facts;
   if (!loading) {
     loading = (async () => {
-      const state = await db<Array<{ version: number }>>("kb_state?select=version&id=eq.1&limit=1");
-      const version = state[0]?.version ?? -1;
-      if (cache?.version === version) return { ...cache, expires: Date.now() + 60_000 };
-      const facts = await db<Fact[]>("kb_facts?select=key,locale,value,spoken,priority,source,status,visibility&status=eq.verified&visibility=eq.public&limit=250&order=priority.asc");
-      return { facts, version, expires: Date.now() + 60_000 };
+      const core=await db<{version:number;facts:Fact[]}>("rpc/kb_get_core_facts",{
+        method:"POST",body:{},timeoutMs:2000,
+      });
+      if (!Array.isArray(core.facts)) throw new Error("JARVIS_CORE_FACTS_UNAVAILABLE");
+      if (cache?.version === core.version) return { ...cache, expires: Date.now() + 60_000 };
+      return { facts: core.facts, version: core.version, expires: Date.now() + 60_000 };
     })().then((value) => { cache = value; return value; }).finally(() => { loading = null; });
   }
   return (await loading).facts;
