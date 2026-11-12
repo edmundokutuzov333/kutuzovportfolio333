@@ -51,6 +51,31 @@ export const Route=createFileRoute("/api/jarvis/probe")({
       }
       return Response.json({results},{headers:{"Cache-Control":"no-store, private"}});
     }
+    if(url.searchParams.get("action")==="livetoken"){
+      const started=Date.now();
+      try{
+        const reply=await fetch("https://edmundokutuzov.art/api/jarvis/live-token",{
+          method:"POST",headers:{origin:"https://edmundokutuzov.art","sec-fetch-site":"same-origin"},
+          signal:AbortSignal.timeout(8500),cache:"no-store",
+        });
+        const payload=reply.ok?await reply.json() as {
+          token?:string;model?:string;config?:{
+            generationConfig?:{speechConfig?:{voiceConfig?:{prebuiltVoiceConfig?:{voiceName?:string}}}};
+            sessionResumption?:unknown;contextWindowCompression?:unknown;
+            inputAudioTranscription?:unknown;outputAudioTranscription?:unknown;
+          };
+        }:null;
+        const c=payload?.config;
+        return Response.json({http:reply.status,ms:Date.now()-started,
+          tokenIssued:!!payload?.token,model:payload?.model??null,
+          voice:c?.generationConfig?.speechConfig?.voiceConfig?.prebuiltVoiceConfig?.voiceName??null,
+          hasResumption:!!c?.sessionResumption,hasCompression:!!c?.contextWindowCompression,
+          hasInputTranscription:!!c?.inputAudioTranscription,
+          hasOutputTranscription:!!c?.outputAudioTranscription},
+          {headers:{"Cache-Control":"no-store, private"}});
+      }catch(error){return Response.json({error:error instanceof Error?error.name:"unknown"},
+        {status:503,headers:{"Cache-Control":"no-store, private"}});}
+    }
     // A single explicit, authenticated backfill call, never invoked by public traffic.
     if(url.searchParams.get("action")==="embed"){
       try{
