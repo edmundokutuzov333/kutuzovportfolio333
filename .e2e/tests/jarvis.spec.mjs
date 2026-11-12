@@ -38,7 +38,8 @@ test("JARVIS presents published project links and live artwork instead of the ol
   await page.setViewportSize({ width: 1448, height: 1086 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
-  await page.locator('button[aria-haspopup="dialog"]').first().click({ force: true });
+  await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
+  await expect(page.locator(".jv-root")).toBeVisible();
   await page.getByRole("button", { name: "Abrir conversa escrita" }).click();
   const chat = page.locator(".jv-chat-card");
   await chat.getByRole("button", { name: "Explorar os meus projectos." }).click();
