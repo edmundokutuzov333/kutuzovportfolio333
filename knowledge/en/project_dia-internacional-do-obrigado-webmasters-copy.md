@@ -1,0 +1,24 @@
+---
+id: "project:dia-internacional-do-obrigado-webmasters-copy"
+locale: "en"
+visibility: public
+source: "site_db"
+verified: false
+source_ref: "project:dia-internacional-do-obrigado-webmasters-copy"
+---
+
+# Dia internacional do obrigado Webmasters
+
+[Translation pending editorial review]
+
+Cliente: 
+
+Ano: 
+
+Disciplina: Social Media
+
+Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.
+
+Uma gramática visual modular — hierarquia tipográfica, contraste e um gesto memorável — desenhada para funcionar no feed, no ecrã e na memória.
+
+Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.
