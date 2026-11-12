@@ -25,6 +25,51 @@ function answerKnown(query:string, facts:Awaited<ReturnType<typeof getVerifiedFa
   }
   return null;
 }
+type PublishedProject={slug:string;title:string;client_label:string|null;
+  summary:string|null;year_label:string|null;discipline:string|null};
+const clientCache=new Map<string,{until:number;projects:PublishedProject[]}>();
+const normalize=(text:string)=>text.toLowerCase().normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+async function answerPublishedClient(query:string,
+  facts:Awaited<ReturnType<typeof getVerifiedFacts>>,locale:JarvisLocale):Promise<string|null>{
+  if(!/(?:project|campaign|trabalho|campanha|case|cliente|marca|client|brand)/i.test(query))return null;
+  const target=normalize(query);
+  const verified=facts.filter(f=>f.status==="verified"&&f.visibility==="public"
+    &&f.key.startsWith("client."));
+  const match=verified.find(f=>{
+    const name=normalize(f.value);
+    const first=name.split(/\s+/).find(w=>w.length>=3&&!["mocambique","companhia","hotel"].includes(w));
+    return first && target.split(/\s+/).includes(first);
+  });
+  if(!match)return null;
+  const brand=match.value;
+  const key=match.key;
+  let projects:PublishedProject[];
+  const cached=clientCache.get(key);
+  if(cached&&cached.until>Date.now())projects=cached.projects;
+  else {
+    // An approved company name from KB facts is the only interpolation source.
+    // The CMS is queried read-only; never invent missing case studies.
+    const label=encodeURIComponent(brand.split(/\s+/)[0]??brand).replace(/%20/g,"");
+    projects=await db<PublishedProject[]>(
+      "projects?select=slug,title,client_label,summary,year_label,discipline"+
+      "&status=eq.published&or=(client_label.ilike.*"+label+"*,title.ilike.*"+label+"*)"+
+      "&order=position.asc&limit=6",{timeoutMs:2000});
+    clientCache.set(key,{until:Date.now()+60_000,projects});
+    if(clientCache.size>30)clientCache.delete(clientCache.keys().next().value??key);
+  }
+  if(!projects.length)return locale==="en"
+    ? brand+" is a verified portfolio client, but there is no specific published project for this brand on the website."
+    : brand+" é uma marca confirmada no portfólio. Não há, neste momento, um projecto específico dessa marca publicado no site.";
+  const first=projects.slice(0,3).map(p=>{
+    const desc=[p.title,p.year_label,p.discipline].filter(Boolean).join(" · ");
+    return desc+". https://www.edmundokutuzov.art/work/"+encodeURIComponent(p.slug);
+  });
+  return locale==="en"
+    ? "Published work for "+brand+": "+first.join(" ")
+    : "Trabalhos publicados de "+brand+": "+first.join(" ");
+}
+
 async function findRelevant(query:string,locale:JarvisLocale):Promise<string> {
   if(process.env["KB_ENABLED"]!=="true" || !/(?:project|portfolio|campaign|work|case|marca|cliente|projecto|trabalho|campanha|design)/i.test(query))
     return "";
@@ -57,6 +102,17 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
     write("timing",{totalMs:Date.now()-start,firstTextMs:Date.now()-start,tier:"direct"});
     write("done",{});return;
   }
+  // Published projects and confirmed clients bypass the generative model.
+  // Fast and factual even when Gemini is congested.
+  try{
+    const published=await answerPublishedClient(question,facts,locale);
+    if(published){
+      const safe=validateContacts(published,facts,locale);
+      write("chunk",{text:safe.text});
+      write("timing",{totalMs:Date.now()-start,firstTextMs:Date.now()-start,tier:"published_cms"});
+      write("done",{});return;
+    }
+  }catch{/* CMS failure still allows verified KB+Gemini response. */}
   const contextPromise=findRelevant(question,locale);
   const key=process.env["GEMINI_API_KEY"];
   if(!key){write("error",{message:"Serviço de IA indisponível."});return;}
