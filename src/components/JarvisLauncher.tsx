@@ -73,7 +73,7 @@ function useConversation() {
     if (!content || busy.current) return null;
     busy.current = true;
     const version = ++epoch.current;
-    const next: Msg[] = [...current.current, { role: "user", content }].slice(-12);
+    const next: Msg[] = [...current.current, { role: "user" as const, content }].slice(-12);
     current.current = next;
     setMessages(next);
     setPending(true);
@@ -82,7 +82,7 @@ function useConversation() {
       const response = await ask({ data: { messages: next } });
       if (epoch.current !== version) return null;
       if (response.reply) {
-        current.current = [...current.current, { role: "assistant", content: response.reply }].slice(-24);
+        current.current = [...current.current, { role: "assistant" as const, content: response.reply }].slice(-24);
         setMessages(current.current);
         return response.reply;
       }
@@ -309,7 +309,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           const level = Math.min(1, Math.max(0.04, rms * 7));
           if (visualRef.current) {
             visualRef.current.style.setProperty("--jv-level", level.toFixed(3));
-            visualRef.current.dataset.live = "true";
+            visualRef.current.dataset["live"] = "true";
           }
         }
         meterFrame.current = requestAnimationFrame(frame);
@@ -404,7 +404,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   useEffect(() => () => {
     voiceSession.current += 1;
     recRef.current?.abort();
-    recorderRef.current?.stop();
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     stopMeter();
     window.speechSynthesis?.cancel();
   }, [stopMeter]);
@@ -562,7 +562,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       }, 15_000);
     } catch {
       stopMeter();
-      if (voiceSession === undefined || voiceSession.current !== session) return;
+      if (voiceSession.current !== session) return;
       setVoice("unavailable");
       setVoiceMessage("Não foi possível utilizar o microfone. Verifique as permissões.");
     }

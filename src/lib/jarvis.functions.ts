@@ -50,13 +50,13 @@ async function requestGemini(
   payload: Record<string, unknown>,
   timeoutMs = 12_000,
 ): Promise<GeminiResult> {
-  const key = process.env.GEMINI_API_KEY?.trim();
+  const key = process.env["GEMINI_API_KEY"]?.trim();
   if (!key) {
     console.error("JARVIS_CONFIG_MISSING_GEMINI_KEY");
     return { reply: null, error: "O assistente está em configuração. Tente novamente mais tarde." };
   }
 
-  const configured = process.env.JARVIS_GEMINI_MODEL?.trim();
+  const configured = process.env["JARVIS_GEMINI_MODEL"]?.trim();
   const primary = configured && ALLOWED_MODELS.has(configured) ? configured : "gemini-3.5-flash-lite";
   const fallbacks = primary === "gemini-3.5-flash-lite" ? ["gemini-3.5-flash"] : [];
   for (const model of [primary, ...fallbacks]) {
