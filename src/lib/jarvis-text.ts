@@ -4,7 +4,7 @@
 export function cleanJarvisReply(input: string): string {
   return input
     .replace(/\r\n?/g, "\n")
-    .replace(/^\s*```[^\n]*$/gm, "")
+    .replace(/^[ \t]*```[^\n]*\n?/gm, "")
     .replace(/^\s*(?:#{1,6}\s+|>\s+)/gm, "")
     .replace(/^\s*(?:[-*+•]\s+)/gm, "")
     .replace(/^\s*(?:-{3,}|_{3,}|\*{3,})\s*$/gm, "")
