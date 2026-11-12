@@ -51,7 +51,7 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
   if(!quota){write("error",{message:"Limite de pedidos atingido. Tente mais tarde."});return;}
   const locale=detectLocale(question), canonical=getContact(facts,locale);
   if(!canonical.email){write("error",{message:"Contactos oficiais temporariamente indisponíveis."});return;}
-  let result=answerKnown(question,facts,locale);
+  const result=answerKnown(question,facts,locale);
   if(result){
     write("chunk",{text:result});
     write("timing",{totalMs:Date.now()-start,firstTextMs:Date.now()-start,tier:"direct"});
