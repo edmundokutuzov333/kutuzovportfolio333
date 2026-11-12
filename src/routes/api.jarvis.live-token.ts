@@ -19,13 +19,22 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
           if(!quota)return new Response(null,{status:429,headers});
           const contact=getContact(facts),apiKey=process.env["GEMINI_API_KEY"];
           if(!contact.email||!apiKey)return new Response(null,{status:503,headers});
+          // Gemini Live 3.8 is the low-latency native-audio model.
           const model="models/gemini-3.8-live";
-          const system=jarvisPersona("pt",buildFactsBlock(facts,"pt").slice(0,4300),"");
+          const system=jarvisPersona("pt",buildFactsBlock(facts,"pt").slice(0,4300),"")
+            +"\\nVOICE: Usa apresentação vocal MASCULINA, natural e calorosa, registo médio-grave."
+            +"\\nRESPONDE INEQUIVOCAMENTE EM PORTUGUÊS EUROPEU FALADO EM MOÇAMBIQUE."
+            +"\\nEvita de forma explícita a pronúncia e o vocabulário do português do Brasil."
+            +"\\nMantém cadência moçambicana natural, sem imitações caricaturais."
+            +"\\nFala em frases curtas. Em contactos invoca sempre get_contact.";
+
           const config={
             responseModalities:["AUDIO"],
+            speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}},
             inputAudioTranscription:{},
             outputAudioTranscription:{},
             sessionResumption:{},
+            contextWindowCompression:{slidingWindow:{}},
             systemInstruction:{parts:[{text:system}]},
             tools:[{functionDeclarations:[{
               name:"get_contact",description:"Obter email, WhatsApp, site, LinkedIn ou Instagram canónicos antes de dizer contactos.",
@@ -35,7 +44,7 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
           const response=await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens",{
             method:"POST",headers:{"x-goog-api-key":apiKey,"Content-Type":"application/json"},
             body:JSON.stringify({uses:1,
-              expireTime:new Date(Date.now()+12*60_000).toISOString(),
+              expireTime:new Date(Date.now()+36*60_000).toISOString(),
               newSessionExpireTime:new Date(Date.now()+60_000).toISOString(),
               liveConnectConstraints:{model,config}}),
             signal:AbortSignal.timeout(8500),cache:"no-store",
