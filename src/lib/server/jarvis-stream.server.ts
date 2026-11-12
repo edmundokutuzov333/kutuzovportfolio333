@@ -79,7 +79,7 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
       });
       if(!res.ok || !res.body){if(res.status===401||res.status===403)break;continue;}
       const reader=res.body.getReader(),decoder=new TextDecoder();
-      let unparsed="",finished=false;
+      let unparsed="";
       const processMessage=(line:string)=>{
         if(!line.startsWith("data:"))return;
         let data:GeminiPart;
@@ -99,7 +99,7 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
           if(safe)write("chunk",{text:safe});
         }
       };
-      while(!finished){
+      while(true){
         const {done,value}=await reader.read();if(done)break;
         unparsed+=decoder.decode(value,{stream:true});
         const lines=unparsed.split(/\r?\n/);unparsed=lines.pop()??"";

@@ -71,6 +71,7 @@ function useConversation() {
   const busy = useRef(false);
   const epoch = useRef(0);
 
+  const streamingController = useRef<AbortController | null>(null);
   const send = useCallback(async (raw: string): Promise<string | null> => {
     const content = raw.trim();
     if (!content || busy.current) return null;
@@ -81,21 +82,75 @@ function useConversation() {
     setMessages(next);
     setPending(true);
     setError(null);
+    let reply = "";
+    let receivedError: string | null = null;
+    const controller = new AbortController();
+    streamingController.current = controller;
+    const addText = (fragment: string) => {
+      if (epoch.current !== version || !fragment) return;
+      reply += fragment;
+      const displayed = [...next, { role: "assistant" as const, content: cleanJarvisReply(reply) }].slice(-24);
+      current.current = displayed;
+      setMessages(displayed);
+    };
     try {
-      const response = await ask({ data: { messages: next } });
-      if (epoch.current !== version) return null;
-      const reply = response.reply ? cleanJarvisReply(response.reply) : "";
-      if (reply) {
-        current.current = [...current.current, { role: "assistant" as const, content: reply }].slice(-24);
-        setMessages(current.current);
-        return reply;
+      const response = await fetch("/api/jarvis/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
+        body: JSON.stringify({ messages: next }),
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.body) throw new Error("stream_unavailable");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let unread = "";
+      const parse = (block: string) => {
+        const kind = /^event:\s*(\S+)/m.exec(block)?.[1];
+        const data = /^data:\s*(.*)$/m.exec(block)?.[1];
+        if (!data) return;
+        try {
+          const message = JSON.parse(data) as { text?: string; message?: string };
+          if (kind === "chunk" && typeof message.text === "string") addText(message.text);
+          if (kind === "error") receivedError = message.message ?? "Não foi possível obter resposta.";
+        } catch { /* Discard invalid server event without exposing raw fragments. */ }
+      };
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        unread += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
+        const blocks = unread.split("\n\n");
+        unread = blocks.pop() ?? "";
+        for (const block of blocks) parse(block);
       }
-      setError(response.error || "Não foi possível obter resposta. Tente novamente.");
+      if (unread.trim()) parse(unread);
+      if (epoch.current !== version) return null;
+      if (receivedError && !reply) setError(receivedError);
+      if (receivedError && reply) setError("A resposta foi interrompida. Pode voltar a tentar.");
+      if (reply) return cleanJarvisReply(reply);
+      if (receivedError) return null;
+      throw new Error("empty_stream");
     } catch {
-      if (epoch.current === version) setError("Não foi possível contactar o servidor. Tente novamente.");
+      if (epoch.current !== version || controller.signal.aborted) return null;
+      if (reply) {
+        setError("A ligação foi interrompida. Pode voltar a tentar.");
+        return cleanJarvisReply(reply);
+      }
+      // Older browsers / route incompatibilities: preserve original server function.
+      try {
+        const response = await ask({ data: { messages: next } });
+        if (epoch.current !== version) return null;
+        if (response.reply) {
+          addText(cleanJarvisReply(response.reply));
+          return cleanJarvisReply(reply);
+        }
+        setError(response.error || "Não foi possível obter resposta. Tente novamente.");
+      } catch {
+        if (epoch.current === version) setError("Não foi possível contactar o servidor. Tente novamente.");
+      }
     } finally {
       if (epoch.current === version) {
         busy.current = false;
+        streamingController.current = null;
         setPending(false);
       }
     }
@@ -103,6 +158,8 @@ function useConversation() {
   }, [ask]);
 
   const reset = useCallback(() => {
+    streamingController.current?.abort();
+    streamingController.current = null;
     epoch.current++;
     busy.current = false;
     current.current = [];
@@ -656,7 +713,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
     const scrollArea = content.current;
     if (showWorks || !hasMessages || !scrollArea) return;
     scrollArea.scrollTop = scrollArea.scrollHeight;
-  }, [convo.messages.length, convo.pending, showWorks, hasMessages]);
+  }, [convo.messages.length, convo.messages.at(-1)?.content, convo.pending, showWorks, hasMessages]);
 
   const resize = () => {
     const element = textarea.current;
