@@ -7,6 +7,7 @@ import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
+export const JARVIS_CLOSE_EVENT = "ek:jarvis-close";
 export const openJarvis = () => window.dispatchEvent(new Event(JARVIS_OPEN_EVENT));
 
 export function JarvisTrigger({ className = "", label = "JARVIS · AI" }: { className?: string; label?: string }) {
@@ -346,6 +347,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     stopVoice();
     setChatOpen(false);
     setOpen(false);
+    window.dispatchEvent(new Event(JARVIS_CLOSE_EVENT));
     requestAnimationFrame(() => returnFocus.current?.focus?.());
   }, [stopVoice]);
 

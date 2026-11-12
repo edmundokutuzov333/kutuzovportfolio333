@@ -9,7 +9,7 @@ import { EKBlueprint } from "./EKBlueprint";
 import { LogoMark } from "./LogoMark";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
-import { JarvisLauncher, JarvisTrigger } from "./JarvisLauncher";
+import { JARVIS_CLOSE_EVENT, JARVIS_OPEN_EVENT, JarvisLauncher, JarvisTrigger } from "./JarvisLauncher";
 import { LiquidTransition } from "./LiquidTransition";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 
@@ -23,6 +23,7 @@ function Cursor() {
     if (!window.matchMedia("(pointer: fine)").matches) return;
     let x = 0, y = 0, cx = 0, cy = 0, raf = 0;
     const move = (event: MouseEvent) => {
+      if (document.documentElement.classList.contains("jarvis-active")) return;
       x = event.clientX;
       y = event.clientY;
       const target = event.target as HTMLElement;
@@ -32,16 +33,31 @@ function Cursor() {
       setLensOn(!element && !!target.closest("img,video,h1,h2,h3,h4,p,.font-display"));
     };
     const loop = () => {
+      if (document.documentElement.classList.contains("jarvis-active")) { raf = 0; return; }
       cx += (x - cx) * 0.35;
       cy += (y - cy) * 0.35;
       if (dot.current) dot.current.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
       if (lens.current) lens.current.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
       raf = requestAnimationFrame(loop);
     };
+    const pause = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      setHover(false);
+      setLabel(null);
+      setLensOn(false);
+    };
+    const resume = () => {
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
     window.addEventListener("mousemove", move, { passive: true });
+    window.addEventListener(JARVIS_OPEN_EVENT, pause);
+    window.addEventListener(JARVIS_CLOSE_EVENT, resume);
     loop();
     return () => {
       window.removeEventListener("mousemove", move);
+      window.removeEventListener(JARVIS_OPEN_EVENT, pause);
+      window.removeEventListener(JARVIS_CLOSE_EVENT, resume);
       cancelAnimationFrame(raf);
     };
   }, []);
@@ -195,9 +211,21 @@ export function Shell({ children }: { children: ReactNode }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ lerp: 0.14 });
     let raf = 0;
-    const loop = (time: number) => { lenis.raf(time); raf = requestAnimationFrame(loop); };
+    const loop = (time: number) => {
+      if (!document.documentElement.classList.contains("jarvis-active")) lenis.raf(time);
+      raf = requestAnimationFrame(loop);
+    };
+    const pause = () => lenis.stop();
+    const resume = () => lenis.start();
+    window.addEventListener(JARVIS_OPEN_EVENT, pause);
+    window.addEventListener(JARVIS_CLOSE_EVENT, resume);
     raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); lenis.destroy(); };
+    return () => {
+      window.removeEventListener(JARVIS_OPEN_EVENT, pause);
+      window.removeEventListener(JARVIS_CLOSE_EVENT, resume);
+      cancelAnimationFrame(raf);
+      lenis.destroy();
+    };
   }, []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
