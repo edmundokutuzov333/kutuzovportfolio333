@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test";
 test("JARVIS keeps the reference voice stage and native pointer navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1448, height: 1086 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   const open = page.locator('button[aria-haspopup="dialog"]').first();
   await expect(open).toBeVisible();
   await open.click({ force: true });
@@ -34,6 +35,7 @@ test("JARVIS presents published project links and live artwork instead of the ol
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1448, height: 1086 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   await page.locator('button[aria-haspopup="dialog"]').first().click({ force: true });
   await page.getByRole("button", { name: "Abrir conversa escrita" }).click();
   const chat = page.locator(".jv-chat-card");
@@ -57,6 +59,7 @@ test("JARVIS presents published project links and live artwork instead of the ol
 test("mobile JARVIS chat does not scroll sideways and keeps a usable composer", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
   const panel = page.locator(".jv-root");
   await expect(panel).toBeVisible();

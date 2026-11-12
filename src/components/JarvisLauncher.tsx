@@ -362,7 +362,11 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       setOpen(true);
     };
     window.addEventListener(JARVIS_OPEN_EVENT, onOpen);
-    return () => window.removeEventListener(JARVIS_OPEN_EVENT, onOpen);
+    document.documentElement.dataset["jarvisReady"] = "true";
+    return () => {
+      window.removeEventListener(JARVIS_OPEN_EVENT, onOpen);
+      delete document.documentElement.dataset["jarvisReady"];
+    };
   }, []);
 
   useEffect(() => {
