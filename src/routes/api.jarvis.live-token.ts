@@ -12,11 +12,21 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
           ||request.headers.get("sec-fetch-site")==="cross-site")
           return new Response(null,{status:403,headers});
         try{
-          const {getVerifiedFacts,acquireQuota}=await import("@/lib/server/jarvis-kb.server");
+          const {getVerifiedFacts,acquireQuota,db}=await import("@/lib/server/jarvis-kb.server");
           const {buildFactsBlock,getContact}=await import("@/lib/jarvis/facts");
           const {jarvisPersona}=await import("@/lib/jarvis/persona");
           const [facts,quota]=await Promise.all([getVerifiedFacts(),acquireQuota()]);
           if(!quota)return new Response(null,{status:429,headers});
+          // Native audio incurs continuous provider costs, not merely one
+          // request. A separate daily global session ceiling is essential.
+          const configured=Number(process.env["JARVIS_LIVE_DAILY_SESSIONS"]||"24");
+          const daily=Number.isFinite(configured)?Math.max(1,Math.min(100,Math.floor(configured))):24;
+          const date=new Date().toISOString().slice(0,10);
+          const available=await db<boolean>("rpc/kb_acquire_rate_slot",{
+            method:"POST",body:{p_bucket:"live:global:"+date,p_max:daily,p_window_seconds:86400},
+            timeoutMs:2300,
+          });
+          if(!available)return new Response(null,{status:429,headers});
           const contact=getContact(facts),apiKey=process.env["GEMINI_API_KEY"];
           if(!contact.email||!apiKey)return new Response(null,{status:503,headers});
           // Gemini Live 3.8 is the low-latency native-audio model.
