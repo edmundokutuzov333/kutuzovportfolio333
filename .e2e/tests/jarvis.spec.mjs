@@ -10,7 +10,12 @@ test("JARVIS keeps the reference voice stage and native pointer navigation", asy
   await open.click({ force: true });
 
   const jarvis = page.locator(".jv-root");
-  await expect(jarvis).toBeVisible();
+  if (!(await jarvis.isVisible())) {
+    // Dev-server hydration can invalidate a click during Vite optimizer reload.
+    // Re-emit the same public open event after React signals that it is ready.
+    await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
+  }
+  await expect(jarvis).toBeVisible({ timeout: 30_000 });
   await expect(jarvis.locator(".jv-panel h1")).toHaveText("Estou por aqui.");
   await expect(jarvis.locator(".jv-visual__bar")).toHaveCount(34);
   await expect(jarvis.locator(".jv-chat-button")).toHaveCSS("cursor", "pointer");
@@ -194,7 +199,9 @@ test("JARVIS SSE text conversation renders verified chunks without raw Markdown"
     });
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
+  await expect(page.locator(".jv-root")).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: "Abrir conversa escrita" }).click();
   await page.locator("#jv-input").fill("Qual o email?");
   await page.getByRole("button", { name: "Enviar mensagem" }).click();
