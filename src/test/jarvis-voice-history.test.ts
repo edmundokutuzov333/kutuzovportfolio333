@@ -31,3 +31,17 @@ describe("JARVIS long conversation continuity",()=>{
     expect(buildJarvisHistory([{role:"user",content:"Olá"}])).toEqual([{role:"user",content:"Olá"}]);
   });
 });
+
+describe("JARVIS large-conversation transport contract",()=>{
+  it("fits 320 maximum-sized turns into the streaming request limit",()=>{
+    const messages=Array.from({length:320},(_,i)=>({
+      role:(i%2===0?"user":"assistant") as "user"|"assistant",
+      content:(i===0?"Trabalho original Toyota: ":"")+"x".repeat(1850),
+    }));
+    const packed=buildJarvisHistory(messages);
+    expect(packed.length).toBeLessThanOrEqual(16);
+    expect(packed[0]?.content).toContain("Trabalho original Toyota");
+    expect(JSON.stringify({messages:packed}).length).toBeLessThan(26_000);
+    expect(packed.at(-1)?.content.length).toBeLessThanOrEqual(1900);
+  });
+});

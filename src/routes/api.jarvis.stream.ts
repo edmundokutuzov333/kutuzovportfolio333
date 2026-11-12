@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const Message=z.object({role:z.enum(["user","assistant"]),content:z.string().trim().min(1).max(2000)}).strict();
-const Input=z.object({messages:z.array(Message).min(1).max(12)}).strict();
+const Input=z.object({messages:z.array(Message).min(1).max(16)}).strict();
 
 export const Route=createFileRoute("/api/jarvis/stream")({
   server:{handlers:{POST:async ({request})=>{

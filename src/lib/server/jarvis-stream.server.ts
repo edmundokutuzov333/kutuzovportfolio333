@@ -82,7 +82,10 @@ async function findRelevant(query:string,locale:JarvisLocale):Promise<string> {
 function bodyFor(model:string,instruction:string,messages:Message[]) {
   return JSON.stringify({
     systemInstruction:{parts:[{text:instruction}]},
-    contents:messages.slice(-7).map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content.slice(0,1500)}]})),
+    contents:([
+      ...(messages[0]?.content.startsWith("CONTEXTO ANTERIOR DA MESMA CONVERSA")?[messages[0]]:[]),
+      ...messages.slice(-10),
+    ]).map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content.slice(0,1500)}]})),
     generationConfig:{maxOutputTokens:220,
       ...(model.startsWith("gemini-3.5")||model.startsWith("gemini-3.6")
         ? {thinkingConfig:{thinkingLevel:"MINIMAL"}} : {})},
