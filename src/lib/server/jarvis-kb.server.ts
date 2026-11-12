@@ -24,7 +24,7 @@ function dbConfig() {
   if (!url || !key || !/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url)) return null;
   return { url, key };
 }
-export async function db<T>(resource: string, options: { method?: string; body?: unknown; timeoutMs?: number } = {}): Promise<T> {
+export async function db<T>(resource: string, options: { method?: string; body?: unknown; timeoutMs?: number; headers?: Record<string,string> } = {}): Promise<T> {
   const cfg = dbConfig();
   if (!cfg) throw new Error("JARVIS_DB_CONFIG_MISSING");
   const opaque = cfg.key.startsWith("sb_secret_");
@@ -35,6 +35,7 @@ export async function db<T>(resource: string, options: { method?: string; body?:
       ...(opaque ? {} : { Authorization: "Bearer " + cfg.key }),
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...options.headers,
     },
     ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
     signal: AbortSignal.timeout(options.timeoutMs ?? 2500),
