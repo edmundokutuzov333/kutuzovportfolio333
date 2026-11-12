@@ -21,6 +21,7 @@ export const Route=createFileRoute("/api/jarvis/probe")({
         const listing=await modelsResponse.json() as {models?:Array<{name?:string}>};
         result["availableModels"]=(listing.models??[]).map(m=>m.name||"").filter(
           name=>name.includes('gemini-')).slice(0,35);
+        result["availableLiveModels"]=(listing.models??[]).map(m=>m.name||"").filter(name=>name.includes("live"));
       }
     }catch(error){result["modelsError"]=error instanceof Error?error.name:"unknown";}
     try {
@@ -81,20 +82,24 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     if(token&&typeof WebSocket!=="undefined"){
       result["websocketSupported"]=true;
       try{
-        const audio=await new Promise<{setup:boolean;firstAudioMs:number|null;bytes:number;code?:number}>((resolve)=>{
+        const audio=await new Promise<{setup:boolean;firstAudioMs:number|null;bytes:number;code?:number;reason?:string}>((resolve)=>{
           let settled=false,setup=false,firstAudioMs:number|null=null,bytes=0;
           const deadline=setTimeout(()=>finish(),12000);
-          const finish=(code?:number)=>{
+          const finish=(code?:number,reason?:string)=>{
             if(settled)return;settled=true;clearTimeout(deadline);
             try{socket.close();}catch{/* already closed */}
-            resolve({setup,firstAudioMs,bytes,...(code===undefined?{}:{code})});
+            resolve({setup,firstAudioMs,bytes,...(code===undefined?{}:{code}),...(reason?{reason:reason.slice(0,280)}:{})});
           };
-          const socket=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
-          socket.addEventListener("open",()=>socket.send(JSON.stringify({setup:{
-            model:"models/gemini-3.8-live",responseModalities:["AUDIO"],
-            speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}},
-            systemInstruction:{parts:[{text:"Responde com voz masculina em português de Portugal usado em Moçambique. Uma frase curta."}]},
-          }})));
+          const apiVersion=url.searchParams.get("socketVersion")==="v1alpha"?"v1alpha":"v1beta";
+          const socket=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage."+apiVersion+".GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
+          socket.addEventListener("open",()=>{
+            const mode=url.searchParams.get("mode")||"minimal";
+            const voice={speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Orus"}}}};
+            const speech={systemInstruction:{parts:[{text:"Responde em português europeu com voz masculina."}]}};
+            const init={model:"models/gemini-3.8-live",responseModalities:["AUDIO"],
+              ...(mode==="voice"||mode==="full"?voice:{}),...(mode==="full"?speech:{})};
+            socket.send(JSON.stringify({setup:init}));
+          });
           socket.addEventListener("message",(event)=>{
             try{
               const data=JSON.parse(String(event.data)) as {
@@ -113,13 +118,14 @@ export const Route=createFileRoute("/api/jarvis/probe")({
               }
             }catch{/* not a JSON data event */}
           });
-          socket.addEventListener("close",event=>finish(event.code));
+          socket.addEventListener("close",event=>finish(event.code,event.reason));
           socket.addEventListener("error",()=>finish(1006));
         });
         result["liveSetup"]=audio.setup;
         result["firstAudioMs"]=audio.firstAudioMs;
         result["audioPayloadBytes"]=audio.bytes;
         result["socketCloseCode"]=audio.code||null;
+        result["socketCloseReason"]=audio.reason||null;
       }catch(error){result["socketError"]=error instanceof Error?error.name:"unknown";}
     }else result["websocketSupported"]=typeof WebSocket!=="undefined";
     result["totalElapsedMs"]=Date.now()-first;
