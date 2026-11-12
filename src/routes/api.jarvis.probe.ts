@@ -12,6 +12,17 @@ export const Route=createFileRoute("/api/jarvis/probe")({
     const result:Record<string,unknown>={provider:"Gemini",model:"gemini-3.8-live"};
     const headers={"Content-Type":"application/json","x-goog-api-key":key};
     const first=Date.now();
+    try{
+      const modelsResponse=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100",{
+        headers:{"x-goog-api-key":key},signal:AbortSignal.timeout(5500),cache:"no-store",
+      });
+      result["modelsHTTP"]=modelsResponse.status;
+      if(modelsResponse.ok){
+        const listing=await modelsResponse.json() as {models?:Array<{name?:string}>};
+        result["availableModels"]=(listing.models??[]).map(m=>m.name||"").filter(
+          name=>/gemini-(2\\.5|3\\.5|3\\.8|embedding)/.test(name)).slice(0,35);
+      }
+    }catch(error){result["modelsError"]=error instanceof Error?error.name:"unknown";}
     try {
       const text=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:streamGenerateContent?alt=sse",{
         method:"POST",headers,
@@ -46,6 +57,11 @@ export const Route=createFileRoute("/api/jarvis/probe")({
       result["tokenHTTP"]=res.status;
       result["tokenLatencyMs"]=Date.now()-start;
       if(res.ok)token=(await res.json() as {name?:string}).name||"";
+      else {
+        const problem=await res.json().catch(()=>null) as {error?:{code?:number;status?:string;message?:string}}|null;
+        result["tokenErrorStatus"]=problem?.error?.status||"unknown";
+        result["tokenErrorMessage"]=String(problem?.error?.message||"").slice(0,260);
+      }
     }catch(error){
       result["tokenError"]=error instanceof Error?error.name:"unknown";
     }
