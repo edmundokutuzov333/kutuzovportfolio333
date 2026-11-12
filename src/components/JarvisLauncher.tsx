@@ -1,10 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Mic, MessageSquare, Plus, Send, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, MessageSquare, Plus, Send, X } from "lucide-react";
 import { EKMark } from "./EKMark";
-import { askJarvis } from "@/lib/jarvis.functions";
-import { jarvisWorks } from "@/lib/jarvis-works";
+import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
@@ -12,7 +11,7 @@ export const openJarvis = () => window.dispatchEvent(new Event(JARVIS_OPEN_EVENT
 
 export function JarvisTrigger({ className = "", label = "JARVIS · AI" }: { className?: string; label?: string }) {
   return (
-    <button type="button" onClick={openJarvis} aria-haspopup="dialog" className={`group inline-flex items-center gap-2.5 ${className}`}>
+    <button type="button" onClick={openJarvis} aria-haspopup="dialog" className={"group inline-flex items-center gap-2.5 " + className}>
       <span className="relative flex h-2 w-2">
         <span className="absolute inset-0 rounded-full bg-primary/60 blur-[3px] transition group-hover:bg-primary" />
         <span className="relative h-2 w-2 rounded-full bg-primary" />
@@ -24,75 +23,103 @@ export function JarvisTrigger({ className = "", label = "JARVIS · AI" }: { clas
 
 type Msg = { role: "user" | "assistant"; content: string };
 type VoiceState = "idle" | "listening" | "processing" | "speaking" | "unavailable";
+type SpeechRec = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onend: (() => void) | null;
+};
 
 const VOICE_LABEL: Record<VoiceState, string> = {
   idle: "Disponível para conversar",
   listening: "A ouvir…",
   processing: "A processar…",
   speaking: "A responder…",
-  unavailable: "Ligação indisponível",
+  unavailable: "Voz indisponível. Tente novamente.",
 };
-
 const SUGGESTIONS = [
   { id: "percurso", label: "Conhecer o meu percurso.", prompt: "Fala-me do teu percurso profissional." },
   { id: "projectos", label: "Explorar os meus projectos.", prompt: null },
   { id: "marcas", label: "Ver as marcas com que trabalhei.", prompt: "Com que marcas já trabalhaste?" },
 ] as const;
-
-type SpeechRec = { lang: string; interimResults: boolean; start: () => void; stop: () => void; onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null };
+const WAVEFORM = [2, 3, 4, 8, 14, 23, 34, 47, 57, 47, 35, 25, 16, 9, 5, 3, 2];
 
 function getRecognition(): SpeechRec | null {
-  const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
-  const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
-  return Ctor ? new Ctor() : null;
+  const scope = window as unknown as {
+    SpeechRecognition?: new () => SpeechRec;
+    webkitSpeechRecognition?: new () => SpeechRec;
+  };
+  const Constructor = scope.SpeechRecognition ?? scope.webkitSpeechRecognition;
+  return Constructor ? new Constructor() : null;
 }
 
-/* ---------- Conversation core (shared by voice + text) ---------- */
+/** Only update React when a whole message changes, never for microphone frames. */
 function useConversation() {
   const ask = useServerFn(askJarvis);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const current = useRef<Msg[]>([]);
+  const busy = useRef(false);
+  const epoch = useRef(0);
 
-  const send = useCallback(async (text: string): Promise<string | null> => {
-    const content = text.trim();
-    if (!content || pending) return null;
-    const next = [...messages, { role: "user" as const, content }].slice(-24);
+  const send = useCallback(async (raw: string): Promise<string | null> => {
+    const content = raw.trim();
+    if (!content || busy.current) return null;
+    busy.current = true;
+    const version = ++epoch.current;
+    const next: Msg[] = [...current.current, { role: "user", content }].slice(-12);
+    current.current = next;
     setMessages(next);
     setPending(true);
     setError(null);
     try {
-      const res = await ask({ data: { messages: next } });
-      if (res.reply) {
-        setMessages((m) => [...m, { role: "assistant", content: res.reply! }]);
-        return res.reply;
+      const response = await ask({ data: { messages: next } });
+      if (epoch.current !== version) return null;
+      if (response.reply) {
+        current.current = [...current.current, { role: "assistant", content: response.reply }].slice(-24);
+        setMessages(current.current);
+        return response.reply;
       }
-      setError(res.error ?? "Algo correu mal.");
+      setError(response.error || "Não foi possível obter resposta. Tente novamente.");
     } catch {
-      setError("Ligação indisponível. Tente novamente.");
+      if (epoch.current === version) setError("Não foi possível contactar o servidor. Tente novamente.");
     } finally {
-      setPending(false);
+      if (epoch.current === version) {
+        busy.current = false;
+        setPending(false);
+      }
     }
     return null;
-  }, [ask, messages, pending]);
+  }, [ask]);
 
-  const reset = () => { setMessages([]); setError(null); };
+  const reset = useCallback(() => {
+    epoch.current++;
+    busy.current = false;
+    current.current = [];
+    setMessages([]);
+    setError(null);
+    setPending(false);
+  }, []);
+
   return { messages, pending, error, send, reset };
 }
 
-
-const WAVEFORM = [2, 3, 4, 8, 14, 23, 34, 47, 57, 47, 35, 25, 16, 9, 5, 3, 2];
-
-function JarvisVoiceVisual({ voice, onToggle }: { voice: VoiceState; onToggle: () => void }) {
+/** The SVG bars take a real microphone RMS level from the Web Audio API. */
+function JarvisVoiceVisual({ voice, onToggle, visualRef }: {
+  voice: VoiceState;
+  onToggle: () => void;
+  visualRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
-    <div className="jv-visual" data-state={voice}>
+    <div className="jv-visual" data-state={voice} ref={visualRef}>
       <svg className="jv-visual__svg" viewBox="0 0 660 250" aria-hidden="true" focusable="false">
         <defs>
-          <linearGradient id="jv-outline" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#16315f" />
-            <stop offset="48%" stopColor="#317eff" />
-            <stop offset="100%" stopColor="#0b2353" />
-          </linearGradient>
           <radialGradient id="jv-sphere" cx="35%" cy="23%" r="86%">
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="34%" stopColor="#edf6ff" />
@@ -106,17 +133,18 @@ function JarvisVoiceVisual({ voice, onToggle }: { voice: VoiceState; onToggle: (
             <feGaussianBlur stdDeviation="3.5" />
           </filter>
         </defs>
-
         <path className="jv-visual__horizontal" d="M4 125H656" />
         <g className="jv-visual__waves">
-          {WAVEFORM.map((height, i) => {
-            const x = 96 + i * 8;
+          {WAVEFORM.map((height, index) => {
+            const x = 96 + index * 8;
+            const line = "M" + x + " " + (125 - height / 2) + "V" + (125 + height / 2);
+            const opposite = "M" + (660 - x) + " " + (125 - height / 2) + "V" + (125 + height / 2);
             return (
-              <g key={i}>
-                <path className="jv-visual__bar-glow" d={'M'+x+' '+(125-height/2)+'V'+(125+height/2)} filter="url(#jv-waveglow)" />
-                <path className="jv-visual__bar" d={'M'+x+' '+(125-height/2)+'V'+(125+height/2)} style={{ animationDelay: i * -0.09 + 's' }} />
-                <path className="jv-visual__bar-glow" d={'M'+(660-x)+' '+(125-height/2)+'V'+(125+height/2)} filter="url(#jv-waveglow)" />
-                <path className="jv-visual__bar" d={'M'+(660-x)+' '+(125-height/2)+'V'+(125+height/2)} style={{ animationDelay: i * -0.09 + 's' }} />
+              <g key={index}>
+                <path className="jv-visual__bar-glow" d={line} filter="url(#jv-waveglow)" />
+                <path className="jv-visual__bar" d={line} style={{ animationDelay: index * -0.09 + "s" }} />
+                <path className="jv-visual__bar-glow" d={opposite} filter="url(#jv-waveglow)" />
+                <path className="jv-visual__bar" d={opposite} style={{ animationDelay: index * -0.09 + "s" }} />
               </g>
             );
           })}
@@ -132,14 +160,96 @@ function JarvisVoiceVisual({ voice, onToggle }: { voice: VoiceState; onToggle: (
         <circle cx="330" cy="125" r="45" className="jv-visual__sphere-glow" filter="url(#jv-softglow)" />
         <circle cx="330" cy="125" r="36" fill="url(#jv-sphere)" className="jv-visual__sphere" />
       </svg>
-      <button
-        type="button"
-        className="jv-orbit-hit"
-        onClick={onToggle}
-        disabled={voice === "processing"}
+      <button type="button" className="jv-orbit-hit" onClick={onToggle} disabled={voice === "processing"}
         aria-pressed={voice === "listening"}
-        aria-label={voice === "listening" ? "Parar de ouvir" : voice === "speaking" ? "Parar resposta falada" : "Falar com Kutuzov por voz"}
-      />
+        aria-label={voice === "listening" ? "Parar de ouvir" : voice === "speaking" ? "Parar resposta falada" : "Falar com Kutuzov por voz"} />
+    </div>
+  );
+}
+
+type GalleryWork = {
+  slug: string;
+  title: string;
+  client: string;
+  cover: string;
+};
+let worksCache: GalleryWork[] | null = null;
+let worksLoading: Promise<GalleryWork[]> | null = null;
+
+/** Same published CMS data and asset resolution as /work; loaded only on demand. */
+async function getJarvisWorks(): Promise<GalleryWork[]> {
+  if (worksCache) return worksCache;
+  if (!worksLoading) {
+    worksLoading = Promise.all([
+      import("@/lib/cms/queries"),
+      import("@/lib/public-assets"),
+    ]).then(async ([cms, assets]) => {
+      const projects = await cms.getProjects();
+      const works = projects.map((project) => ({
+        slug: project.slug,
+        title: project.title,
+        client: project.client || project.discipline || "",
+        cover: assets.resolvePublicAssetUrl(project.cover || project.gallery[0]),
+        featured: project.featured,
+      }));
+      works.sort((a, b) => Number(b.featured) - Number(a.featured));
+      worksCache = works.map(({ slug, title, client, cover }) => ({ slug, title, client, cover }));
+      return worksCache;
+    }).catch((error: unknown) => {
+      worksLoading = null;
+      throw error;
+    });
+  }
+  return worksLoading;
+}
+
+function HologramWork({ work, onPick }: { work: GalleryWork; onPick: () => void }) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <li>
+      <Link to="/work/$slug" params={{ slug: work.slug }} onClick={onPick} className="jv-hologram">
+        <span className="jv-hologram__art">
+          {work.cover && !broken
+            ? <img src={work.cover} alt={work.title} loading="lazy" decoding="async" onError={() => setBroken(true)} />
+            : <EKMark className="jv-hologram__fallback" />}
+          <span className="jv-hologram__scan" aria-hidden="true" />
+          <ArrowUpRight className="jv-hologram__arrow" size={19} aria-hidden="true" />
+        </span>
+        <span className="jv-hologram__info">
+          <strong>{work.title}</strong>
+          {work.client && <small>{work.client}</small>}
+        </span>
+      </Link>
+    </li>
+  );
+}
+
+function WorksPanel({ onPick }: { onPick: () => void }) {
+  const [works, setWorks] = useState<GalleryWork[]>(() => worksCache ?? []);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(worksCache ? "ready" : "loading");
+  const [count, setCount] = useState(12);
+  useEffect(() => {
+    let alive = true;
+    void getJarvisWorks().then((items) => {
+      if (!alive) return;
+      setWorks(items);
+      setStatus("ready");
+    }).catch(() => { if (alive) setStatus("error"); });
+    return () => { alive = false; };
+  }, []);
+  return (
+    <div className="jv-works">
+      <div className="jv-works__top">
+        <span>PROJECTOS</span><span>{status === "ready" ? works.length : "—"}</span>
+      </div>
+      {status === "loading" && <div className="jv-gallery-loading" role="status" aria-label="A carregar projectos"><i /><i /><i /><i /></div>}
+      {status === "error" && <div className="jv-gallery-error" role="alert">Não foi possível carregar o portfólio. <button type="button" onClick={() => { setStatus("loading"); void getJarvisWorks().then((items) => { setWorks(items); setStatus("ready"); }).catch(() => setStatus("error")); }}>Tentar novamente</button></div>}
+      {status === "ready" && works.length === 0 && <p className="jv-gallery-error">Não há projectos publicados para mostrar.</p>}
+      <ul className="jv-works__grid">
+        {works.slice(0, count).map((work) => <HologramWork key={work.slug} work={work} onPick={onPick} />)}
+      </ul>
+      {status === "ready" && works.length > count &&
+        <button type="button" className="jv-more" onClick={() => setCount((n) => n + 12)}>Ver mais projectos <ArrowRight size={17} /></button>}
     </div>
   );
 }
@@ -148,11 +258,67 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const [open, setOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [voice, setVoice] = useState<VoiceState>("idle");
+  const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
   const convo = useConversation();
+  const transcribe = useServerFn(transcribeJarvisAudio);
   const recRef = useRef<SpeechRec | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
   const voiceSession = useRef(0);
+  const microphone = useRef<MediaStream | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+  const meterFrame = useRef(0);
+  const visualRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  const stopMeter = useCallback(() => {
+    cancelAnimationFrame(meterFrame.current);
+    meterFrame.current = 0;
+    visualRef.current?.style.removeProperty("--jv-level");
+    visualRef.current?.removeAttribute("data-live");
+    microphone.current?.getTracks().forEach((track) => track.stop());
+    microphone.current = null;
+    const context = audioContext.current;
+    audioContext.current = null;
+    if (context) void context.close().catch(() => {});
+  }, []);
+
+  const startMeter = useCallback((stream: MediaStream) => {
+    const Constructor = window.AudioContext;
+    if (!Constructor) return;
+    try {
+      const context = new Constructor({ latencyHint: "interactive" });
+      audioContext.current = context;
+      const source = context.createMediaStreamSource(stream);
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.72;
+      source.connect(analyser);
+      const samples = new Uint8Array(analyser.fftSize);
+      let previous = 0;
+      const frame = (time: number) => {
+        if (time - previous > 32) {
+          previous = time;
+          analyser.getByteTimeDomainData(samples);
+          let energy = 0;
+          for (const sample of samples) {
+            const value = (sample - 128) / 128;
+            energy += value * value;
+          }
+          const rms = Math.sqrt(energy / samples.length);
+          const level = Math.min(1, Math.max(0.04, rms * 7));
+          if (visualRef.current) {
+            visualRef.current.style.setProperty("--jv-level", level.toFixed(3));
+            visualRef.current.dataset.live = "true";
+          }
+        }
+        meterFrame.current = requestAnimationFrame(frame);
+      };
+      meterFrame.current = requestAnimationFrame(frame);
+    } catch {
+      // Recognition still works even if the browser refuses audio visualisation.
+    }
+  }, []);
 
   const stopVoice = useCallback(() => {
     voiceSession.current += 1;
@@ -162,11 +328,19 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       rec.onresult = null;
       rec.onerror = null;
       rec.onend = null;
-      try { rec.stop(); } catch { /* Recognition may already have ended. */ }
+      try { rec.abort(); } catch { /* Recognition may already have ended. */ }
     }
-    if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    const recorder = recorderRef.current;
+    recorderRef.current = null;
+    if (recorder) {
+      recorder.onstop = null;
+      try { if (recorder.state !== "inactive") recorder.stop(); } catch { /* Already stopped. */ }
+    }
+    stopMeter();
+    window.speechSynthesis?.cancel();
     setVoice("idle");
-  }, []);
+    setVoiceMessage(null);
+  }, [stopMeter]);
 
   const close = useCallback(() => {
     stopVoice();
@@ -175,20 +349,24 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     requestAnimationFrame(() => returnFocus.current?.focus?.());
   }, [stopVoice]);
 
-  useEffect(() => {
-    const onOpen = () => { returnFocus.current = document.activeElement as HTMLElement; setOpen(true); };
-    window.addEventListener(JARVIS_OPEN_EVENT, onOpen);
-    return () => window.removeEventListener(JARVIS_OPEN_EVENT, onOpen);
-  }, []);
-
   const closeChat = useCallback(() => {
     setChatOpen(false);
     requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLButtonElement>(".jv-chat-button")?.focus());
   }, []);
 
   useEffect(() => {
+    const onOpen = () => {
+      returnFocus.current = document.activeElement as HTMLElement;
+      setOpen(true);
+    };
+    window.addEventListener(JARVIS_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(JARVIS_OPEN_EVENT, onOpen);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
+    document.documentElement.classList.add("jarvis-active");
+    const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     if (chatOpen) dialogRef.current?.querySelector<HTMLTextAreaElement>("#jv-input")?.focus();
     else dialogRef.current?.focus();
@@ -204,85 +382,196 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         ? dialogRef.current?.querySelector<HTMLElement>(".jv-chat-card")
         : dialogRef.current;
       if (!scope) return;
-      const focusable = Array.from(scope.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      const elements = Array.from(scope.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       )).filter((element) => element.getClientRects().length > 0);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const first = elements[0], last = elements[elements.length - 1];
       if (!first || !last) return;
       if (event.shiftKey && (document.activeElement === first || document.activeElement === scope)) {
-        event.preventDefault();
-        last.focus();
+        event.preventDefault(); last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
+        event.preventDefault(); first.focus();
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = previous;
+      document.documentElement.classList.remove("jarvis-active");
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open, chatOpen, close, closeChat]);
 
+  useEffect(() => () => {
+    voiceSession.current += 1;
+    recRef.current?.abort();
+    recorderRef.current?.stop();
+    stopMeter();
+    window.speechSynthesis?.cancel();
+  }, [stopMeter]);
+
   const speak = (text: string, session: number) => {
-    const synth = window.speechSynthesis;
-    if (!synth || typeof SpeechSynthesisUtterance === "undefined") {
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
       setVoice("idle");
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "pt-PT";
+    utterance.rate = 1.04;
     utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
-    utterance.onerror = () => { if (voiceSession.current === session) setVoice("idle"); };
+    utterance.onerror = () => {
+      if (voiceSession.current === session) {
+        setVoice("unavailable");
+        setVoiceMessage("Não foi possível reproduzir a resposta em voz.");
+      }
+    };
+    window.speechSynthesis.cancel();
     setVoice("speaking");
-    synth.cancel();
-    synth.speak(utterance);
+    window.speechSynthesis.speak(utterance);
   };
 
-  const toggleVoice = () => {
-    if (voice === "listening" || voice === "speaking") { stopVoice(); return; }
+  const handleSpeech = async (text: string, session: number) => {
+    stopMeter();
+    if (voiceSession.current !== session) return;
+    if (!text.trim()) { setVoice("idle"); return; }
+    setVoice("processing");
+    const response = await convo.send(text.trim());
+    if (voiceSession.current !== session) return;
+    if (response) speak(response, session);
+    else {
+      setVoice("unavailable");
+      setVoiceMessage("Não foi possível obter resposta. Abra a conversa escrita para tentar novamente.");
+    }
+  };
+
+  const startVoice = async () => {
+    if (voice === "listening") {
+      const recorder = recorderRef.current;
+      if (recorder && recorder.state === "recording") {
+        recorder.stop();
+      } else {
+        recRef.current?.stop();
+      }
+      return;
+    }
+    if (voice === "speaking") { stopVoice(); return; }
     if (voice === "processing") return;
 
-    const rec = getRecognition();
-    if (!rec) { setVoice("unavailable"); return; }
     stopVoice();
     const session = voiceSession.current;
-    recRef.current = rec;
-    rec.lang = "pt-PT";
-    rec.interimResults = false;
-    let heard = "";
-    let failed = false;
-    rec.onresult = (e) => { heard = Array.from(e.results).map((r) => r[0]?.transcript ?? "").join(" "); };
-    rec.onerror = () => {
-      failed = true;
-      if (voiceSession.current !== session) return;
-      recRef.current = null;
+    setVoiceMessage(null);
+    setVoice("listening");
+    if (!navigator.mediaDevices?.getUserMedia) {
       setVoice("unavailable");
-    };
-    rec.onend = async () => {
-      if (voiceSession.current !== session || failed) return;
-      recRef.current = null;
-      if (!heard.trim()) { setVoice("idle"); return; }
-      setVoice("processing");
-      const reply = await convo.send(heard);
-      if (voiceSession.current !== session) return;
-      if (reply) speak(reply, session);
-      else setVoice("unavailable");
-    };
-    try { rec.start(); setVoice("listening"); }
-    catch { recRef.current = null; setVoice("unavailable"); }
+      setVoiceMessage("Este navegador não permite aceder ao microfone.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      if (voiceSession.current !== session) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      microphone.current = stream;
+      startMeter(stream);
+
+      const recognition = getRecognition();
+      if (recognition) {
+        recRef.current = recognition;
+        recognition.lang = "pt-PT";
+        recognition.interimResults = false;
+        recognition.continuous = false;
+        let transcript = "";
+        let errored = false;
+        recognition.onresult = (event) => {
+          transcript = Array.from(event.results).map((result) => result[0]?.transcript ?? "").join(" ");
+        };
+        recognition.onerror = (event) => {
+          errored = true;
+          recRef.current = null;
+          stopMeter();
+          if (voiceSession.current !== session) return;
+          setVoice("unavailable");
+          setVoiceMessage(event.error === "not-allowed" ? "Autorize o microfone nas definições do navegador." : "Reconhecimento de voz indisponível. Tente novamente.");
+        };
+        recognition.onend = () => {
+          if (voiceSession.current !== session || errored) return;
+          recRef.current = null;
+          void handleSpeech(transcript, session);
+        };
+        try { recognition.start(); return; }
+        catch { recRef.current = null; }
+      }
+
+      // MediaRecorder + server-side Gemini transcription for browsers without SpeechRecognition.
+      if (typeof MediaRecorder === "undefined") throw new Error("recording-not-supported");
+      const supported = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg"]
+        .find((type) => MediaRecorder.isTypeSupported(type));
+      if (!supported) throw new Error("recording-not-supported");
+      const recorder = new MediaRecorder(stream, { mimeType: supported, audioBitsPerSecond: 64000 });
+      recorderRef.current = recorder;
+      const chunks: Blob[] = [];
+      let bytes = 0;
+      recorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+          bytes += event.data.size;
+          if (bytes > 2_500_000 && recorder.state === "recording") recorder.stop();
+        }
+      };
+      recorder.onstop = async () => {
+        recorderRef.current = null;
+        stopMeter();
+        if (voiceSession.current !== session) return;
+        if (bytes === 0 || bytes > 2_500_000) {
+          setVoice("unavailable");
+          setVoiceMessage("Gravação inválida ou demasiado longa. Tente novamente.");
+          return;
+        }
+        setVoice("processing");
+        const blob = new Blob(chunks, { type: supported });
+        const mimeType = supported.split(";")[0] || "audio/webm";
+        try {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+            reader.onerror = () => reject(new Error("read-failed"));
+            reader.readAsDataURL(blob);
+          });
+          if (voiceSession.current !== session) return;
+          const result = await transcribe({
+            data: { base64, mimeType: mimeType as "audio/webm" | "audio/mp4" | "audio/ogg" },
+          });
+          if (voiceSession.current !== session) return;
+          if (result.transcript) void handleSpeech(result.transcript, session);
+          else {
+            setVoice("unavailable");
+            setVoiceMessage(result.error || "Não foi possível reconhecer a fala.");
+          }
+        } catch {
+          if (voiceSession.current === session) {
+            setVoice("unavailable");
+            setVoiceMessage("A transcrição falhou. Tente novamente.");
+          }
+        }
+      };
+      recorder.start(250);
+      window.setTimeout(() => {
+        if (voiceSession.current === session && recorder.state === "recording") recorder.stop();
+      }, 15_000);
+    } catch {
+      stopMeter();
+      if (voiceSession === undefined || voiceSession.current !== session) return;
+      setVoice("unavailable");
+      setVoiceMessage("Não foi possível utilizar o microfone. Verifique as permissões.");
+    }
   };
 
   if (!open) return null;
-
   return (
-    <div
-      ref={dialogRef}
-      tabIndex={-1}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Kutuzov, assistente de IA de Edmundo Kutuzov"
-      className="jv-root"
-    >
+    <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true"
+      aria-label="Kutuzov, assistente de IA de Edmundo Kutuzov" className="jv-root">
       <div className="jv-atmosphere" aria-hidden="true"><span className="jv-horizon" /></div>
       <div className="jv-frame">
         <header className="jv-header">
@@ -295,29 +584,25 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
             <button type="button" onClick={close} aria-label="Fechar" className="jv-close"><X size={16} strokeWidth={1.4} /></button>
           </div>
         </header>
-
         <main className="jv-main">
           <section className="jv-panel" aria-labelledby="jv-title">
             <p className="jv-eyebrow">KUTUZOV · IA DE EDMUNDO</p>
             <h1 id="jv-title">Estou por aqui.</h1>
             <p className="jv-description">Fala comigo. Explora o meu trabalho. Abre uma janela para cada ideia.</p>
-            <JarvisVoiceVisual voice={voice} onToggle={toggleVoice} />
+            <JarvisVoiceVisual voice={voice} onToggle={() => { void startVoice(); }} visualRef={visualRef} />
             <div className="jv-voice-meta">
-              <button type="button" className="jv-voice-caption" onClick={toggleVoice} disabled={voice === "processing"}>
-                FALAR COM KUTUZOV
-              </button>
+              <button type="button" className="jv-voice-caption" onClick={() => { void startVoice(); }} disabled={voice === "processing"}>FALAR COM KUTUZOV</button>
               <span className="jv-voice-state" role="status" aria-live="polite">
                 <span className="jv-voice-state__dot" aria-hidden="true" />
-                {VOICE_LABEL[voice]}
+                {voice === "unavailable" ? (voiceMessage || convo.error || VOICE_LABEL[voice]) : VOICE_LABEL[voice]}
               </span>
             </div>
-            <button type="button" className="jv-chat-button" onClick={() => setChatOpen(true)}>
+            <button type="button" className="jv-chat-button" onClick={() => { stopVoice(); setChatOpen(true); }}>
               <MessageSquare size={21} strokeWidth={1.5} aria-hidden="true" />
               Abrir conversa escrita
             </button>
           </section>
         </main>
-
         <footer className="jv-footer">
           <span>PREFERE FALAR COM O EDMUNDO REAL?</span>
           <nav aria-label="Contactos" className="jv-footer__links">
@@ -326,156 +611,108 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           </nav>
         </footer>
       </div>
-
-      {chatOpen && (
-        <ChatWindow
-          convo={convo}
-          onClose={closeChat}
-          onCloseAll={close}
-          onVoice={() => { setChatOpen(false); requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLButtonElement>(".jv-orbit-hit")?.focus()); toggleVoice(); }}
-        />
-      )}
+      {chatOpen && <ChatWindow convo={convo} onClose={closeChat} onCloseAll={close} />}
     </div>
   );
 }
 
-/* ---------- Conversation window ---------- */
-function ChatWindow({ convo, onClose, onCloseAll, onVoice }: {
+function ChatWindow({ convo, onClose, onCloseAll }: {
   convo: ReturnType<typeof useConversation>;
   onClose: () => void;
   onCloseAll: () => void;
-  onVoice: () => void;
 }) {
   const [draft, setDraft] = useState("");
   const [showWorks, setShowWorks] = useState(false);
-  const taRef = useRef<HTMLTextAreaElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const hasHistory = convo.messages.length > 0;
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const hasMessages = convo.messages.length > 0;
 
-  useEffect(() => { taRef.current?.focus(); }, []);
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [convo.messages.length, convo.pending]);
+  useEffect(() => { textarea.current?.focus(); }, []);
+  useEffect(() => {
+    if (!content.current) return;
+    content.current.scrollTop = content.current.scrollHeight;
+  }, [convo.messages.length, convo.pending, showWorks]);
 
-  const autosize = () => {
-    const el = taRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+  const resize = () => {
+    const element = textarea.current;
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = Math.min(element.scrollHeight, 148) + "px";
   };
 
   const submit = async (text = draft) => {
     if (!text.trim() || convo.pending) return;
     setShowWorks(false);
     setDraft("");
-    requestAnimationFrame(autosize);
+    requestAnimationFrame(resize);
     await convo.send(text);
   };
 
   return (
-    <div className="jv-chat-overlay fixed inset-0 z-[80] flex items-stretch justify-center bg-background/70 backdrop-blur-sm md:items-center md:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="jv-chat-title" className="jv-chat-card flex h-[100svh] w-full flex-col overflow-hidden bg-card md:h-[min(86svh,780px)] md:max-w-[880px] md:rounded-2xl md:border md:border-border md:shadow-2xl">
-        {/* WINDOW HEADER */}
-        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border px-4 pt-[env(safe-area-inset-top)] md:px-5">
-          <span aria-hidden className="flex gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-muted" /><span className="h-2.5 w-2.5 rounded-full bg-muted" /><span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
-          </span>
-          <h2 id="jv-chat-title" className="min-w-0 flex-1 truncate font-mono text-[11px] uppercase tracking-[0.22em]">Conversa comigo</h2>
-          {(hasHistory || showWorks) && (
-            <button type="button" onClick={() => { convo.reset(); setShowWorks(false); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-              <Plus className="h-3.5 w-3.5" /> Nova
-            </button>
-          )}
-          <button type="button" onClick={onClose} aria-label="Fechar conversa" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-            <X className="h-4 w-4" />
-          </button>
+    <div className="jv-chat-overlay">
+      <section role="dialog" aria-modal="true" aria-labelledby="jv-chat-title" className="jv-chat-card">
+        <header className="jv-chat-head">
+          <span aria-hidden="true" className="jv-window-lights"><i /><i /><i /></span>
+          <h2 id="jv-chat-title">CONVERSA COMIGO</h2>
+          <div className="jv-chat-head__actions">
+            {(hasMessages || showWorks) && <button type="button" className="jv-chat-reset" onClick={() => { convo.reset(); setShowWorks(false); }}
+              aria-label="Nova conversa" title="Nova conversa"><Plus size={20} /></button>}
+            <button type="button" onClick={onClose} aria-label="Fechar conversa" className="jv-chat-close"><X size={23} strokeWidth={1.7} /></button>
+          </div>
         </header>
 
-        {/* CONTENT */}
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-8">
+        <div ref={content} className={"jv-chat-content" + (showWorks ? " jv-chat-content--gallery" : "")}>
           {showWorks ? (
             <WorksPanel onPick={onCloseAll} />
-          ) : !hasHistory ? (
-            <div className="mx-auto flex max-w-[44rem] flex-col gap-6">
-              <p className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-primary" /> Disponível
-              </p>
-              <div className="flex flex-col gap-2">
-                <h3 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">Olá. Sou o Kutuzov.</h3>
-                <p className="max-w-[36rem] text-muted-foreground">Sou a versão IA do Edmundo. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => (s.prompt ? submit(s.prompt) : setShowWorks(true))}
-                    className="flex min-h-[4.5rem] items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-left text-sm transition hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <span className="min-w-0">{s.label}</span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+          ) : !hasMessages ? (
+            <div className="jv-chat-welcome">
+              <p className="jv-chat-available"><span /> DISPONÍVEL</p>
+              <h3>Olá. Sou o Kutuzov.</h3>
+              <p className="jv-chat-intro">Sou a versão IA do Edmundo. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
+              <div className="jv-suggestions">
+                {SUGGESTIONS.map((suggestion) => (
+                  <button key={suggestion.id} type="button" disabled={convo.pending}
+                    onClick={() => suggestion.prompt ? void submit(suggestion.prompt) : setShowWorks(true)}>
+                    <span>{suggestion.label}</span><ArrowRight size={22} strokeWidth={1.8} aria-hidden="true" />
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <ol className="mx-auto flex max-w-[44rem] flex-col gap-4" aria-live="polite">
-              {convo.messages.map((m, i) => (
-                <li key={i} className={m.role === "user" ? "ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground" : "mr-auto max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-bl-sm border border-border px-4 py-2.5 text-sm"}>
-                  {m.content}
+            <ol className="jv-chat-messages" aria-live="polite" aria-relevant="additions">
+              {convo.messages.map((message, index) => (
+                <li key={index} className={"jv-chat-message jv-chat-message--" + message.role}>
+                  {message.role === "assistant" && <span className="jv-chat-avatar"><EKMark className="jv-chat-avatar__logo" /></span>}
+                  <p>{message.content}</p>
                 </li>
               ))}
-              {convo.pending && <li className="mr-auto font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">A processar…</li>}
+              {convo.pending && <li className="jv-chat-message jv-chat-message--assistant">
+                <span className="jv-chat-avatar"><EKMark className="jv-chat-avatar__logo" /></span>
+                <span className="jv-chat-typing" aria-label="A responder…" role="status"><i /><i /><i /></span>
+              </li>}
             </ol>
           )}
-          {convo.error && <p role="alert" className="mx-auto mt-4 max-w-[44rem] text-sm text-destructive">{convo.error}</p>}
+          {convo.error && !showWorks && <p className="jv-chat-error" role="alert">{convo.error}</p>}
         </div>
 
-        {/* COMPOSER */}
-        <form onSubmit={(e) => { e.preventDefault(); void submit(); }} className="shrink-0 border-t border-border px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-8">
-          <div className="mx-auto max-w-[44rem] rounded-xl border border-border bg-background/40 focus-within:border-primary">
+        <form className="jv-chat-composer" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+          <div className="jv-chat-input-wrap">
             <label htmlFor="jv-input" className="sr-only">Mensagem para Kutuzov</label>
-            <textarea
-              id="jv-input"
-              ref={taRef}
-              rows={2}
-              value={draft}
-              maxLength={2000}
-              onChange={(e) => { setDraft(e.target.value); autosize(); }}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void submit(); } }}
-              placeholder="Escreva-me uma mensagem…"
-              className="block max-h-[180px] w-full resize-none overflow-y-auto bg-transparent px-4 pt-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-            />
-            <div className="flex items-center justify-between gap-3 px-2 pb-2">
-              <button type="button" onClick={onVoice} title="Falar por voz" aria-label="Mudar para conversa por voz" className="inline-flex h-9 items-center gap-2 rounded-full px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-                <Mic className="h-4 w-4" /> Voz
-              </button>
-              <button type="submit" disabled={!draft.trim() || convo.pending} aria-label={convo.pending ? "A enviar" : "Enviar mensagem"} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                {convo.pending ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" /> : <Send className="h-4 w-4" />}
-              </button>
-            </div>
+            <textarea id="jv-input" ref={textarea} rows={1} maxLength={2000} value={draft}
+              onChange={(event) => { setDraft(event.target.value); resize(); }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault(); void submit();
+                }
+              }}
+              placeholder="Escreva-me uma mensagem…" />
+            <button type="submit" className="jv-chat-send" aria-label="Enviar mensagem"
+              disabled={!draft.trim() || convo.pending}>
+              {convo.pending ? <span className="jv-chat-spinner" /> : <Send size={22} strokeWidth={1.8} />}
+            </button>
           </div>
         </form>
       </section>
-    </div>
-  );
-}
-
-function WorksPanel({ onPick }: { onPick: () => void }) {
-  return (
-    <div className="mx-auto flex max-w-[44rem] flex-col gap-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{jarvisWorks.length} trabalhos do portfólio</p>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {jarvisWorks.map((w) => (
-          <li key={w.slug}>
-            <Link to="/work/$slug" params={{ slug: w.slug }} onClick={onPick} className="group block overflow-hidden rounded-lg border border-border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-              {w.cover_path && <img src={w.cover_path} alt={w.cover_alt ?? w.title} loading="lazy" className="block h-auto w-full transition group-hover:scale-[1.02]" />}
-              <span className="flex items-start justify-between gap-2 p-2.5 text-xs">
-                <span className="min-w-0"><span className="block truncate">{w.title}</span><span className="block truncate text-muted-foreground">{w.client_label}</span></span>
-                <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
