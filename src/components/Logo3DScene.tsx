@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Float, Lightformer, ContactShadows } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { LOGO_H, LOGO_W, logoPolygons } from "./logo-paths";
 
@@ -57,8 +57,21 @@ function Monogram() {
 }
 
 export default function Logo3DScene() {
+  const [jarvisOpen, setJarvisOpen] = useState(false);
+  useEffect(() => {
+    const pause = () => setJarvisOpen(true);
+    const resume = () => setJarvisOpen(false);
+    window.addEventListener("ek:jarvis-open", pause);
+    window.addEventListener("ek:jarvis-close", resume);
+    if (document.documentElement.classList.contains("jarvis-active")) pause();
+    return () => {
+      window.removeEventListener("ek:jarvis-open", pause);
+      window.removeEventListener("ek:jarvis-close", resume);
+    };
+  }, []);
+
   return (
-    <Canvas camera={{ position: [0, 0, 7], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
+    <Canvas frameloop={jarvisOpen ? "never" : "always"} camera={{ position: [0, 0, 7], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
       <ambientLight intensity={0.2} />
       <directionalLight position={[4, 5, 6]} intensity={1.2} />
       <pointLight position={[-5, -2, 3]} intensity={30} color="#1d4ed8" />
