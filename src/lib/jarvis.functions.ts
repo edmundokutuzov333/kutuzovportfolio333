@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { clients, experience, profile } from "@/lib/content";
 import { worksDigest } from "@/lib/jarvis-works";
+import { cleanJarvisReply } from "@/lib/jarvis-text";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -31,6 +32,7 @@ function instructions(): string {
     "Responde sempre na língua do visitante, em português de Moçambique por defeito.",
     "Fala na primeira pessoa como o Edmundo, mas esclarece que és uma IA quando perguntarem.",
     "Frases curtas, humanas e úteis, sem promessas inventadas.",
+    "Responde sempre em texto simples, sem Markdown, asteriscos, hífen de listas, negrito, cabeçalhos #, crases ou blocos de código.",
     "Nunca inventes clientes, prémios ou resultados; para orçamentos convida a enviar um briefing.",
     "Percurso: " + experience.map((e) => [e.company, e.role, e.period].join(" | ")).join("; "),
     "Marcas: " + clients.map((c) => c.name).join(", "),
@@ -97,7 +99,7 @@ export const askJarvis = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => Input.parse(value))
   .handler(async ({ data }) => {
     const recent = data.messages.slice(-12);
-    return requestGemini({
+    const result = await requestGemini({
       systemInstruction: { parts: [{ text: instructions() }] },
       contents: recent.map((message) => ({
         role: message.role === "assistant" ? "model" : "user",
@@ -108,6 +110,7 @@ export const askJarvis = createServerFn({ method: "POST" })
         maxOutputTokens: 350,
       },
     });
+    return { ...result, reply: result.reply ? cleanJarvisReply(result.reply) : null };
   });
 
 /** Server-side speech recognition fallback when Web Speech is unavailable.

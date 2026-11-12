@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, MessageSquare, Plus, Send, X } from "lucide-react";
 import { EKMark } from "./EKMark";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
+import { cleanJarvisReply } from "@/lib/jarvis-text";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
@@ -82,10 +83,11 @@ function useConversation() {
     try {
       const response = await ask({ data: { messages: next } });
       if (epoch.current !== version) return null;
-      if (response.reply) {
-        current.current = [...current.current, { role: "assistant" as const, content: response.reply }].slice(-24);
+      const reply = response.reply ? cleanJarvisReply(response.reply) : "";
+      if (reply) {
+        current.current = [...current.current, { role: "assistant" as const, content: reply }].slice(-24);
         setMessages(current.current);
-        return response.reply;
+        return reply;
       }
       setError(response.error || "Não foi possível obter resposta. Tente novamente.");
     } catch {
@@ -209,7 +211,7 @@ function HologramWork({ work, onPick }: { work: GalleryWork; onPick: () => void 
   return (
     <li>
       <Link to="/work/$slug" params={{ slug: work.slug }} onClick={onPick} className="jv-hologram">
-        <span className="jv-hologram__art">
+        <span className={"jv-hologram__art" + (!work.cover || broken ? " jv-hologram__art--empty" : "")}>
           {work.cover && !broken
             ? <img src={work.cover} alt={work.title} loading="lazy" decoding="async" onError={() => setBroken(true)} />
             : <EKMark className="jv-hologram__fallback" />}

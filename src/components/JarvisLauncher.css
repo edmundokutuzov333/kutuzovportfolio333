@@ -495,11 +495,13 @@ html.jarvis-active .grain > .pointer-events-none.fixed.left-0.top-0 { visibility
 .jv-works { width: 100%; padding-bottom: 18px; }
 .jv-works__top { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 17px; color: #9bb4d8; font: 11px var(--font-mono),monospace; letter-spacing: .24em; border-bottom: 1px solid rgba(107,158,228,.22); }
 .jv-works__top span:last-child { color: #6da7ff; letter-spacing: .1em; }
-.jv-works__grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px 17px; margin: 26px 0 0; padding: 0; list-style: none; }
+.jv-works__grid { display: block; columns: 3; column-gap: 17px; margin: 26px 0 0; padding: 0; list-style: none; }
+.jv-works__grid > li { display: inline-block; width: 100%; margin: 0 0 20px; vertical-align: top; break-inside: avoid; }
 .jv-hologram { display: block; position: relative; min-width: 0; text-decoration: none; transform-style: preserve-3d; transition: transform .26s cubic-bezier(.2,.7,.2,1); }
-.jv-hologram__art { display: grid; place-items: center; position: relative; isolation: isolate; overflow: hidden; width: 100%; aspect-ratio: 1.45; border: 1px solid rgba(92,158,255,.4); border-radius: 13px; background: radial-gradient(ellipse at 48% 45%,rgba(46,103,201,.22),rgba(6,17,42,.96)); box-shadow: inset 0 0 28px rgba(26,89,186,.12),0 11px 30px rgba(2,10,34,.2); }
+.jv-hologram__art { display: block; position: relative; isolation: isolate; overflow: hidden; width: 100%; border: 1px solid rgba(92,158,255,.4); border-radius: 13px; background: radial-gradient(ellipse at 48% 45%,rgba(46,103,201,.22),rgba(6,17,42,.96)); box-shadow: inset 0 0 28px rgba(26,89,186,.12),0 11px 30px rgba(2,10,34,.2); }
 .jv-hologram__art::before { content: ""; position: absolute; z-index: 2; pointer-events: none; inset: 0; background: linear-gradient(110deg,transparent 20%,rgba(153,218,255,.12) 50%,transparent 72%); transform: translateX(-125%); transition: transform .7s cubic-bezier(.2,.8,.2,1); }
-.jv-hologram__art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .5s ease, filter .45s ease; }
+.jv-hologram__art--empty { display: grid; place-items: center; aspect-ratio: 1.45; }
+.jv-hologram__art img { display: block; width: 100%; height: auto; max-width: 100%; object-fit: contain; object-position: center; transition: filter .45s ease; }
 .jv-hologram__scan { position: absolute; z-index: 1; pointer-events: none; inset: 0; opacity: .14; background: repeating-linear-gradient(180deg,rgba(125,207,255,.55) 0 1px,transparent 1px 6px); }
 .jv-hologram__arrow { position: absolute; z-index: 3; right: 11px; top: 11px; display: block; padding: 5px; box-sizing: content-box; border: 1px solid rgba(165,220,255,.4); border-radius: 50%; color: #eaf5ff; background: rgba(4,24,65,.63); }
 .jv-hologram__fallback { width: 48px; height: 38px; color: rgba(151,191,255,.75); filter: drop-shadow(0 0 14px rgba(50,118,245,.4)); }
@@ -508,7 +510,7 @@ html.jarvis-active .grain > .pointer-events-none.fixed.left-0.top-0 { visibility
 .jv-hologram__info small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a7c9; font: 11px/1.5 var(--font-mono),monospace; }
 .jv-hologram:hover { transform: translateY(-5px); }
 .jv-hologram:hover .jv-hologram__art { border-color: #93d7ff; box-shadow: 0 0 22px rgba(34,132,255,.32),inset 0 0 20px rgba(35,104,233,.16); }
-.jv-hologram:hover .jv-hologram__art img { transform: scale(1.045); filter: saturate(1.15); }
+.jv-hologram:hover .jv-hologram__art img { filter: saturate(1.12) brightness(1.04); }
 .jv-hologram:hover .jv-hologram__art::before { transform: translateX(125%); }
 .jv-more { display: inline-flex; align-items: center; gap: 13px; margin: 24px auto 0; padding: 13px 22px; border: 1px solid rgba(84,153,250,.45); border-radius: 999px; background: rgba(20,58,126,.26); color: #e4f0ff; font-size: 13px; }
 .jv-more:hover { border-color: #8bc3ff; box-shadow: 0 0 14px rgba(39,118,254,.17); }
@@ -554,13 +556,14 @@ html.jarvis-active .grain > .pointer-events-none.fixed.left-0.top-0 { visibility
   .jv-root .jv-chat-composer { min-height: 99px; padding: 14px 20px max(17px,env(safe-area-inset-bottom)); }
   .jv-root .jv-chat-input-wrap { min-height: 61px; padding: 6px 9px 6px 17px; border-radius: 16px; }
   .jv-root .jv-chat-send { width: 45px; height: 45px; flex-basis: 45px; }
-  .jv-works__grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 12px; }
+  .jv-works__grid { columns: 2; column-gap: 12px; }
+  .jv-works__grid > li { margin-bottom: 16px; }
 }
 @media (max-width: 375px) {
   .jv-root .jv-chat-head h2 { letter-spacing: .1em; }
   .jv-root .jv-chat-head { gap: 9px; padding-inline: 15px; }
   .jv-root .jv-chat-intro { font-size: 14px; }
-  .jv-works__grid { gap: 13px 8px; }
+  .jv-works__grid { column-gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .jv-root .jv-atmosphere::before,

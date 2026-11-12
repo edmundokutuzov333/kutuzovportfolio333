@@ -53,6 +53,19 @@ test("JARVIS presents published project links and live artwork instead of the ol
   await expect.poll(async () => {
     return images.first().evaluate((image) => image.complete && image.naturalWidth > 0);
   }, { timeout: 20_000 }).toBe(true);
+  // Original image proportions must survive the hologram frame, on any orientation.
+  const proportions = await images.first().evaluate((image) => {
+    const frame = image.closest(".jv-hologram__art");
+    const imageRect = image.getBoundingClientRect();
+    const frameRect = frame?.getBoundingClientRect();
+    return {
+      intrinsic: image.naturalWidth / image.naturalHeight,
+      visible: imageRect.width / imageRect.height,
+      frame: frameRect ? frameRect.width / frameRect.height : 0,
+    };
+  });
+  expect(Math.abs(proportions.intrinsic - proportions.visible)).toBeLessThan(0.025);
+  expect(Math.abs(proportions.intrinsic - proportions.frame)).toBeLessThan(0.04);
   const href = await cards.first().getAttribute("href");
   expect(href).not.toBeNull();
   const response = await page.request.get(href);
