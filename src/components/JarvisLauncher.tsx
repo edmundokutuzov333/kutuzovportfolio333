@@ -579,7 +579,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       utterance.lang = selected.lang;
       utterance.rate = 1.02;
       utterance.pitch = 0.91;
-      utterance.onend = finish;
+      utterance.onend = () => finish();
       utterance.onerror = () => {
         if (voiceSession.current === session) {
           setVoice("unavailable");
