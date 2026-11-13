@@ -120,10 +120,10 @@ test("voice begins TTS before the LLM finishes streaming, without duplicating th
         const encoder = new TextEncoder();
         const body = new ReadableStream({
           start(controller) {
-            controller.enqueue(encoder.encode('event: chunk\\ndata: {"text":"I direct art and visual identities. "}\\n\\n'));
+            controller.enqueue(encoder.encode('event: chunk\ndata: {"text":"I direct art and visual identities. "}\n\n'));
             setTimeout(() => {
-              controller.enqueue(encoder.encode('event: chunk\\ndata: {"text":"I also create brand campaigns."}\\n\\n'));
-              controller.enqueue(encoder.encode('event: done\\ndata: {}\\n\\n'));
+              controller.enqueue(encoder.encode('event: chunk\ndata: {"text":"I also create brand campaigns."}\n\n'));
+              controller.enqueue(encoder.encode('event: done\ndata: {}\n\n'));
               controller.close();
               window.__jarvisStreamFinished = true;
             }, 1800);
