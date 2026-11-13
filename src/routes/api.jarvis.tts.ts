@@ -52,7 +52,7 @@ export const Route=createFileRoute("/api/jarvis/tts")({
         console.warn("JARVIS_TTS_INVALID_WAV");
         return new Response(null,{status:503,headers});
       }
-      return new Response(bytes,{
+      return new Response(new Uint8Array(bytes),{
         headers:{...headers,"Content-Type":"audio/wav","Content-Length":String(bytes.length)}
       });
     }catch{
