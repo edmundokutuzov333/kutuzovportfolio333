@@ -67,8 +67,8 @@ test("recorded voice uses raw STT, normal text dialogue and WAV TTS in the same 
     expect(request.messages.at(-1).content).toBe("Tell me about your work");
     requests.push("answer");
     await route.fulfill({ status: 200, contentType: "text/event-stream",
-      body: 'event: chunk\\ndata: {"text":"I work in art direction and branding."}\\n\\n'
-        + 'event: done\\ndata: {}\\n\\n' });
+      body: 'event: chunk\ndata: {"text":"I work in art direction and branding."}\n\n'
+        + 'event: done\ndata: {}\n\n' });
   });
   await page.route("**/api/jarvis/tts", async route => {
     const input = route.request().postDataJSON();
