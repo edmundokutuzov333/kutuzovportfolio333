@@ -154,7 +154,7 @@ test("mobile project gallery starts at the heading and scrolls both directions",
   await page.getByRole("button", { name: "Open text chat" }).click();
   await page.getByRole("button", { name: "Explore selected work." }).click();
 
-  const area = page.getByRole("region", { name: "Project gallery" });
+  const area = page.locator(".jv-chat-card").getByRole("region", { name: "Project gallery" });
   await expect(area.locator(".jv-hologram").first()).toBeVisible({ timeout: 30_000 });
   await expect(area).toHaveCSS("touch-action", "pan-y");
   await expect(area.locator(".jv-works__top")).toBeInViewport();
