@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
             timeoutMs:2300,
           });
           if(!available)return new Response(null,{status:429,headers});
-          const contact=getContact(facts),apiKey=process.env["GEMINI_API_KEY"];
+          const contact=getContact(facts,locale),apiKey=process.env["GEMINI_API_KEY"];
           if(!contact.email||!apiKey)return new Response(null,{status:503,headers});
           // Gemini Live 3.8 is the low-latency native-audio model.
           const model="models/gemini-3.8-live";
