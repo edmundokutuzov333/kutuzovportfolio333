@@ -4,7 +4,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ArrowRight, ArrowUpRight, MessageSquare, Plus, Send, X } from "lucide-react";
 import { EKMark } from "./EKMark";
 import { DirectionIcon } from "./DirectionIcon";
-import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
+import { askJarvis } from "@/lib/jarvis.functions";
+import { MAX_JARVIS_AUDIO_BYTES, MAX_JARVIS_RECORDING_MS, normalizedAudioMime, preferredRecordingMime, shouldEndRecording } from "@/lib/jarvis/audio-capture";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
 import { chooseJarvisMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
@@ -334,12 +335,11 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const [voice, setVoice] = useState<VoiceState>("idle");
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
   const convo = useConversation(locale);
-  const transcribe = useServerFn(transcribeJarvisAudio);
   const recRef = useRef<SpeechRec | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const liveRef = useRef<{stop:()=>void} | null>(null);
-  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
-  const ttsUrlRef = useRef<string | null>(null);
+  const playbackContextRef = useRef<AudioContext | null>(null);
+  const playbackSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const ttsAbortRef = useRef<AbortController | null>(null);
   const voiceSession = useRef(0);
   const microphone = useRef<MediaStream | null>(null);
@@ -361,7 +361,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (context) void context.close().catch(() => {});
   }, []);
 
-  const startMeter = useCallback((stream: MediaStream) => {
+  const startMeter = useCallback((stream: MediaStream, onLevel?: (rms: number) => void) => {
     const Constructor = window.AudioContext;
     if (!Constructor) return;
     try {
@@ -384,6 +384,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
             energy += value * value;
           }
           const rms = Math.sqrt(energy / samples.length);
+          onLevel?.(rms);
           const level = Math.min(1, Math.max(0.04, rms * 7));
           if (visualRef.current) {
             visualRef.current.style.setProperty("--jv-level", level.toFixed(3));
@@ -419,10 +420,13 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     stopMeter();
     ttsAbortRef.current?.abort();
     ttsAbortRef.current=null;
-    ttsAudioRef.current?.pause();
-    ttsAudioRef.current=null;
-    if(ttsUrlRef.current)URL.revokeObjectURL(ttsUrlRef.current);
-    ttsUrlRef.current=null;
+    if (playbackSourceRef.current) {
+      try { playbackSourceRef.current.stop(); } catch { /* Already completed. */ }
+      playbackSourceRef.current = null;
+    }
+    const playback = playbackContextRef.current;
+    playbackContextRef.current = null;
+    if (playback) void playback.close().catch(() => {});
     window.speechSynthesis?.cancel();
     setVoice("idle");
     setVoiceMessage(null);
@@ -508,8 +512,10 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     stopMeter();
     ttsAbortRef.current?.abort();
-    ttsAudioRef.current?.pause();
-    if(ttsUrlRef.current)URL.revokeObjectURL(ttsUrlRef.current);
+    if (playbackSourceRef.current) {
+      try { playbackSourceRef.current.stop(); } catch { /* Already stopped. */ }
+    }
+    if (playbackContextRef.current) void playbackContextRef.current.close().catch(() => {});
     window.speechSynthesis?.cancel();
   }, [stopMeter]);
 
