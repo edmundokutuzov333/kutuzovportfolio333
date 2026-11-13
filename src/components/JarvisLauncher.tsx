@@ -341,6 +341,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const playbackContextRef = useRef<AudioContext | null>(null);
   const playbackSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const ttsAbortRef = useRef<AbortController | null>(null);
+  const transcriptionAbortRef = useRef<AbortController | null>(null);
   const voiceSession = useRef(0);
   const microphone = useRef<MediaStream | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
@@ -420,6 +421,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     stopMeter();
     ttsAbortRef.current?.abort();
     ttsAbortRef.current=null;
+    transcriptionAbortRef.current?.abort();
+    transcriptionAbortRef.current=null;
     if (playbackSourceRef.current) {
       try { playbackSourceRef.current.stop(); } catch { /* Already completed. */ }
       playbackSourceRef.current = null;
@@ -512,6 +515,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     stopMeter();
     ttsAbortRef.current?.abort();
+    transcriptionAbortRef.current?.abort();
     if (playbackSourceRef.current) {
       try { playbackSourceRef.current.stop(); } catch { /* Already stopped. */ }
     }
