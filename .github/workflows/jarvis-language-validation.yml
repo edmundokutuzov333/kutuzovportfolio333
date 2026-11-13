@@ -1,0 +1,29 @@
+name: Jarvis language branch validation
+
+on:
+  push:
+    branches:
+      - fix/jarvis-site-language-20261113
+
+permissions:
+  contents: read
+
+jobs:
+  language-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Run all unit tests
+        run: bun run test
+      - name: Check types and development build
+        run: bun run typecheck
+      - name: Run ESLint
+        run: bun run lint
+      - name: Build production bundle
+        run: bun run build
