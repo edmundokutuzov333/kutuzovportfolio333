@@ -175,7 +175,7 @@ export function Footer({ profile, presentation }: { profile: Profile | null; pre
           <div className="min-w-0 space-y-3 text-sm">
             <p className="eyebrow mb-4">{tx(copy.social_label) || "Social"}</p>
             {profile?.socials.map((social) => (
-              <a key={social.label} className="group inline-flex max-w-full items-center gap-2 py-0.5 transition-colors hover:text-primary" href={social.href} target="_blank" rel="noopener noreferrer">
+              <a key={social.label} className="group flex w-fit max-w-full items-center gap-2 py-0.5 transition-colors hover:text-primary" href={social.href} target="_blank" rel="noopener noreferrer">
                 <span className="min-w-0 [overflow-wrap:anywhere]">{social.label}</span>
                 <DirectionIcon direction="external" className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
