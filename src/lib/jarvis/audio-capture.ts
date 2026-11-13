@@ -30,7 +30,10 @@ export function shouldEndRecording(options: {
   silenceMs: number;
   elapsedMs: number;
 }): boolean {
-  return options.speechDetected && options.elapsedMs >= 1200 && options.silenceMs >= 1700;
+  // Short questions need a slightly longer pause tolerance; established speech can
+  // finish more promptly. Never cut off speech before a confirmed voice onset.
+  const requiredSilenceMs = options.elapsedMs < 2800 ? 1250 : 950;
+  return options.speechDetected && options.elapsedMs >= 1200 && options.silenceMs >= requiredSilenceMs;
 }
 
 export const MAX_JARVIS_RECORDING_MS = 18_000;
