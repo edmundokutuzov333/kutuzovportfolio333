@@ -30,10 +30,10 @@ export function shouldEndRecording(options: {
   silenceMs: number;
   elapsedMs: number;
 }): boolean {
-  // Short questions need a slightly longer pause tolerance; established speech can
-  // finish more promptly. Never cut off speech before a confirmed voice onset.
-  const requiredSilenceMs = options.elapsedMs < 2800 ? 1250 : 950;
-  return options.speechDetected && options.elapsedMs >= 1200 && options.silenceMs >= requiredSilenceMs;
+  // Built-in Live VAD guidance recommends 500–800ms. Permit slightly
+  // longer pauses on short questions to avoid truncating natural speech.
+  const requiredSilenceMs = options.elapsedMs < 2800 ? 900 : 700;
+  return options.speechDetected && options.elapsedMs >= 1100 && options.silenceMs >= requiredSilenceMs;
 }
 
 export const MAX_JARVIS_RECORDING_MS = 18_000;
