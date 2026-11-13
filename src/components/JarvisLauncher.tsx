@@ -6,6 +6,7 @@ import { EKMark } from "./EKMark";
 import { DirectionIcon } from "./DirectionIcon";
 import { askJarvis } from "@/lib/jarvis.functions";
 import { MAX_JARVIS_AUDIO_BYTES, MAX_JARVIS_RECORDING_MS, normalizedAudioMime, preferredRecordingMime, shouldEndRecording } from "@/lib/jarvis/audio-capture";
+import { splitVoiceSegments } from "@/lib/jarvis/voice-chunks";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
 import { chooseJarvisMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
@@ -69,7 +70,7 @@ function useConversation(locale: JarvisLocale) {
   const epoch = useRef(0);
 
   const streamingController = useRef<AbortController | null>(null);
-  const send = useCallback(async (raw: string): Promise<string | null> => {
+  const send = useCallback(async (raw: string, options?: { mode?: "voice"; onFirstChunk?: (text: string) => void }): Promise<string | null> => {
     const content = raw.trim();
     if (!content || busy.current) return null;
     busy.current = true;
@@ -81,6 +82,7 @@ function useConversation(locale: JarvisLocale) {
     setPending(true);
     setError(null);
     let reply = "";
+    let firstChunkDelivered = false;
     let receivedError: string | null = null;
     const controller = new AbortController();
     streamingController.current = controller;
@@ -92,12 +94,21 @@ function useConversation(locale: JarvisLocale) {
       const displayed = [...next, { role: "assistant" as const, content: cleanJarvisReply(reply) }].slice(-100);
       current.current = displayed;
       setMessages(displayed);
+      if (!firstChunkDelivered && options?.onFirstChunk) {
+        const first = cleanJarvisReply(fragment).trim();
+        if (first) {
+          firstChunkDelivered = true;
+          options.onFirstChunk(first);
+        }
+      }
     };
     try {
       const response = await fetch("/api/jarvis/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-        body: JSON.stringify({ messages: modelHistory, locale }),
+        body: JSON.stringify(options?.mode === "voice"
+          ? { messages: modelHistory, locale, mode: "voice" }
+          : { messages: modelHistory, locale }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error("stream_unavailable");
