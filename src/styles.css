@@ -78,6 +78,16 @@
   @media (pointer: fine) { body, a, button { cursor: none; } }
 }
 
+/* Responsive to the footer's actual width, not just the device viewport.
+   Prevents long contact addresses from colliding with social links. */
+.footer-details-grid {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
+  gap: 2.5rem;
+}
+.footer-details-grid > * { min-width: 0; }
+
 @utility font-display { font-family: var(--font-display); }
 @utility eyebrow {
   font-family: var(--font-mono);
