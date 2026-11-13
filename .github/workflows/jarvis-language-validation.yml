@@ -27,3 +27,9 @@ jobs:
         run: bun run lint
       - name: Build production bundle
         run: bun run build
+      - name: Install isolated Playwright for browser regressions
+        run: |
+          npm install --prefix .e2e --no-save --package-lock=false --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium
+      - name: Test JARVIS English/Portuguese browser flows
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs .e2e/tests/jarvis.spec.mjs --grep "JARVIS keeps the reference voice|JARVIS stays in the site's EN/PT|JARVIS restores the saved Portuguese"
