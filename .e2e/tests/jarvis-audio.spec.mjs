@@ -73,6 +73,7 @@ test("recorded voice uses raw STT, normal text dialogue and WAV TTS in the same 
       body: 'event: chunk\ndata: {"text":"I work in art direction and branding."}\n\n'
         + 'event: done\ndata: {}\n\n' });
   });
+  await page.route("**/api/jarvis/tts-stream", route => route.fulfill({ status: 503 }));
   await page.route("**/api/jarvis/tts", async route => {
     const input = route.request().postDataJSON();
     expect(input.locale).toBe("en");
@@ -158,4 +159,82 @@ test("voice begins TTS before the LLM finishes streaming, without duplicating th
   await jarvis.getByRole("button", { name: "Open text chat" }).click();
   await expect(jarvis.locator(".jv-chat-message--assistant").last())
     .toContainText("I direct art and visual identities. I also create brand campaigns.");
+});
+
+
+test("PCM starts playing BEFORE the final TTS network event, without waiting for WAV", async ({ page }) => {
+  await installFakeMicrophone(page);
+  await page.addInitScript(() => {
+    window.__jarvisPcmDone = false;
+    const original = window.fetch.bind(window);
+    window.fetch = (input, init) => {
+      if (input === "/api/jarvis/tts-stream") {
+        const pcm = new Uint8Array(48_000);
+        const audio = btoa(String.fromCharCode(...pcm));
+        const encoder = new TextEncoder();
+        const body = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode('event: audio\ndata: ' + JSON.stringify({ data: audio }) + '\n\n'));
+            setTimeout(() => {
+              window.__jarvisPcmDone = true;
+              controller.enqueue(encoder.encode('event: done\ndata: {"bytes":48000}\n\n'));
+              controller.close();
+            }, 1800);
+          },
+        });
+        return Promise.resolve(new Response(body, {
+          status: 200,
+          headers: { "Content-Type": "text/event-stream; charset=utf-8" },
+        }));
+      }
+      return original(input, init);
+    };
+  });
+  await page.route("**/api/jarvis/transcribe", route =>
+    route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ transcript: "What do you create?", error: null }) }));
+  await page.route("**/api/jarvis/stream", route =>
+    route.fulfill({ status: 200, contentType: "text/event-stream",
+      body: 'event: chunk\ndata: {"text":"I create distinctive visual identities."}\n\n'
+        + 'event: done\ndata: {}\n\n' }));
+  let wavRequests = 0;
+  await page.route("**/api/jarvis/tts", route => {
+    wavRequests++;
+    return route.fulfill({ status: 200, contentType: "audio/wav", body: mockWav() });
+  });
+  await openJarvis(page);
+  const jarvis = page.locator(".jv-root");
+  await jarvis.getByRole("button", { name: "TALK TO KUTUZOV" }).click();
+  await jarvis.locator(".jv-orbit-hit").click();
+  await expect(jarvis.locator(".jv-visual")).toHaveAttribute("data-state", "speaking", { timeout: 12_000 });
+  expect(await page.evaluate(() => window.__jarvisPcmDone)).toBe(false);
+  await expect.poll(() => page.evaluate(() => window.__jarvisPcmDone)).toBe(true);
+  expect(wavRequests).toBe(0);
+});
+
+test("unavailable streamed TTS gracefully falls back to the existing WAV pipeline", async ({ page }) => {
+  await installFakeMicrophone(page);
+  await page.route("**/api/jarvis/transcribe", route =>
+    route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ transcript: "Tell me about Edmundo.", error: null }) }));
+  await page.route("**/api/jarvis/stream", route =>
+    route.fulfill({ status: 200, contentType: "text/event-stream",
+      body: 'event: chunk\ndata: {"text":"Edmundo is an art director."}\n\n'
+        + 'event: done\ndata: {}\n\n' }));
+  const stages = [];
+  await page.route("**/api/jarvis/tts-stream", route => {
+    stages.push("stream");
+    return route.fulfill({ status: 503 });
+  });
+  await page.route("**/api/jarvis/tts", route => {
+    stages.push("wav");
+    return route.fulfill({ status: 200, contentType: "audio/wav", body: mockWav() });
+  });
+  await openJarvis(page);
+  const jarvis = page.locator(".jv-root");
+  await jarvis.getByRole("button", { name: "TALK TO KUTUZOV" }).click();
+  await jarvis.locator(".jv-orbit-hit").click();
+  await expect.poll(() => stages).toEqual(["stream", "wav"]);
+  await jarvis.getByRole("button", { name: "Open text chat" }).click();
+  await expect(jarvis.locator(".jv-chat-message--assistant")).toContainText("Edmundo is an art director.");
 });
