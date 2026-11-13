@@ -98,6 +98,7 @@ const contentTranslations: Record<string, string> = {
   "Selected collaborations": "Colaborações seleccionadas",
   "Contact": "Contacto",
   "Let's talk.": "Vamos conversar.",
+  "Newsletter: new work and availability": "Newsletter: novos trabalhos e disponibilidade",
   "Next move": "Próximo passo",
   "Social": "Redes sociais",
   "Years": "Anos",
