@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { Buffer } from "node:buffer";
+import { extractJarvisWav } from "@/lib/jarvis/tts-response";
 import type { JarvisLocale } from "@/lib/jarvis/facts";
 
 const Input=z.object({text:z.string().trim().min(1).max(650),locale:z.enum(["en","pt"]).default("en")}).strict();
@@ -39,7 +39,7 @@ export const Route=createFileRoute("/api/jarvis/tts")({
               locale==="en"
                 ? "Adult male voice, low warm timbre, natural polished English with a neutral British accent. Calm, confident, articulate delivery."
                 : "Adult male voice, low warm timbre, precise natural Portuguese as spoken in Mozambique; European Portuguese pronunciation, never Brazilian Portuguese. Calm confident articulate delivery."}]}]}],
-          response_format:{type:"audio",mime_type:"audio/wav"},
+          response_format:{type:"audio"},
           generation_config:{speech_config:[{voice:"Orus"}]},
         }),signal:AbortSignal.timeout(16000),cache:"no-store",
       });
@@ -47,13 +47,11 @@ export const Route=createFileRoute("/api/jarvis/tts")({
         console.warn("JARVIS_TTS_HTTP",response.status);
         return new Response(null,{status:503,headers});
       }
-      const data=await response.json() as {steps?:Array<{type?:string;content?:Array<{type?:string;data?:string}>}>};
-      const audio=data.steps?.filter(x=>x.type==="model_output").flatMap(x=>x.content??[])
-        .filter(x=>x.type==="audio").at(-1)?.data;
-      if(!audio||audio.length>2_000_000)return new Response(null,{status:503,headers});
-      const bytes=Buffer.from(audio,"base64");
-      if(bytes.length<44||bytes.toString("ascii",0,4)!=="RIFF")
+      const bytes=extractJarvisWav(await response.json());
+      if(!bytes){
+        console.warn("JARVIS_TTS_INVALID_WAV");
         return new Response(null,{status:503,headers});
+      }
       return new Response(new Uint8Array(bytes),{
         headers:{...headers,"Content-Type":"audio/wav","Content-Length":String(bytes.length)}
       });
