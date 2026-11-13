@@ -83,7 +83,7 @@
 .footer-details-grid {
   display: grid;
   min-width: 0;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   gap: 2.5rem;
 }
 .footer-details-grid > * { min-width: 0; }
