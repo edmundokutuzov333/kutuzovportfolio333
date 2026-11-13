@@ -1,0 +1,46 @@
+name: Jarvis production audio smoke (temporary)
+
+on:
+  push:
+    branches: [test/jarvis-prod-audio-smoke-20261113]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-real-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Test production Gemini TTS and speech-to-text (synthetic phrase only)
+        env:
+          SITE: https://edmundokutuzov.art
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 20 "$SITE/api/jarvis/health" > /tmp/health.json
+          echo "Health: $(python3 -c 'import json;print(json.load(open("/tmp/health.json")).get("status"))')"
+          TTS_STATUS=$(curl -sSL --max-time 36 -o /tmp/jarvis-test.wav -w '%{http_code}' \
+            -X POST "$SITE/api/jarvis/tts" \
+            -H "Origin: $SITE" -H 'Content-Type: application/json' \
+            --data '{"text":"Hello. This is a short voice test from Jarvis.","locale":"en"}')
+          echo "TTS HTTP: $TTS_STATUS"
+          test "$TTS_STATUS" = "200"
+          python3 - <<'PY'
+          import wave
+          with wave.open("/tmp/jarvis-test.wav","rb") as w:
+              print("TTS WAV verified:",w.getframerate(),"Hz",w.getnchannels(),"channel(s)",round(w.getnframes()/w.getframerate(),2),"seconds")
+              assert w.getnframes() > 2400
+          PY
+          STT_STATUS=$(curl -sSL --max-time 40 -o /tmp/transcript.json -w '%{http_code}' \
+            -X POST "$SITE/api/jarvis/transcribe" \
+            -H "Origin: $SITE" -H 'X-Jarvis-Locale: en' -H 'Content-Type: audio/wav' \
+            --data-binary @/tmp/jarvis-test.wav)
+          echo "STT HTTP: $STT_STATUS"
+          python3 - <<'PY'
+          import json
+          j=json.load(open("/tmp/transcript.json"))
+          t=j.get("transcript") or ""
+          print("STT transcript:",t[:180] if t else "EMPTY", "error:",(j.get("error") or "none")[:130])
+          assert t.strip() and 'jarvis' in t.lower(), "Provider STT did not return the expected spoken phrase"
+          PY
+          test "$STT_STATUS" = "200"
