@@ -8,7 +8,7 @@ const copy = {
   en: {
     voice: {
       idle: "Ready to talk",
-      listening: "Listening…",
+      listening: "Listening · tap to send",
       processing: "Thinking…",
       speaking: "Speaking…",
       unavailable: "Voice unavailable. Please try again.",
@@ -96,7 +96,7 @@ const copy = {
   pt: {
     voice: {
       idle: "Disponível para conversar",
-      listening: "A ouvir…",
+      listening: "A ouvir · toque para enviar",
       processing: "A processar…",
       speaking: "A responder…",
       unavailable: "Voz indisponível. Tente novamente.",
