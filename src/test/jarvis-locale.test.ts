@@ -81,7 +81,7 @@ describe("JARVIS follows the site's EN/PT selection", () => {
     const tts=readFileSync("src/routes/api.jarvis.tts.ts","utf8");
     const token=readFileSync("src/routes/api.jarvis.live-token.ts","utf8");
     expect(launcher).toContain("siteToJarvisLocale(language)");
-    expect(launcher).toContain("{ messages: modelHistory, locale });");
+    expect(launcher).toContain("{ messages: modelHistory, locale }),");
     expect(launcher).toContain('{ messages: modelHistory, locale, mode: "voice" }');
     expect(launcher).toContain('recognition.lang = locale === "en" ? "en-GB" : "pt-PT"');
     expect(stream).toContain("streamJarvis(data.messages,write,request.signal,data.locale,data.mode)");
