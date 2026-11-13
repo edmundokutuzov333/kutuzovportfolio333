@@ -22,7 +22,7 @@ export function chooseJarvisMaleVoice<T extends BrowserVoice>(voices:readonly T[
   return locale==="en"?chooseEnglishMaleVoice(voices):choosePortugueseMaleVoice(voices);
 }
 export const JARVIS_LIVE_VOICE="Orus";
-export const JARVIS_SPEECH_LOCALE="pt-PT";
+export const JARVIS_SPEECH_LOCALE="en-GB";
 export const jarvisSpeechLocale=(locale:JarvisLocale)=>locale==="en"?"en-GB":"pt-PT";
 export function describeVoiceFallback(voices:readonly BrowserVoice[],locale:JarvisLocale="pt"):string|null {
   if(chooseJarvisMaleVoice(voices,locale))return null;
