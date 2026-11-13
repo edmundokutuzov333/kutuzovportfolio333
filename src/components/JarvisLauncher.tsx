@@ -519,68 +519,109 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     window.speechSynthesis?.cancel();
   }, [stopMeter]);
 
+  /** Cloud Orus is preferred for a consistent male voice; device speech is a nonblocking fallback. */
   const speak = async (text: string, session: number) => {
-    const speech=window.speechSynthesis;
-    let voices=speech?.getVoices()??[];
-    if(speech && !voices.length){
-      await new Promise<void>(resolve=>{
-        const done=()=>{speech.removeEventListener?.("voiceschanged",done);resolve();};
-        speech.addEventListener?.("voiceschanged",done,{once:true});
-        window.setTimeout(done,450);
-      });
-      voices=speech.getVoices();
-    }
-    if(voiceSession.current!==session)return;
-    const selected=chooseJarvisMaleVoice(voices,locale);
-    if(selected && speech && typeof SpeechSynthesisUtterance!=="undefined"){
-      const utterance=new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
-      utterance.voice=selected;
-      utterance.lang=selected.lang;
-      utterance.rate=1.02;
-      utterance.pitch=.91;
-      utterance.onend=()=>{if(voiceSession.current===session)setVoice("idle");};
-      utterance.onerror=()=>{if(voiceSession.current===session){
-        setVoice("unavailable");setVoiceMessage(t.speechFailed);
-      }};
-      speech.cancel();
-      setVoice("speaking");speech.speak(utterance);
-      return;
-    }
-    // No suitable local male voice: use the verified Google Orus
-    // audio endpoint. Preserve text-only graceful fallback on unsupported devices.
-    const controller=new AbortController();
-    ttsAbortRef.current=controller;
-    setVoice("processing");
-    try{
-      const response=await fetch("/api/jarvis/tts",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({text:text.slice(0,650),locale}),signal:controller.signal,
-      });
-      if(!response.ok)throw Error("tts_unavailable");
-      const audioBlob=await response.blob();
-      if(voiceSession.current!==session||controller.signal.aborted)return;
-      if(audioBlob.type!=="audio/wav"||audioBlob.size<44)throw Error("invalid_tts_audio");
-      const objectUrl=URL.createObjectURL(audioBlob);
-      ttsUrlRef.current=objectUrl;
-      const audio=new Audio(objectUrl);
-      ttsAudioRef.current=audio;
-      audio.onended=()=>{
-        if(ttsUrlRef.current===objectUrl){URL.revokeObjectURL(objectUrl);ttsUrlRef.current=null;}
-        if(voiceSession.current===session){setVoice("idle");ttsAudioRef.current=null;}
-      };
-      audio.onerror=()=>{
-        if(voiceSession.current===session){setVoice("unavailable");
-          setVoiceMessage(t.audioFailed);}
-      };
-      await audio.play();
-      if(voiceSession.current===session)setVoice("speaking");
-    }catch{
-      if(voiceSession.current===session && !controller.signal.aborted){
-        setVoice("unavailable");
-        setVoiceMessage(describeVoiceFallback(voices, locale)??t.maleVoiceUnavailable);
+    const fallbackDeviceSpeech = async (): Promise<void> => {
+      const speech = window.speechSynthesis;
+      if (!speech || typeof SpeechSynthesisUtterance === "undefined") {
+        if (voiceSession.current === session) {
+          setVoice("unavailable");
+          setVoiceMessage(t.audioFailed);
+        }
+        return;
       }
-    }finally {
-      if(ttsAbortRef.current===controller)ttsAbortRef.current=null;
+      let voices = speech.getVoices();
+      if (!voices.length) {
+        await new Promise<void>(resolve => {
+          let settled = false;
+          const done = () => {
+            if (settled) return;
+            settled = true;
+            speech.removeEventListener?.("voiceschanged", done);
+            resolve();
+          };
+          speech.addEventListener?.("voiceschanged", done);
+          window.setTimeout(done, 550);
+        });
+        voices = speech.getVoices();
+      }
+      if (voiceSession.current !== session) return;
+      const selected = chooseJarvisMaleVoice(voices, locale);
+      if (!selected) {
+        setVoice("unavailable");
+        setVoiceMessage(describeVoiceFallback(voices, locale) ?? t.maleVoiceUnavailable);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
+      utterance.voice = selected;
+      utterance.lang = selected.lang;
+      utterance.rate = 1.02;
+      utterance.pitch = 0.91;
+      utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
+      utterance.onerror = () => {
+        if (voiceSession.current === session) {
+          setVoice("unavailable");
+          setVoiceMessage(t.audioFailed);
+        }
+      };
+      try {
+        speech.cancel();
+        setVoice("speaking");
+        speech.speak(utterance);
+      } catch {
+        if (voiceSession.current === session) {
+          setVoice("unavailable");
+          setVoiceMessage(t.audioFailed);
+        }
+      }
+    };
+
+    const controller = new AbortController();
+    ttsAbortRef.current = controller;
+    setVoice("processing");
+    try {
+      const response = await fetch("/api/jarvis/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ text: text.slice(0, 650), locale }),
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.headers.get("content-type")?.startsWith("audio/wav")) {
+        throw new Error("tts_http_" + response.status);
+      }
+      const wav = await response.arrayBuffer();
+      if (wav.byteLength < 44 || wav.byteLength > MAX_JARVIS_AUDIO_BYTES) throw new Error("invalid_wav");
+      if (voiceSession.current !== session || controller.signal.aborted) return;
+
+      const context = playbackContextRef.current;
+      if (!context || context.state === "closed") throw new Error("missing_audio_context");
+      const decoded = await context.decodeAudioData(wav.slice(0));
+      if (voiceSession.current !== session || controller.signal.aborted) return;
+      if (context.state !== "running") {
+        await Promise.race([
+          context.resume().catch(() => {}),
+          new Promise<void>(resolve => window.setTimeout(resolve, 1800)),
+        ]);
+      }
+      if (context.state !== "running") throw new Error("audio_context_suspended");
+      const source = context.createBufferSource();
+      source.buffer = decoded;
+      source.connect(context.destination);
+      playbackSourceRef.current = source;
+      source.onended = () => {
+        if (playbackSourceRef.current === source) playbackSourceRef.current = null;
+        if (voiceSession.current === session) setVoice("idle");
+      };
+      source.start();
+      setVoice("speaking");
+    } catch (error) {
+      if (voiceSession.current === session && !controller.signal.aborted) {
+        console.warn("JARVIS_TTS_FALLBACK", error instanceof Error ? error.message.slice(0, 50) : "unknown");
+        await fallbackDeviceSpeech();
+      }
+    } finally {
+      if (ttsAbortRef.current === controller) ttsAbortRef.current = null;
     }
   };
 
