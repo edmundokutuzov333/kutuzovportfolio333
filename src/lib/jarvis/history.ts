@@ -2,8 +2,8 @@
  * No visitor conversation text is stored in localStorage or the server database.
  * Always fit the SSE endpoint's 26 KB request envelope.
  */
-export type HistoryMessage={role:"user"|"assistant";content:string};
 import type { JarvisLocale } from "./facts";
+export type HistoryMessage={role:"user"|"assistant";content:string};
 export function buildJarvisHistory(messages:readonly HistoryMessage[], locale: JarvisLocale = "en"):HistoryMessage[] {
   const recent=messages.slice(-14).map((msg,index,items)=>({
     role:msg.role,
