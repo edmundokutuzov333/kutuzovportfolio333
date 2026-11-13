@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import type { IntroClock } from "./IntroScene";
+import { DirectionIcon } from "./DirectionIcon";
+import { useI18n } from "@/lib/i18n";
 
 const Scene = lazy(() => import("./IntroScene"));
 
@@ -13,6 +15,7 @@ const ease = [0.76, 0, 0.24, 1] as const;
 type Phase = "idle" | "breach" | "flash" | "done";
 
 export function Intro() {
+  const { language } = useI18n();
   // Rendered on the server too, so the home page never flashes before the intro.
   const [phase, setPhase] = useState<Phase>("idle");
   const [mounted, setMounted] = useState(false);
@@ -165,9 +168,9 @@ export function Intro() {
 
           <button
             onClick={(e) => { e.stopPropagation(); skip(); }}
-            className="absolute bottom-9 right-6 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground md:right-12 md:text-xs"
+            className="absolute bottom-9 right-6 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground md:right-12 md:text-xs"
           >
-            Skip →
+            {language === "pt-PT" ? "Saltar" : "Skip"} <DirectionIcon direction="forward" />
           </button>
         </motion.div>
       )}
