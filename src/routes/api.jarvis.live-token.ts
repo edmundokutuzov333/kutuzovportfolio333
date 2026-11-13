@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+const Input=z.object({locale:z.enum(["en","pt"]).default("en")}).strict();
 
 /** A one-use ephemeral token. Never expose GEMINI_API_KEY or Supabase credentials. */
 export const Route = createFileRoute("/api/jarvis/live-token")({
@@ -11,6 +13,9 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
         if(!origin||new URL(origin).origin!==new URL(request.url).origin
           ||request.headers.get("sec-fetch-site")==="cross-site")
           return new Response(null,{status:403,headers});
+        let locale:"en"|"pt";
+        try { locale=Input.parse(await request.json().catch(()=>({}))).locale; }
+        catch { return new Response(null,{status:400,headers}); }
         try{
           const {getVerifiedFacts,acquireQuota,db}=await import("@/lib/server/jarvis-kb.server");
           const {buildFactsBlock,getContact}=await import("@/lib/jarvis/facts");
@@ -27,16 +32,15 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
             timeoutMs:2300,
           });
           if(!available)return new Response(null,{status:429,headers});
-          const contact=getContact(facts),apiKey=process.env["GEMINI_API_KEY"];
+          const contact=getContact(facts,locale),apiKey=process.env["GEMINI_API_KEY"];
           if(!contact.email||!apiKey)return new Response(null,{status:503,headers});
           // Gemini Live 3.8 is the low-latency native-audio model.
           const model="models/gemini-3.8-live";
-          const system=jarvisPersona("pt",buildFactsBlock(facts,"pt").slice(0,4300),"")
-            +"\\nVOICE: Usa apresentação vocal MASCULINA, natural e calorosa, registo médio-grave."
-            +"\\nRESPONDE INEQUIVOCAMENTE EM PORTUGUÊS EUROPEU FALADO EM MOÇAMBIQUE."
-            +"\\nEvita de forma explícita a pronúncia e o vocabulário do português do Brasil."
-            +"\\nMantém cadência moçambicana natural, sem imitações caricaturais."
-            +"\\nFala em frases curtas. Em contactos invoca sempre get_contact.";
+          const system=jarvisPersona(locale,buildFactsBlock(facts,locale).slice(0,4300),"")
+            +(locale==="en"
+              ? "\\nVOICE: Masculine, natural, warm, medium-low register; polished neutral British English. Reply ONLY in English, matching the site's EN setting."
+              : "\\nVOICE: Masculina, natural, calorosa, registo médio-grave. Responde APENAS em português de Moçambique/Portugal, nunca português brasileiro.")
+            +"\\nUse short sentences. Always call get_contact before mentioning contact information.";
 
           const config={
             generationConfig:{
@@ -49,7 +53,7 @@ export const Route = createFileRoute("/api/jarvis/live-token")({
             contextWindowCompression:{slidingWindow:{}},
             systemInstruction:{parts:[{text:system}]},
             tools:[{functionDeclarations:[{
-              name:"get_contact",description:"Obter email, WhatsApp, site, LinkedIn ou Instagram canónicos antes de dizer contactos.",
+              name:"get_contact",description:"Get verified email, WhatsApp, website, LinkedIn or Instagram before providing contact information.",
               parameters:{type:"OBJECT",properties:{}},
             }]}],
           };

@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Buffer } from "node:buffer";
+import type { JarvisLocale } from "@/lib/jarvis/facts";
 
-const Input=z.object({text:z.string().trim().min(1).max(650)}).strict();
-/** Render a masculine Portuguese voice through Google TTS if a local PT/MZ voice is unavailable.
+const Input=z.object({text:z.string().trim().min(1).max(650),locale:z.enum(["en","pt"]).default("en")}).strict();
+/** Render a masculine voice in the site language when no matching browser voice is available.
  * Only verified public contacts may be synthesized. Never pass master keys to the browser.
  */
 export const Route=createFileRoute("/api/jarvis/tts")({
@@ -13,11 +14,11 @@ export const Route=createFileRoute("/api/jarvis/tts")({
     if(request.headers.get("sec-fetch-site")==="cross-site"
       ||(origin&&origin!==new URL(request.url).origin))return new Response(null,{status:403,headers});
     if(Number(request.headers.get("content-length")||"0")>2000)return new Response(null,{status:413,headers});
-    let text:string;
+    let text:string,locale:JarvisLocale;
     try{
       const raw=await request.text();
       if(raw.length>2000)return new Response(null,{status:413,headers});
-      text=Input.parse(JSON.parse(raw)).text;
+      const input=Input.parse(JSON.parse(raw));text=input.text;locale=input.locale;
     }catch{return new Response(null,{status:400,headers});}
     try {
       const {getVerifiedFacts,acquireQuota}=await import("@/lib/server/jarvis-kb.server");
@@ -25,17 +26,19 @@ export const Route=createFileRoute("/api/jarvis/tts")({
       const {spokenJarvisText}=await import("@/lib/jarvis/speech");
       const [facts,allowed]=await Promise.all([getVerifiedFacts(),acquireQuota()]);
       if(!allowed)return new Response(null,{status:429,headers});
-      const safe=validateContacts(text,facts,"pt");
+      const safe=validateContacts(text,facts,locale);
       const key=process.env["GEMINI_API_KEY"];
       if(!key)return new Response(null,{status:503,headers});
-      const voiceText=spokenJarvisText(safe.text).slice(0,850);
+      const voiceText=spokenJarvisText(safe.text,locale).slice(0,850);
       const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
         method:"POST",headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
         body:JSON.stringify({
           model:"gemini-3.8-flash-lite-tts",
           input:[{type:"user_input",content:[{type:"text",text:voiceText,
             annotations:[{type:"speech_metadata",style:
-              "Adult male voice, low warm timbre, precise natural Portuguese as spoken in Mozambique; European Portuguese pronunciation, never Brazilian Portuguese. Calm confident articulate delivery."}]}]}],
+              locale==="en"
+                ? "Adult male voice, low warm timbre, natural polished English with a neutral British accent. Calm, confident, articulate delivery."
+                : "Adult male voice, low warm timbre, precise natural Portuguese as spoken in Mozambique; European Portuguese pronunciation, never Brazilian Portuguese. Calm confident articulate delivery."}]}]}],
           response_format:{type:"audio",mime_type:"audio/wav"},
           generation_config:{speech_config:[{voice:"Orus"}]},
         }),signal:AbortSignal.timeout(16000),cache:"no-store",

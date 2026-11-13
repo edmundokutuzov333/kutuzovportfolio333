@@ -73,17 +73,17 @@ export function validateContacts(answer: string, facts: Fact[], locale: JarvisLo
       || (!!officialSite && url.startsWith(officialSite + "/work/"));
     if (trusted) return raw;
     flagged = true; reasons.add("unverified_url");
-    return (officialSite ?? "endereço não confirmado") + punctuation;
+    return (officialSite ?? (locale==="en"?"unverified address":"endereço não confirmado")) + punctuation;
   });
   text = text.replace(emailPattern, (value) => {
     if (allowedEmails.has(value.toLowerCase())) return value;
     flagged = true; reasons.add("unverified_email");
-    return contact.email ?? "email não confirmado";
+    return contact.email ?? (locale==="en"?"unverified email":"email não confirmado");
   });
   text = text.replace(phonePattern, (value) => {
     if (allowedPhones.has(normaliseDigits(value)) || normaliseDigits(value).length < 10) return value;
     flagged = true; reasons.add("unverified_phone");
-    return contact.phone ?? "telefone não confirmado";
+    return contact.phone ?? (locale==="en"?"unverified phone":"telefone não confirmado");
   });
   return { text, flagged, reasons: [...reasons] };
 }

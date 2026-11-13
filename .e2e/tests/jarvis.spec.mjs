@@ -16,18 +16,18 @@ test("JARVIS keeps the reference voice stage and native pointer navigation", asy
     await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
   }
   await expect(jarvis).toBeVisible({ timeout: 30_000 });
-  await expect(jarvis.locator(".jv-panel h1")).toHaveText("Estou por aqui.");
+  await expect(jarvis.locator(".jv-panel h1")).toHaveText("I'm right here.");
   await expect(jarvis.locator(".jv-visual__bar")).toHaveCount(34);
   await expect(jarvis.locator(".jv-chat-button")).toHaveCSS("cursor", "pointer");
   await expect(page.locator("html")).toHaveClass(/jarvis-active/);
 
-  await jarvis.getByRole("button", { name: "Abrir conversa escrita" }).click();
+  await jarvis.getByRole("button", { name: "Open text chat" }).click();
   const chat = jarvis.locator(".jv-chat-card");
   await expect(chat).toBeVisible();
-  await expect(chat.locator("h2")).toHaveText("CONVERSA COMIGO");
+  await expect(chat.locator("h2")).toHaveText("LET'S TALK");
   await expect(chat.locator(".jv-suggestions button")).toHaveCount(3);
   await expect(chat.locator("#jv-input")).toBeFocused();
-  await expect(chat.getByRole("button", { name: "Mudar para conversa por voz" })).toHaveCount(0);
+  await expect(chat.getByRole("button", { name: "Switch to voice chat" })).toHaveCount(0);
 
   await page.keyboard.press("Escape");
   await expect(chat).toHaveCount(0);
@@ -45,13 +45,13 @@ test("JARVIS presents published project links and live artwork instead of the ol
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
   await expect(page.locator(".jv-root")).toBeVisible();
-  await page.getByRole("button", { name: "Abrir conversa escrita" }).click();
+  await page.getByRole("button", { name: "Open text chat" }).click();
   const chat = page.locator(".jv-chat-card");
-  await chat.getByRole("button", { name: "Explorar os meus projectos." }).click();
+  await chat.getByRole("button", { name: "Explore selected work." }).click();
 
   // Opening the gallery must position its heading at the start, not the
   // conversation's old bottom scroll position.
-  const gallery = chat.getByRole("region", { name: "Galeria de projectos" });
+  const gallery = chat.getByRole("region", { name: "Project gallery" });
   await expect(gallery).toHaveAttribute("data-lenis-prevent", "");
   await expect(gallery).toHaveCSS("overflow-y", "auto");
   await expect(gallery).toHaveCSS("touch-action", "pan-y");
@@ -128,7 +128,7 @@ test("mobile JARVIS chat does not scroll sideways and keeps a usable composer", 
   await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
   const panel = page.locator(".jv-root");
   await expect(panel).toBeVisible();
-  await panel.getByRole("button", { name: "Abrir conversa escrita" }).click();
+  await panel.getByRole("button", { name: "Open text chat" }).click();
   await expect(page.locator(".jv-chat-card")).toBeVisible();
   const composer = page.locator("#jv-input");
   await expect(composer).toBeVisible();
@@ -151,10 +151,10 @@ test("mobile project gallery starts at the heading and scrolls both directions",
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
-  await page.getByRole("button", { name: "Abrir conversa escrita" }).click();
-  await page.getByRole("button", { name: "Explorar os meus projectos." }).click();
+  await page.getByRole("button", { name: "Open text chat" }).click();
+  await page.getByRole("button", { name: "Explore selected work." }).click();
 
-  const area = page.getByRole("region", { name: "Galeria de projectos" });
+  const area = page.getByRole("region", { name: "Project gallery" });
   await expect(area.locator(".jv-hologram").first()).toBeVisible({ timeout: 30_000 });
   await expect(area).toHaveCSS("touch-action", "pan-y");
   await expect(area.locator(".jv-works__top")).toBeInViewport();
@@ -193,7 +193,7 @@ test("JARVIS SSE text conversation renders verified chunks without raw Markdown"
       status: 200,
       contentType: "text/event-stream; charset=utf-8",
       headers: { "Cache-Control": "no-cache, no-transform" },
-      body: 'event: chunk\ndata: {"text":"O email oficial é contact@edmundokutuzov.art"}\n\n'
+      body: 'event: chunk\ndata: {"text":"Edmundo’s verified email is contact@edmundokutuzov.art"}\n\n'
           + 'event: timing\ndata: {"firstTextMs":80,"totalMs":120}\n\n'
           + 'event: done\ndata: {}\n\n',
     });
@@ -202,9 +202,9 @@ test("JARVIS SSE text conversation renders verified chunks without raw Markdown"
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready", "true", { timeout: 30_000 });
   await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
   await expect(page.locator(".jv-root")).toBeVisible({ timeout: 20_000 });
-  await page.getByRole("button", { name: "Abrir conversa escrita" }).click();
+  await page.getByRole("button", { name: "Open text chat" }).click();
   await page.locator("#jv-input").fill("Qual o email?");
-  await page.getByRole("button", { name: "Enviar mensagem" }).click();
+  await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.locator(".jv-chat-message--assistant").last())
     .toContainText("contact@edmundokutuzov.art");
   await expect(page.locator(".jv-chat-message--assistant").last()).not.toContainText("**");
@@ -222,7 +222,7 @@ test("JARVIS stream route rejects invalid payloads without exposing secrets", as
 test("JARVIS never submits a lead before explicit consent and DB acknowledgement", async ({ page }) => {
   await page.route("**/api/jarvis/stream", async route => {
     await route.fulfill({status:200,contentType:"text/event-stream",
-      body:'event: chunk\ndata: {"text":"Podemos preparar um briefing."}\n\n'
+      body:'event: chunk\ndata: {"text":"We can prepare a brief."}\n\n'
         +'event: done\ndata: {}\n\n'});
   });
   let submissions=0;
@@ -237,19 +237,19 @@ test("JARVIS never submits a lead before explicit consent and DB acknowledgement
   await page.goto("/",{waitUntil:"domcontentloaded"});
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready","true",{timeout:30_000});
   await page.evaluate(()=>window.dispatchEvent(new Event("ek:jarvis-open")));
-  await page.getByRole("button",{name:"Abrir conversa escrita"}).click();
+  await page.getByRole("button",{name:"Open text chat"}).click();
   await page.locator("#jv-input").fill("Quero contratar para um projecto.");
-  await page.getByRole("button",{name:"Enviar mensagem"}).click();
+  await page.getByRole("button",{name:"Send message"}).click();
   const form=page.locator(".jv-lead__form");
   await expect(form).toBeVisible();
-  await expect(form.getByRole("button",{name:"Enviar briefing"})).toBeDisabled();
+  await expect(form.getByRole("button",{name:"Send brief"})).toBeDisabled();
   expect(submissions).toBe(0);
-  await form.getByLabel("Nome").fill("Teste de Interface");
-  await form.getByLabel("Email ou WhatsApp").fill("teste@example.net");
-  await form.getByLabel("Resumo do projecto").fill("Identidade visual para campanha.");
+  await form.getByLabel("Name").fill("Teste de Interface");
+  await form.getByLabel("Email or WhatsApp").fill("teste@example.net");
+  await form.getByLabel("Project overview").fill("Identidade visual para campanha.");
   await form.getByRole("checkbox").check();
-  await form.getByRole("button",{name:"Enviar briefing"}).click();
-  await expect(page.locator(".jv-lead__success")).toContainText("Pedido recebido");
+  await form.getByRole("button",{name:"Send brief"}).click();
+  await expect(page.locator(".jv-lead__success")).toContainText("Request received");
   expect(submissions).toBe(1);
 });
 
@@ -264,4 +264,49 @@ test("JARVIS lead API rejects missing consent and cross-origin calls",async ({re
     data:{...payload,consent:true},headers:{origin:"https://evil.example"}
   });
   expect(crossOrigin.status()).toBe(403);
+});
+
+test("JARVIS stays in the site's EN/PT language even when the visitor writes in another language",async({page})=>{
+  await page.setViewportSize({width:1448,height:1086});
+  await page.emulateMedia({reducedMotion:"reduce"});
+  const observed=[];
+  await page.route("**/api/jarvis/stream",async route=>{
+    const payload=route.request().postDataJSON();
+    observed.push(payload.locale);
+    await route.fulfill({status:200,contentType:"text/event-stream",
+      body:'event: chunk\ndata: {"text":"Verified response"}\n\n'
+        +'event: done\ndata: {}\n\n'});
+  });
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready","true",{timeout:30_000});
+  await page.evaluate(()=>window.dispatchEvent(new Event("ek:jarvis-open")));
+  const jarvis=page.locator(".jv-root");
+  await expect(jarvis.locator("#jv-title")).toHaveText("I'm right here.");
+  await jarvis.getByRole("button",{name:"Open text chat"}).click();
+  await expect(jarvis.locator(".jv-chat-welcome h3")).toHaveText("Hi. I'm JARVIS.");
+  await jarvis.locator("#jv-input").fill("Olá, quero saber mais.");
+  await jarvis.getByRole("button",{name:"Send message"}).click();
+  await expect(jarvis.locator(".jv-chat-message--assistant").last()).toContainText("Verified response");
+  expect(observed).toEqual(["en"]);
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
+  await page.getByRole("button",{name:"PT",exact:true}).first().click();
+  await expect(page.locator("html")).toHaveAttribute("lang","pt-PT");
+  await page.evaluate(()=>window.dispatchEvent(new Event("ek:jarvis-open")));
+  await expect(jarvis.locator("#jv-title")).toHaveText("Estou por aqui.");
+  await jarvis.getByRole("button",{name:"Abrir conversa escrita"}).click();
+  await expect(jarvis.locator(".jv-chat-welcome h3")).toHaveText("Olá. Sou o JARVIS.");
+  await jarvis.locator("#jv-input").fill("Hello, what do you do?");
+  await jarvis.getByRole("button",{name:"Enviar mensagem"}).click();
+  await expect(jarvis.locator(".jv-chat-message--assistant").last()).toContainText("Verified response");
+  expect(observed).toEqual(["en","pt"]);
+});
+
+test("JARVIS restores the saved Portuguese site preference after hydration",async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem("ek-language","pt-PT"));
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  await expect(page.locator("html")).toHaveAttribute("lang","pt-PT");
+  await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready","true",{timeout:30_000});
+  await page.evaluate(()=>window.dispatchEvent(new Event("ek:jarvis-open")));
+  await expect(page.locator("#jv-title")).toHaveText("Estou por aqui.");
 });

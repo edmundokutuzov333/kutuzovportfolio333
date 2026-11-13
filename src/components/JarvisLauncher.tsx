@@ -6,8 +6,11 @@ import { EKMark } from "./EKMark";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
-import { choosePortugueseMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
+import { chooseJarvisMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
 import { buildJarvisHistory } from "@/lib/jarvis/history";
+import { useI18n } from "@/lib/i18n";
+import { jarvisCopy, siteToJarvisLocale } from "@/lib/jarvis/locale";
+import type { JarvisLocale } from "@/lib/jarvis/facts";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
@@ -40,18 +43,6 @@ type SpeechRec = {
   onend: (() => void) | null;
 };
 
-const VOICE_LABEL: Record<VoiceState, string> = {
-  idle: "Disponível para conversar",
-  listening: "A ouvir…",
-  processing: "A processar…",
-  speaking: "A responder…",
-  unavailable: "Voz indisponível. Tente novamente.",
-};
-const SUGGESTIONS = [
-  { id: "percurso", label: "Conhecer o meu percurso.", prompt: "Fala-me do teu percurso profissional." },
-  { id: "projectos", label: "Explorar os meus projectos.", prompt: null },
-  { id: "marcas", label: "Ver as marcas com que trabalhei.", prompt: "Com que marcas já trabalhaste?" },
-] as const;
 const WAVEFORM = [2, 3, 4, 8, 14, 23, 34, 47, 57, 47, 35, 25, 16, 9, 5, 3, 2];
 
 function getRecognition(): SpeechRec | null {
@@ -64,7 +55,8 @@ function getRecognition(): SpeechRec | null {
 }
 
 /** Only update React when a whole message changes, never for microphone frames. */
-function useConversation() {
+function useConversation(locale: JarvisLocale) {
+  const t = jarvisCopy(locale);
   const ask = useServerFn(askJarvis);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [pending, setPending] = useState(false);
@@ -80,7 +72,7 @@ function useConversation() {
     busy.current = true;
     const version = ++epoch.current;
     const next: Msg[] = [...current.current, { role: "user" as const, content }].slice(-100);
-    const modelHistory = buildJarvisHistory(next);
+    const modelHistory = buildJarvisHistory(next, locale);
     current.current = next;
     setMessages(next);
     setPending(true);
@@ -102,7 +94,7 @@ function useConversation() {
       const response = await fetch("/api/jarvis/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-        body: JSON.stringify({ messages: modelHistory }),
+        body: JSON.stringify({ messages: modelHistory, locale }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error("stream_unavailable");
@@ -116,7 +108,7 @@ function useConversation() {
         try {
           const message = JSON.parse(data) as { text?: string; message?: string };
           if (kind === "chunk" && typeof message.text === "string") addText(message.text);
-          if (kind === "error") receivedError = message.message ?? "Não foi possível obter resposta.";
+          if (kind === "error") receivedError = message.message ?? t.noResponse;
         } catch { /* Discard invalid server event without exposing raw fragments. */ }
       };
       while (true) {
@@ -130,27 +122,27 @@ function useConversation() {
       if (unread.trim()) parse(unread);
       if (epoch.current !== version) return null;
       if (receivedError && !reply) setError(receivedError);
-      if (receivedError && reply) setError("A resposta foi interrompida. Pode voltar a tentar.");
+      if (receivedError && reply) setError(t.interrupted);
       if (reply) return cleanJarvisReply(reply);
       if (receivedError) return null;
       throw new Error("empty_stream");
     } catch {
       if (epoch.current !== version || controller.signal.aborted) return null;
       if (reply) {
-        setError("A ligação foi interrompida. Pode voltar a tentar.");
+        setError(t.interrupted);
         return cleanJarvisReply(reply);
       }
       // Older browsers / route incompatibilities: preserve original server function.
       try {
-        const response = await ask({ data: { messages: modelHistory } });
+        const response = await ask({ data: { messages: modelHistory, locale } });
         if (epoch.current !== version) return null;
         if (response.reply) {
           addText(cleanJarvisReply(response.reply));
           return cleanJarvisReply(reply);
         }
-        setError(response.error || "Não foi possível obter resposta. Tente novamente.");
+        setError(response.error || t.noResponseRetry);
       } catch {
-        if (epoch.current === version) setError("Não foi possível contactar o servidor. Tente novamente.");
+        if (epoch.current === version) setError(t.serverUnavailable);
       }
     } finally {
       if (epoch.current === version) {
@@ -160,7 +152,7 @@ function useConversation() {
       }
     }
     return null;
-  }, [ask]);
+  }, [ask, locale, t]);
 
   const reset = useCallback(() => {
     streamingController.current?.abort();
@@ -185,11 +177,13 @@ function useConversation() {
 }
 
 /** The SVG bars take a real microphone RMS level from the Web Audio API. */
-function JarvisVoiceVisual({ voice, onToggle, visualRef }: {
+function JarvisVoiceVisual({ voice, onToggle, visualRef, locale }: {
   voice: VoiceState;
   onToggle: () => void;
   visualRef: React.RefObject<HTMLDivElement | null>;
+  locale: JarvisLocale;
 }) {
+  const t = jarvisCopy(locale);
   return (
     <div className="jv-visual" data-state={voice} ref={visualRef}>
       <svg className="jv-visual__svg" viewBox="0 0 660 250" aria-hidden="true" focusable="false">
@@ -236,7 +230,7 @@ function JarvisVoiceVisual({ voice, onToggle, visualRef }: {
       </svg>
       <button type="button" className="jv-orbit-hit" onClick={onToggle} disabled={voice === "processing"}
         aria-pressed={voice === "listening"}
-        aria-label={voice === "listening" ? "Parar de ouvir" : voice === "speaking" ? "Parar resposta falada" : "Falar com Kutuzov por voz"} />
+        aria-label={voice === "listening" ? t.speakStop : voice === "speaking" ? t.speakStopReply : t.speakStart} />
     </div>
   );
 }
@@ -298,7 +292,8 @@ function HologramWork({ work, onPick }: { work: GalleryWork; onPick: () => void 
   );
 }
 
-function WorksPanel({ onPick }: { onPick: () => void }) {
+function WorksPanel({ onPick, locale }: { onPick: () => void; locale: JarvisLocale }) {
+  const t = jarvisCopy(locale);
   const [works, setWorks] = useState<GalleryWork[]>(() => worksCache ?? []);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(worksCache ? "ready" : "loading");
   const [count, setCount] = useState(12);
@@ -314,26 +309,29 @@ function WorksPanel({ onPick }: { onPick: () => void }) {
   return (
     <div className="jv-works">
       <div className="jv-works__top">
-        <span>PROJECTOS</span><span>{status === "ready" ? works.length : "—"}</span>
+        <span>{t.projects}</span><span>{status === "ready" ? works.length : "—"}</span>
       </div>
-      {status === "loading" && <div className="jv-gallery-loading" role="status" aria-label="A carregar projectos"><i /><i /><i /><i /></div>}
-      {status === "error" && <div className="jv-gallery-error" role="alert">Não foi possível carregar o portfólio. <button type="button" onClick={() => { setStatus("loading"); void getJarvisWorks().then((items) => { setWorks(items); setStatus("ready"); }).catch(() => setStatus("error")); }}>Tentar novamente</button></div>}
-      {status === "ready" && works.length === 0 && <p className="jv-gallery-error">Não há projectos publicados para mostrar.</p>}
+      {status === "loading" && <div className="jv-gallery-loading" role="status" aria-label={t.loadingProjects}><i /><i /><i /><i /></div>}
+      {status === "error" && <div className="jv-gallery-error" role="alert">{t.projectsError} <button type="button" onClick={() => { setStatus("loading"); void getJarvisWorks().then((items) => { setWorks(items); setStatus("ready"); }).catch(() => setStatus("error")); }}>{t.retry}</button></div>}
+      {status === "ready" && works.length === 0 && <p className="jv-gallery-error">{t.noProjects}</p>}
       <ul className="jv-works__grid">
         {works.slice(0, count).map((work) => <HologramWork key={work.slug} work={work} onPick={onPick} />)}
       </ul>
       {status === "ready" && works.length > count &&
-        <button type="button" className="jv-more" onClick={() => setCount((n) => n + 12)}>Ver mais projectos <ArrowRight size={17} /></button>}
+        <button type="button" className="jv-more" onClick={() => setCount((n) => n + 12)}>{t.moreProjects} <ArrowRight size={17} /></button>}
     </div>
   );
 }
 
 export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefined }) {
+  const { language } = useI18n();
+  const locale = siteToJarvisLocale(language);
+  const t = jarvisCopy(locale);
   const [open, setOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [voice, setVoice] = useState<VoiceState>("idle");
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
-  const convo = useConversation();
+  const convo = useConversation(locale);
   const transcribe = useServerFn(transcribeJarvisAudio);
   const recRef = useRef<SpeechRec | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -428,6 +426,14 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     setVoiceMessage(null);
   }, [stopMeter]);
 
+  const previousLocale = useRef(locale);
+  useEffect(() => {
+    if (previousLocale.current === locale) return;
+    previousLocale.current = locale;
+    stopVoice();
+    convo.reset();
+  }, [locale, stopVoice, convo.reset]);
+
   const close = useCallback(() => {
     stopVoice();
     setChatOpen(false);
@@ -517,22 +523,22 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       voices=speech.getVoices();
     }
     if(voiceSession.current!==session)return;
-    const selected=choosePortugueseMaleVoice(voices);
+    const selected=chooseJarvisMaleVoice(voices,locale);
     if(selected && speech && typeof SpeechSynthesisUtterance!=="undefined"){
-      const utterance=new SpeechSynthesisUtterance(spokenJarvisText(text));
+      const utterance=new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
       utterance.voice=selected;
       utterance.lang=selected.lang;
       utterance.rate=1.02;
       utterance.pitch=.91;
       utterance.onend=()=>{if(voiceSession.current===session)setVoice("idle");};
       utterance.onerror=()=>{if(voiceSession.current===session){
-        setVoice("unavailable");setVoiceMessage("Não foi possível reproduzir a resposta em voz.");
+        setVoice("unavailable");setVoiceMessage(t.speechFailed);
       }};
       speech.cancel();
       setVoice("speaking");speech.speak(utterance);
       return;
     }
-    // Male PT/MZ speech unavailable locally: use the verified Google Orus
+    // No suitable local male voice: use the verified Google Orus
     // audio endpoint. Preserve text-only graceful fallback on unsupported devices.
     const controller=new AbortController();
     ttsAbortRef.current=controller;
@@ -540,7 +546,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     try{
       const response=await fetch("/api/jarvis/tts",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({text:text.slice(0,650)}),signal:controller.signal,
+        body:JSON.stringify({text:text.slice(0,650),locale}),signal:controller.signal,
       });
       if(!response.ok)throw Error("tts_unavailable");
       const audioBlob=await response.blob();
@@ -556,14 +562,14 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       };
       audio.onerror=()=>{
         if(voiceSession.current===session){setVoice("unavailable");
-          setVoiceMessage("Não foi possível reproduzir o áudio. Pode continuar por escrito.");}
+          setVoiceMessage(t.audioFailed);}
       };
       await audio.play();
       if(voiceSession.current===session)setVoice("speaking");
     }catch{
       if(voiceSession.current===session && !controller.signal.aborted){
         setVoice("unavailable");
-        setVoiceMessage(describeVoiceFallback(voices)??"Não foi possível obter voz masculina neste momento. A resposta está na conversa escrita.");
+        setVoiceMessage(describeVoiceFallback(voices, locale)??t.maleVoiceUnavailable);
       }
     }finally {
       if(ttsAbortRef.current===controller)ttsAbortRef.current=null;
@@ -580,7 +586,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (response) void speak(response, session);
     else {
       setVoice("unavailable");
-      setVoiceMessage("Não foi possível obter resposta. Abra a conversa escrita para tentar novamente.");
+      setVoiceMessage(t.voiceReplyFailed);
     }
   };
 
@@ -604,7 +610,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     setVoice("listening");
     if (!navigator.mediaDevices?.getUserMedia) {
       setVoice("unavailable");
-      setVoiceMessage("Este navegador não permite aceder ao microfone.");
+      setVoiceMessage(t.micUnsupported);
       return;
     }
     try {
@@ -639,7 +645,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
             setVoice("unavailable");
             setVoiceMessage(message);
           },
-        })).catch(() => null) : null;
+        }, locale)).catch(() => null) : null;
       if (voiceSession.current !== session) {
         live?.stop(); stream.getTracks().forEach(track => track.stop()); return;
       }
@@ -648,7 +654,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       const recognition = getRecognition();
       if (recognition) {
         recRef.current = recognition;
-        recognition.lang = "pt-PT";
+        recognition.lang = locale === "en" ? "en-GB" : "pt-PT";
         recognition.interimResults = false;
         recognition.continuous = false;
         let transcript = "";
@@ -662,7 +668,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           stopMeter();
           if (voiceSession.current !== session) return;
           setVoice("unavailable");
-          setVoiceMessage(event.error === "not-allowed" ? "Autorize o microfone nas definições do navegador." : "Reconhecimento de voz indisponível. Tente novamente.");
+          setVoiceMessage(event.error === "not-allowed" ? t.micPermission : t.recognitionFailed);
         };
         recognition.onend = () => {
           if (voiceSession.current !== session || errored) return;
@@ -695,7 +701,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current !== session) return;
         if (bytes === 0 || bytes > 2_500_000) {
           setVoice("unavailable");
-          setVoiceMessage("Gravação inválida ou demasiado longa. Tente novamente.");
+          setVoiceMessage(t.invalidRecording);
           return;
         }
         setVoice("processing");
@@ -710,18 +716,18 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           });
           if (voiceSession.current !== session) return;
           const result = await transcribe({
-            data: { base64, mimeType: mimeType as "audio/webm" | "audio/mp4" | "audio/ogg" },
+            data: { base64, mimeType: mimeType as "audio/webm" | "audio/mp4" | "audio/ogg", locale },
           });
           if (voiceSession.current !== session) return;
           if (result.transcript) void handleSpeech(result.transcript, session);
           else {
             setVoice("unavailable");
-            setVoiceMessage(result.error || "Não foi possível reconhecer a fala.");
+            setVoiceMessage(result.error || t.recognitionEmpty);
           }
         } catch {
           if (voiceSession.current === session) {
             setVoice("unavailable");
-            setVoiceMessage("A transcrição falhou. Tente novamente.");
+            setVoiceMessage(t.transcriptionFailed);
           }
         }
       };
@@ -733,63 +739,65 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       stopMeter();
       if (voiceSession.current !== session) return;
       setVoice("unavailable");
-      setVoiceMessage("Não foi possível utilizar o microfone. Verifique as permissões.");
+      setVoiceMessage(t.micFailed);
     }
   };
 
   if (!open) return null;
   return (
     <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true"
-      aria-label="Kutuzov, assistente de IA de Edmundo Kutuzov" className="jv-root">
+      aria-label={t.assistantDialog} className="jv-root">
       <div className="jv-atmosphere" aria-hidden="true"><span className="jv-horizon" /></div>
       <div className="jv-frame">
         <header className="jv-header">
-          <Link to="/" onClick={close} className="jv-brand" aria-label="Edmundo Kutuzov, página inicial">
+          <Link to="/" onClick={close} className="jv-brand" aria-label={t.home}>
             <EKMark className="jv-brand__mark" />
             <span>EDMUNDO KUTUZOV</span>
           </Link>
           <div className="jv-header__actions">
             <span className="jv-header__light" aria-hidden="true" />
-            <button type="button" onClick={close} aria-label="Fechar" className="jv-close"><X size={16} strokeWidth={1.4} /></button>
+            <button type="button" onClick={close} aria-label={t.close} className="jv-close"><X size={16} strokeWidth={1.4} /></button>
           </div>
         </header>
         <main className="jv-main">
           <section className="jv-panel" aria-labelledby="jv-title">
-            <p className="jv-eyebrow">ASSISTENTE DE IA DO E. KUTUZOV</p>
-            <h1 id="jv-title">Estou por aqui.</h1>
-            <p className="jv-description">Fala comigo. Explora o meu trabalho. Abre uma janela para cada ideia.</p>
-            <JarvisVoiceVisual voice={voice} onToggle={() => { void startVoice(); }} visualRef={visualRef} />
+            <p className="jv-eyebrow">{t.assistantEyebrow}</p>
+            <h1 id="jv-title">{t.assistantTitle}</h1>
+            <p className="jv-description">{t.assistantDescription}</p>
+            <JarvisVoiceVisual voice={voice} onToggle={() => { void startVoice(); }} visualRef={visualRef} locale={locale} />
             <div className="jv-voice-meta">
-              <button type="button" className="jv-voice-caption" onClick={() => { void startVoice(); }} disabled={voice === "processing"}>FALAR COM KUTUZOV</button>
+              <button type="button" className="jv-voice-caption" onClick={() => { void startVoice(); }} disabled={voice === "processing"}>{t.speakButton}</button>
               <span className="jv-voice-state" role="status" aria-live="polite">
                 <span className="jv-voice-state__dot" aria-hidden="true" />
-                {voice === "unavailable" ? (voiceMessage || convo.error || VOICE_LABEL[voice]) : VOICE_LABEL[voice]}
+                {voice === "unavailable" ? (voiceMessage || convo.error || t.voice[voice]) : t.voice[voice]}
               </span>
             </div>
             <button type="button" className="jv-chat-button" onClick={() => { stopVoice(); setChatOpen(true); }}>
               <MessageSquare size={21} strokeWidth={1.5} aria-hidden="true" />
-              Abrir conversa escrita
+              {t.openTextChat}
             </button>
           </section>
         </main>
         <footer className="jv-footer">
-          <span>PREFERE FALAR COM O KUTUZOV REAL?</span>
-          <nav aria-label="Contactos" className="jv-footer__links">
+          <span>{t.realKutuzov}</span>
+          <nav aria-label={t.contacts} className="jv-footer__links">
             {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer">WHATSAPP ↗</a>}
-            <Link to="/contact" onClick={close}>ENVIAR BRIEFING →</Link>
+            <Link to="/contact" onClick={close}>{t.sendBrief}</Link>
           </nav>
         </footer>
       </div>
-      {chatOpen && <ChatWindow convo={convo} onClose={closeChat} onCloseAll={close} />}
+      {chatOpen && <ChatWindow key={locale} locale={locale} convo={convo} onClose={closeChat} onCloseAll={close} />}
     </div>
   );
 }
 
-function ChatWindow({ convo, onClose, onCloseAll }: {
+function ChatWindow({ convo, onClose, onCloseAll, locale }: {
   convo: ReturnType<typeof useConversation>;
   onClose: () => void;
   onCloseAll: () => void;
+  locale: JarvisLocale;
 }) {
+  const t = jarvisCopy(locale);
   const [draft, setDraft] = useState("");
   const [showWorks, setShowWorks] = useState(false);
   const [lead, setLead] = useState({name:"",contact:"",brief:"",deadline:"",budget:"",consent:false});
@@ -801,7 +809,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
   const content = useRef<HTMLDivElement>(null);
   const hasMessages = convo.messages.length > 0;
   const wantsLead = convo.messages.some(message => message.role==="user"
-    && /(?:contratar|orçamento|orcamento|briefing|hire|iniciar (?:um )?projecto|quero trabalhar com)/i.test(message.content));
+    && /(?:contratar|orçamento|orcamento|briefing|hire|want to work with|work together|start a project|project enquiry|quote|iniciar (?:um )?projecto|quero trabalhar com)/i.test(message.content));
   const submitLead = async () => {
     if(leadSending||!lead.consent)return;
     setLeadSending(true);setLeadError("");
@@ -811,9 +819,9 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
         body:JSON.stringify(lead),
       });
       const data=await reply.json() as {ok?:boolean;reference?:string;error?:string};
-      if(!reply.ok||data.ok!==true||!data.reference)throw Error(data.error||"Sem confirmação da base de dados.");
+      if(!reply.ok||data.ok!==true||!data.reference)throw Error(data.error ? t.leadFailed : t.leadNotConfirmed);
       setLeadReference(data.reference);
-    }catch(error){setLeadError(error instanceof Error?error.message:"Falha ao enviar. Tente novamente.");}
+    }catch(error){setLeadError(error instanceof Error?error.message:t.leadFailed);}
     finally{setLeadSending(false);}
   };
 
@@ -865,11 +873,11 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
       <section role="dialog" aria-modal="true" aria-labelledby="jv-chat-title" className="jv-chat-card">
         <header className="jv-chat-head">
           <span aria-hidden="true" className="jv-window-lights"><i /><i /><i /></span>
-          <h2 id="jv-chat-title">CONVERSA COMIGO</h2>
+          <h2 id="jv-chat-title">{t.chatTitle}</h2>
           <div className="jv-chat-head__actions">
             {(hasMessages || showWorks) && <button type="button" className="jv-chat-reset" onClick={() => { convo.reset(); setShowWorks(false); }}
-              aria-label="Nova conversa" title="Nova conversa"><Plus size={20} /></button>}
-            <button type="button" onClick={onClose} aria-label="Fechar conversa" className="jv-chat-close"><X size={23} strokeWidth={1.7} /></button>
+              aria-label={t.newChat} title={t.newChat}><Plus size={20} /></button>}
+            <button type="button" onClick={onClose} aria-label={t.closeChat} className="jv-chat-close"><X size={23} strokeWidth={1.7} /></button>
           </div>
         </header>
 
@@ -878,18 +886,18 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
           className={"jv-chat-content" + (showWorks ? " jv-chat-content--gallery" : "")}
           tabIndex={showWorks ? 0 : undefined}
           role={showWorks ? "region" : undefined}
-          aria-label={showWorks ? "Galeria de projectos" : undefined}
+          aria-label={showWorks ? t.projectsGallery : undefined}
           data-lenis-prevent={showWorks ? "" : undefined}
         >
           {showWorks ? (
-            <WorksPanel onPick={onCloseAll} />
+            <WorksPanel onPick={onCloseAll} locale={locale} />
           ) : !hasMessages ? (
             <div className="jv-chat-welcome">
-              <p className="jv-chat-available"><span /> DISPONÍVEL</p>
-              <h3>Olá. Sou o JARVIS.</h3>
-              <p className="jv-chat-intro">Sou a versão IA do Kutuzov. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
+              <p className="jv-chat-available"><span /> {t.available}</p>
+              <h3>{t.welcomeTitle}</h3>
+              <p className="jv-chat-intro">{t.welcomeDescription}</p>
               <div className="jv-suggestions">
-                {SUGGESTIONS.map((suggestion) => (
+                {t.suggestions.map((suggestion) => (
                   <button key={suggestion.id} type="button" disabled={convo.pending}
                     onClick={() => suggestion.prompt ? void submit(suggestion.prompt) : setShowWorks(true)}>
                     <span>{suggestion.label}</span><ArrowRight size={22} strokeWidth={1.8} aria-hidden="true" />
@@ -907,44 +915,44 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
               ))}
               {convo.pending && <li className="jv-chat-message jv-chat-message--assistant">
                 <span className="jv-chat-avatar"><EKMark className="jv-chat-avatar__logo" /></span>
-                <span className="jv-chat-typing" aria-label="A responder…" role="status"><i /><i /><i /></span>
+                <span className="jv-chat-typing" aria-label={t.replying} role="status"><i /><i /><i /></span>
               </li>}
             </ol>
           )}
           {convo.error && !showWorks && <p className="jv-chat-error" role="alert">{convo.error}</p>}
           {wantsLead && !showWorks && (
-            <section className="jv-lead" aria-label="Pedir projecto com consentimento">
+            <section className="jv-lead" aria-label={t.leadSection}>
               {leadReference ? (
-                <p className="jv-lead__success" role="status">Pedido recebido e confirmado. Referência: {leadReference.slice(0,8).toUpperCase()}.</p>
+                <p className="jv-lead__success" role="status">{t.leadSuccess} {leadReference.slice(0,8).toUpperCase()}.</p>
               ) : (
                 <form className="jv-lead__form" onSubmit={event=>{event.preventDefault();void submitLead();}}>
-                  <p className="jv-lead__eyebrow">NOVO PROJECTO</p>
-                  <h3>Tem uma ideia? Vamos dar-lhe forma.</h3>
-                  <p className="jv-lead__intro">Deixe os dados do briefing. O envio só acontece após a sua autorização.</p>
+                  <p className="jv-lead__eyebrow">{t.newProject}</p>
+                  <h3>{t.leadTitle}</h3>
+                  <p className="jv-lead__intro">{t.leadDescription}</p>
                   <div className="jv-lead__grid">
-                    <label>Nome<input required minLength={2} maxLength={120} value={lead.name}
+                    <label>{t.name}<input required minLength={2} maxLength={120} value={lead.name}
                       onChange={event=>setLead(value=>({...value,name:event.target.value}))}
-                      placeholder="Como devemos tratar?" /></label>
-                    <label>Email ou WhatsApp<input required minLength={5} maxLength={160} value={lead.contact}
+                      placeholder={t.namePlaceholder} /></label>
+                    <label>{t.emailOrWhatsapp}<input required minLength={5} maxLength={160} value={lead.contact}
                       onChange={event=>setLead(value=>({...value,contact:event.target.value}))}
-                      placeholder="Contacto para resposta" /></label>
-                    <label>Prazo (opcional)<input maxLength={100} value={lead.deadline}
+                      placeholder={t.contactPlaceholder} /></label>
+                    <label>{t.deadline}<input maxLength={100} value={lead.deadline}
                       onChange={event=>setLead(value=>({...value,deadline:event.target.value}))}
-                      placeholder="Quando pretende iniciar?" /></label>
-                    <label>Orçamento (opcional)<input maxLength={100} value={lead.budget}
+                      placeholder={t.deadlinePlaceholder} /></label>
+                    <label>{t.budget}<input maxLength={100} value={lead.budget}
                       onChange={event=>setLead(value=>({...value,budget:event.target.value}))}
-                      placeholder="Intervalo estimado" /></label>
+                      placeholder={t.budgetPlaceholder} /></label>
                   </div>
-                  <label className="jv-lead__brief">Resumo do projecto<textarea required minLength={10} maxLength={2000}
+                  <label className="jv-lead__brief">{t.projectSummary}<textarea required minLength={10} maxLength={2000}
                     value={lead.brief} onChange={event=>setLead(value=>({...value,brief:event.target.value}))}
-                    placeholder="O que pretende criar?" rows={3}/></label>
+                    placeholder={t.summaryPlaceholder} rows={3}/></label>
                   <label className="jv-lead__consent">
                     <input type="checkbox" checked={lead.consent}
                       onChange={event=>setLead(value=>({...value,consent:event.target.checked}))} required/>
-                    <span>Autorizo a guardar estes dados para contacto profissional sobre este projecto.</span>
+                    <span>{t.leadConsent}</span>
                   </label>
                   <button className="jv-lead__submit" type="submit" disabled={leadSending||!lead.consent}>
-                    {leadSending?"A enviar…":"Enviar briefing"} <ArrowRight size={16} aria-hidden="true"/>
+                    {leadSending?t.sending:t.submitBrief} <ArrowRight size={16} aria-hidden="true"/>
                   </button>
                   {leadError && <p className="jv-lead__error" role="alert">{leadError}</p>}
                 </form>
@@ -956,7 +964,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
         <form className="jv-chat-composer" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
           <div className="jv-chat-composer__stack">
           <div className="jv-chat-input-wrap">
-            <label htmlFor="jv-input" className="sr-only">Mensagem para Kutuzov</label>
+            <label htmlFor="jv-input" className="sr-only">{t.messageFor}</label>
             <textarea id="jv-input" ref={textarea} rows={1} maxLength={2000} value={draft}
               onChange={(event) => { setDraft(event.target.value); resize(); }}
               onKeyDown={(event) => {
@@ -964,8 +972,8 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
                   event.preventDefault(); void submit();
                 }
               }}
-              placeholder="Escreva-me uma mensagem…" />
-            <button type="submit" className="jv-chat-send" aria-label="Enviar mensagem"
+              placeholder={t.inputPlaceholder} />
+            <button type="submit" className="jv-chat-send" aria-label={t.sendMessage}
               disabled={!draft.trim() || convo.pending}>
               {convo.pending ? <span className="jv-chat-spinner" /> : <Send size={22} strokeWidth={1.8} />}
             </button>

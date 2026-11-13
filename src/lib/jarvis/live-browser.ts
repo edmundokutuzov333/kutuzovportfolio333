@@ -5,6 +5,8 @@
  */
 type LiveContact = { email: string|null; phone: string|null; whatsapp: string|null;
   site: string|null; linkedin: string|null; instagram: string|null; facebook: string|null };
+import type { JarvisLocale } from "@/lib/jarvis/facts";
+import { jarvisCopy } from "@/lib/jarvis/locale";
 type TokenReply = { token: string; model: string; contact: LiveContact; config: Record<string,unknown> };
 type LivePart = {inlineData?:{data?:string;mimeType?:string};text?:string};
 type LiveEvent = {
@@ -40,24 +42,26 @@ function pcm16(input:Float32Array,sampleRate:number):string {
   for(let i=0;i<bytes.length;i++)data+=String.fromCharCode(bytes[i]??0);
   return btoa(data);
 }
-function validatedTranscript(text:string,contact:LiveContact):{text:string;flagged:boolean}{
+function validatedTranscript(text:string,contact:LiveContact,locale:JarvisLocale):{text:string;flagged:boolean}{
   let flagged=false;
   const approved=[contact.email,contact.whatsapp,contact.site,contact.linkedin,contact.instagram]
     .filter((v):v is string=>!!v);
   const textSafe=text.replace(/[\w.+%-]+@[\w.-]+\.[A-Za-z]{2,}|https?:\/\/[^\s,;!?]+/gi,(match)=>{
     if(approved.some(v=>v.toLowerCase()===match.toLowerCase()))return match;
     flagged=true;
-    return match.includes("@")?(contact.email||"contacto não confirmado"):(contact.site||"site oficial");
+    return match.includes("@")?(contact.email||jarvisCopy(locale).liveContactUnconfirmed):(contact.site||jarvisCopy(locale).liveOfficialSite);
   });
   return {text:textSafe,flagged};
 }
-export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbacks):Promise<LiveSession|null> {
+export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbacks,locale:JarvisLocale="en"):Promise<LiveSession|null> {
+  const t=jarvisCopy(locale);
   const controller=new AbortController();
   const timer=window.setTimeout(()=>controller.abort(),7000);
   let tokenResponse:Response;
   try {
     tokenResponse=await fetch("/api/jarvis/live-token",{
-      method:"POST",headers:{"Accept":"application/json"},credentials:"same-origin",
+      method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},credentials:"same-origin",
+      body:JSON.stringify({locale}),
       signal:controller.signal,
     });
   }catch{
@@ -127,15 +131,14 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
     inputTranscript="";outputTranscript="";
     if(user)callbacks.onUserTranscript?.(user.slice(0,1900));
     if(assistant) {
-      const result=validatedTranscript(assistant,token.contact);
+      const result=validatedTranscript(assistant,token.contact,locale);
       callbacks.onAssistantTranscript?.(result.text.slice(0,1900));
       if(result.flagged&&!correctionRequested){
         correctionRequested=true;
         clearPlayback();
-        const official=token.contact.email||"contacto oficial";
+        const official=token.contact.email||t.liveOfficialContact;
         send({clientContent:{turns:[{role:"user",parts:[{text:
-          "Corrige o contacto da resposta anterior. O único email aprovado é "+official+
-          ". Usa sempre a função get_contact antes de responder."}]}],turnComplete:true}});
+          t.liveContactCorrection+official+t.liveUseContact}]}],turnComplete:true}});
       }else correctionRequested=false;
     }
   };
@@ -144,7 +147,7 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
     if(message.toolCall?.functionCalls?.length){
       send({toolResponse:{functionResponses:message.toolCall.functionCalls.map(call=>({
         id:call.id,name:call.name,
-        response:call.name==="get_contact"?token.contact:{error:"tool_nao_disponivel"},
+        response:call.name==="get_contact"?token.contact:{error:"tool_unavailable"},
       }))}});
     }
     const content=message.serverContent;
@@ -197,12 +200,12 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
         retries++;
         reconnectTimer=window.setTimeout(()=>{
           if(!closed)void connect(true).then(ok=>{if(!ok&&retries>=3){
-            callbacks.onError("A sessão de voz terminou. Pode iniciar outra conversa.");
+            callbacks.onError(t.liveSessionEnded);
             close();
           }});
         },retries*400);
       }else if(established){
-        callbacks.onError("A ligação de voz terminou. Pode iniciar outra conversa.");
+        callbacks.onError(t.liveConnectionEnded);
         close();
       }
     };
@@ -218,7 +221,7 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
   if(!connected){close();return null;}
   // The server limits each token. Proactively close before its expiry.
   const lifetime=window.setTimeout(()=>{
-    if(!closed)callbacks.onError("A sessão de voz chegou ao limite. Inicie outra para continuar.");
+    if(!closed)callbacks.onError(t.liveSessionLimit);
     close();
   },30*60_000);
   const stop=()=>{window.clearTimeout(lifetime);close();};
