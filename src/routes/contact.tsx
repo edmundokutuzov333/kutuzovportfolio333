@@ -7,7 +7,8 @@ import { loadContactContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { seoFromPage } from "@/lib/seo";
 import { submitContactForm } from "@/lib/public-forms";
-import { ArrowUpRight, Mail, Phone, Video } from "lucide-react";
+import { ArrowUpRight, Check, Mail, Phone, Video } from "lucide-react";
+import { DirectionIcon } from "@/components/DirectionIcon";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loadContactContent(),
@@ -185,7 +186,7 @@ function Contact() {
                             const additional = b.additionalTypes.includes(service);
                             return (
                               <Chip key={service} on={primary || additional} onClick={() => toggleService(service)}>
-                                {primary ? "01 · " : additional ? "✓ · " : ""}{service}
+                                {primary ? <span aria-hidden="true">01 · </span> : additional ? <Check size={14} strokeWidth={2} className="mr-1 inline-block align-middle" aria-hidden="true" /> : null}{service}
                               </Chip>
                             );
                           })}
@@ -346,9 +347,9 @@ function Contact() {
 
               {err && <p className="mt-6 text-sm text-destructive">{err}</p>}
               <div className="mt-12 flex items-center justify-between">
-                <button type="button" disabled={step === 0} onClick={() => { setErr(null); setStep(step - 1); }} className="liquid-glass-button rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest">← Back</button>
-                <button type="submit" disabled={submitting} className="liquid-glass-button rounded-full px-8 py-4 font-mono text-xs uppercase tracking-widest disabled:cursor-not-allowed">
-                  {submitting ? "Sending..." : step < 4 ? "Continue →" : "Send enquiry"}
+                <button type="button" disabled={step === 0} onClick={() => { setErr(null); setStep(step - 1); }} className="liquid-glass-button inline-flex items-center gap-2 rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest"><DirectionIcon direction="back" />Back</button>
+                <button type="submit" disabled={submitting} className="liquid-glass-button inline-flex items-center gap-2 rounded-full px-8 py-4 font-mono text-xs uppercase tracking-widest disabled:cursor-not-allowed">
+                  {submitting ? "Sending..." : step < 4 ? <>Continue <DirectionIcon direction="forward" /></> : "Send enquiry"}
                 </button>
               </div>
           </form>

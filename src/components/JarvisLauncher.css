@@ -79,7 +79,8 @@
 .jv-chat-button:hover { transform: translateY(-2px); border-color: rgba(135,190,255,.8); box-shadow: 0 0 23px rgba(37,104,225,.21); background: rgba(33,61,113,.25); }
 .jv-footer { display: flex; justify-content: space-between; align-items: center; gap: 22px; min-height: 48px; margin-bottom: 24px; padding-top: 16px; border-top: 1px solid rgba(139,159,197,.16); color: #7d8ca9; font: 600 9px/1.5 var(--font-mono), monospace; letter-spacing: .24em; }
 .jv-footer__links { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 25px; }
-.jv-footer__links a { white-space: nowrap; color: #c7cfe0; transition: color .2s; }
+.jv-footer__links a { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; color: #c7cfe0; transition: color .2s; }
+.jv-footer__links svg { width: 14px; height: 14px; flex: none; }
 .jv-footer__links a:hover { color: #78b8ff; }
 
 /* Secondary screen inherits the same deep blue material without changing copy or capabilities. */

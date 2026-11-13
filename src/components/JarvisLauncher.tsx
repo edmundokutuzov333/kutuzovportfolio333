@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, MessageSquare, Plus, Send, X } from "lucide-react";
 import { EKMark } from "./EKMark";
+import { DirectionIcon } from "./DirectionIcon";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
@@ -17,7 +18,7 @@ export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
 export const JARVIS_CLOSE_EVENT = "ek:jarvis-close";
 export const openJarvis = () => window.dispatchEvent(new Event(JARVIS_OPEN_EVENT));
 
-export function JarvisTrigger({ className = "", label = "JARVIS · AI" }: { className?: string; label?: string }) {
+export function JarvisTrigger({ className = "", label = "JARVIS · AI", trailingIcon = false }: { className?: string; label?: string; trailingIcon?: boolean }) {
   return (
     <button type="button" onClick={openJarvis} aria-haspopup="dialog" className={"group inline-flex items-center gap-2.5 " + className}>
       <span className="relative flex h-2 w-2">
@@ -25,6 +26,7 @@ export function JarvisTrigger({ className = "", label = "JARVIS · AI" }: { clas
         <span className="relative h-2 w-2 rounded-full bg-primary" />
       </span>
       <span>{label}</span>
+      {trailingIcon && <DirectionIcon direction="forward" />}
     </button>
   );
 }
@@ -781,8 +783,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         <footer className="jv-footer">
           <span>{t.realKutuzov}</span>
           <nav aria-label={t.contacts} className="jv-footer__links">
-            {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer">WHATSAPP ↗</a>}
-            <Link to="/contact" onClick={close}>{t.sendBrief}</Link>
+            {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer">WHATSAPP <DirectionIcon direction="external" /></a>}
+            <Link to="/contact" onClick={close}>{t.sendBrief}<DirectionIcon direction="forward" /></Link>
           </nav>
         </footer>
       </div>

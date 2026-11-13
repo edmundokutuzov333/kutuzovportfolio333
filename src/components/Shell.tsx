@@ -7,6 +7,7 @@ import { getPublicPresentation, getPublishedRevision } from "@/lib/cms/queries";
 import { DEFAULT_PUBLIC_PRESENTATION, type Profile, type PublicPresentation } from "@/lib/cms/types";
 import { EKBlueprint } from "./EKBlueprint";
 import { LogoMark } from "./LogoMark";
+import { DirectionIcon } from "./DirectionIcon";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Intro, REPLAY_EVENT } from "./Intro";
 import { JARVIS_CLOSE_EVENT, JARVIS_OPEN_EVENT, JarvisLauncher, JarvisTrigger } from "./JarvisLauncher";
@@ -97,13 +98,13 @@ function Cursor() {
 }
 
 function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (value: boolean) => void; presentation: PublicPresentation["presentation"] }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 text-bone md:px-12">
       <Link to="/" aria-label="Home" className="text-bone"><LogoMark className="h-6 w-auto" /></Link>
       <div className="hidden items-center gap-4 md:flex"><div className="eyebrow text-bone">{presentation.availability_label || t("available")}</div><LanguageSwitcher /></div>
       <div className="flex items-center gap-2">
-        <JarvisTrigger className="liquid-glass-button hidden rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone sm:inline-flex" />
+        <JarvisTrigger className="liquid-glass-button hidden rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone sm:inline-flex" label={language === "en" ? "JARVIS · AI" : "JARVIS · IA"} />
         <div className="md:hidden"><LanguageSwitcher /></div>
         <button onClick={() => setOpen(!open)} className="liquid-glass-button flex items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
           {open ? t("close") : t("menu")}
@@ -118,7 +119,7 @@ function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (valu
 }
 
 function Menu({ close, profile, presentation }: { close: () => void; profile: Profile | null; presentation: PublicPresentation }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const navLabel = (to: string, fallback: string) => ({ "/": t("home"), "/work": t("work"), "/about": t("about"), "/services": t("services"), "/process": t("process"), "/clients": t("clients"), "/contact": t("contact") }[to] ?? fallback);
   return (
     <motion.div
@@ -138,13 +139,13 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
           </motion.div>
         ))}
       </nav>
-      <div className="flex flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest">
-        {profile?.email && <a href={`mailto:${profile.email}`}>{profile.email}</a>}
-        <div className="flex gap-6">
-          <span onClick={close}><JarvisTrigger className="liquid-glass-button rounded-full px-4 py-2 uppercase" label="JARVIS (IA)" /></span>
+      <div className="flex min-w-0 flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest">
+        {profile?.email && <a className="min-w-0 [overflow-wrap:anywhere]" href={`mailto:${profile.email}`}>{profile.email}</a>}
+        <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-3">
+          <span onClick={close}><JarvisTrigger className="liquid-glass-button rounded-full px-4 py-2 uppercase" label={language === "en" ? "JARVIS (AI)" : "JARVIS (IA)"} /></span>
           <button onClick={() => { close(); window.dispatchEvent(new Event(REPLAY_EVENT)); }} className="liquid-glass-button rounded-full px-4 py-2 uppercase">{t("replay")}</button>
           {profile?.socials.map((social) => (
-            <a key={social.label} href={social.href} target="_blank" rel="noreferrer">{social.label}</a>
+            <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5">{social.label}<DirectionIcon direction="external" className="h-3.5 w-3.5" /></a>
           ))}
         </div>
       </div>
@@ -154,30 +155,33 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
 
 export function Footer({ profile, presentation }: { profile: Profile | null; presentation: PublicPresentation }) {
   const copy = presentation.footer;
-  const { t, tx } = useI18n();
+  const { t, tx, language } = useI18n();
   return (
     <footer className="border-t border-border px-6 pb-8 pt-24 md:px-12">
-      <div className="grid gap-16 md:grid-cols-2">
-        <div>
+      <div className="grid min-w-0 gap-16 lg:grid-cols-2">
+        <div className="min-w-0">
           <p className="eyebrow mb-6">{tx(copy.next_move_label) || t("talk")}</p>
           <Link to={copy.cta_path} data-cursor="Talk" className="font-display text-6xl font-bold leading-none hover:text-primary md:text-8xl">{tx(copy.cta_label)}</Link>
           <p className="mt-6 max-w-sm text-muted-foreground">{tx(copy.cta_description)}</p>
         </div>
-        <div className="grid grid-cols-2 gap-10">
-          <div className="space-y-3 text-sm">
+        <div className="footer-details-grid min-w-0">
+          <div className="min-w-0 space-y-3 text-sm">
             <p className="eyebrow mb-4">{tx(copy.contact_label) || t("contact")}</p>
-            {profile?.email && <a className="block hover:text-primary" href={`mailto:${profile.email}`}>{profile.email}</a>}
-            {profile?.whatsapp && profile.phone && <a className="block hover:text-primary" href={profile.whatsapp} target="_blank" rel="noreferrer">{profile.phone}</a>}
-            {profile?.location && <p className="text-muted-foreground">{profile.location}</p>}
-            <JarvisTrigger className="pt-2 font-mono text-[10px] uppercase tracking-[0.2em] hover:text-primary" label="Falar com JARVIS (IA) →" />
+            {profile?.email && <a className="block min-w-0 max-w-full [overflow-wrap:anywhere] transition-colors hover:text-primary" href={`mailto:${profile.email}`}>{profile.email}</a>}
+            {profile?.whatsapp && profile.phone && <a className="block min-w-0 max-w-full [overflow-wrap:anywhere] transition-colors hover:text-primary" href={profile.whatsapp} target="_blank" rel="noopener noreferrer">{profile.phone}</a>}
+            {profile?.location && <p className="max-w-full [overflow-wrap:anywhere] text-muted-foreground">{profile.location}</p>}
+            <JarvisTrigger className="max-w-full pt-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-primary" label={language === "en" ? "TALK TO JARVIS (AI)" : "FALAR COM JARVIS (IA)"} trailingIcon />
           </div>
-          <div className="space-y-3 text-sm">
+          <div className="min-w-0 space-y-3 text-sm">
             <p className="eyebrow mb-4">{tx(copy.social_label) || "Social"}</p>
             {profile?.socials.map((social) => (
-              <a key={social.label} className="block hover:text-primary" href={social.href} target="_blank" rel="noreferrer">{social.label} ↗</a>
+              <a key={social.label} className="group flex w-fit max-w-full items-center gap-2 py-0.5 transition-colors hover:text-primary" href={social.href} target="_blank" rel="noopener noreferrer">
+                <span className="min-w-0 [overflow-wrap:anywhere]">{social.label}</span>
+                <DirectionIcon direction="external" className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
             ))}
           </div>
-          <div className="col-span-2" aria-label="Newsletter subscription">
+          <div className="col-span-full min-w-0" aria-label={language === "en" ? "Newsletter subscription" : "Subscrição da newsletter"}>
             <p className="eyebrow mb-4">{tx(copy.newsletter_label) || t("newsletter")}</p>
             <NewsletterSignup />
           </div>
