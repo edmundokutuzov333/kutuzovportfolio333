@@ -53,7 +53,7 @@ function Hero({ profile }: { profile: Profile }) {
         >
           <p>{roles.map(tx).join(" / ")}</p>
           <p>{location}</p>
-          <p className="text-primary">{t("scroll")}</p>
+          <p className="inline-flex items-center gap-1.5 text-primary md:justify-end"><DirectionIcon direction="down" className="h-3.5 w-3.5" />{t("scroll")}</p>
         </motion.div>
       </div>
     </section>
