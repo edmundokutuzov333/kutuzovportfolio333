@@ -1,0 +1,36 @@
+name: Jarvis audio repair validation
+
+on:
+  push:
+    branches: [fix/jarvis-audio-pipeline-20261113]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Install pinned dependencies
+        run: bun install --frozen-lockfile
+      - name: Unit tests
+        run: bun run test
+      - name: Typecheck
+        run: bun run typecheck
+      - name: ESLint
+        run: bun run lint
+      - name: Production build
+        run: bun run build
+      - name: Install isolated Chromium and WebKit test runner
+        run: |
+          npm install --prefix .e2e --no-save --package-lock=false --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Browser all public routes and audio regression tests
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs
+      - name: iPhone Safari audio regression tests
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.webkit.config.mjs .e2e/tests/jarvis-audio.spec.mjs
