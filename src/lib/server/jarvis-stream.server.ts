@@ -2,19 +2,17 @@ import { acquireQuota, db, getVerifiedFacts } from "./jarvis-kb.server";
 import { answerContactQuestion, buildFactsBlock, getContact, validateContacts, type JarvisLocale } from "@/lib/jarvis/facts";
 import { jarvisPersona } from "@/lib/jarvis/persona";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
+import { jarvisServerCopy } from "@/lib/jarvis/locale";
 
 type Message = { role:"user"|"assistant"; content:string };
 type Write = (kind:"chunk"|"done"|"error"|"timing", data:Record<string,unknown>)=>void;
 type GeminiPart = { candidates?: Array<{content?: {parts?: Array<{text?: string; thought?:boolean}>}} > };
-function detectLocale(question:string): JarvisLocale {
-  return /\b(what|who|where|email|phone|contact|work|projects|clients|services|tell me)\b/i.test(question)
-    && !/\b(como|qual|quais|projectos|serviços|trabalhos|contacto|sobre)\b/i.test(question) ? "en" : "pt";
-}
 function answerKnown(query:string, facts:Awaited<ReturnType<typeof getVerifiedFacts>>, locale:JarvisLocale):string|null {
   const contact = answerContactQuestion(query,facts,locale);
   if(contact)return contact;
   const q=query.toLowerCase().trim();
-  const filtered=facts.filter(f=>f.status==="verified"&&f.visibility==="public");
+  const filtered=facts.filter(f=>f.status==="verified"&&f.visibility==="public"
+    &&(f.locale==="all"||f.locale===locale));
   if(/^(?:quais (?:são )?os serviços|que serviços (?:oferece|prestam)|what services|list(?: the)? services)[?.! ]*$/i.test(q)){
     const values=filtered.filter(f=>f.key.startsWith("service.")).slice(0,5);
     if(values.length)return (locale==="en"?"Services: ":"Serviços: ")+values.map(f=>f.value.split(":")[0]).join(", ")+".";
@@ -83,7 +81,7 @@ function bodyFor(model:string,instruction:string,messages:Message[]) {
   return JSON.stringify({
     systemInstruction:{parts:[{text:instruction}]},
     contents:([
-      ...(messages[0]?.content.startsWith("CONTEXTO ANTERIOR DA MESMA CONVERSA")?[messages[0]]:[]),
+      ...(/^(?:CONTEXTO ANTERIOR DA MESMA CONVERSA|EARLIER CONTEXT FROM THIS CONVERSATION)/.test(messages[0]?.content??"")?[messages[0]]:[]),
       ...messages.slice(-10),
     ]).map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content.slice(0,1500)}]})),
     generationConfig:{maxOutputTokens:220,
@@ -92,12 +90,13 @@ function bodyFor(model:string,instruction:string,messages:Message[]) {
   });
 }
 /** Stream only complete sentences through contact guardrails, never unsafe partial email/URL. */
-export async function streamJarvis(messages:Message[],write:Write,signal:AbortSignal):Promise<void>{
+export async function streamJarvis(messages:Message[],write:Write,signal:AbortSignal,locale:JarvisLocale="en"):Promise<void>{
+  const t=jarvisServerCopy(locale);
   const start=Date.now(),question=messages.at(-1)?.content??"";
   const [facts,quota]=await Promise.all([getVerifiedFacts(),acquireQuota()]);
-  if(!quota){write("error",{message:"Limite de pedidos atingido. Tente mais tarde."});return;}
-  const locale=detectLocale(question), canonical=getContact(facts,locale);
-  if(!canonical.email){write("error",{message:"Contactos oficiais temporariamente indisponíveis."});return;}
+  if(!quota){write("error",{message:t.quota});return;}
+  const canonical=getContact(facts,locale);
+  if(!canonical.email){write("error",{message:t.contacts});return;}
   const result=answerKnown(question,facts,locale);
   if(result){
     write("chunk",{text:result});
@@ -117,7 +116,7 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
   }catch{/* CMS failure still allows verified KB+Gemini response. */}
   const contextPromise=findRelevant(question,locale);
   const key=process.env["GEMINI_API_KEY"];
-  if(!key){write("error",{message:"Serviço de IA indisponível."});return;}
+  if(!key){write("error",{message:t.ai});return;}
   const context=await contextPromise;
   const compactFacts=buildFactsBlock(facts,locale).slice(0,4000);
   const prompt=jarvisPersona(locale,compactFacts,"")+
@@ -171,10 +170,10 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
     }catch{
       if(signal.aborted)return;
       // A partial response must never be repeated by a fallback model.
-      if(full){write("error",{message:"A ligação foi interrompida. Pode tentar novamente."});return;}
+      if(full){write("error",{message:t.interrupted});return;}
     }finally {
       clearTimeout(timeout);signal.removeEventListener("abort",abort);
     }
   }
-  write("error",{message:"O assistente está temporariamente indisponível. Tente novamente."});
+  write("error",{message:t.assistant});
 }
