@@ -5,6 +5,7 @@ import {
 } from "@/lib/jarvis/facts";
 import { jarvisPersona } from "@/lib/jarvis/persona";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
+import { jarvisServerCopy } from "@/lib/jarvis/locale";
 
 type GeminiResult = { reply: string | null; error: string | null };
 type Content = { role: "user" | "model"; parts: { text: string }[] };
@@ -76,10 +77,6 @@ export async function acquireQuota(): Promise<boolean> {
   });
 }
 
-function shortLocale(text: string): JarvisLocale {
-  return /\b(what|who|where|contact|email|phone|client|projects|work|services|how can|tell me)\b/i.test(text)
-    && !/\b(qual|como|trabalho|projectos|servi[cç]os|contacto|fala-me|sobre)\b/i.test(text) ? "en" : "pt";
-}
 
 async function logQuery(data: {
   query: string; locale: JarvisLocale; answer: boolean; tier: string; flagged: boolean;
@@ -135,7 +132,7 @@ async function embeddingFor(text: string): Promise<number[] | null> {
 }
 
 type SearchResult = { id: string; content: string; metadata: Record<string, unknown>; score: number };
-export async function searchKnowledge(query: string, locale: JarvisLocale = shortLocale(query)): Promise<{ chunks: SearchResult[]; embedMs: number; searchMs: number }> {
+export async function searchKnowledge(query: string, locale: JarvisLocale = "en"): Promise<{ chunks: SearchResult[]; embedMs: number; searchMs: number }> {
   if (process.env["KB_ENABLED"] !== "true") return { chunks: [], embedMs: 0, searchMs: 0 };
   const start = Date.now();
   const lexical = await db<SearchResult[]>("rpc/kb_hybrid_search", {
@@ -173,9 +170,10 @@ function modelList() {
   return [...new Set([...configured,"gemini-3.5-flash-lite","gemini-3.5-flash"])];
 }
 
-async function generate(contents: Content[], instruction: string): Promise<GeminiResult> {
+async function generate(contents: Content[], instruction: string, locale: JarvisLocale): Promise<GeminiResult> {
+  const t=jarvisServerCopy(locale);
   const key = process.env["GEMINI_API_KEY"]?.trim();
-  if (!key) return { reply: null, error: "O assistente está temporariamente indisponível." };
+  if (!key) return { reply: null, error: t.assistant };
   for (const model of modelList()) {
     try {
       const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
@@ -190,28 +188,28 @@ async function generate(contents: Content[], instruction: string): Promise<Gemin
       if (!response.ok) {
         console.warn("JARVIS_AI_STATUS", response.status, model);
         if ([400, 404, 429, 503].includes(response.status)) continue;
-        return { reply: null, error: "O serviço de IA não está disponível neste momento." };
+        return { reply: null, error: t.ai };
       }
       const data = await response.json() as GeminiResponse;
       const reply = data.candidates?.[0]?.content?.parts?.map(p => p.text ?? "").join("").trim() ?? "";
       if (reply) return { reply, error: null };
     } catch { continue; }
   }
-  return { reply: null, error: "O serviço de IA está temporariamente indisponível." };
+  return { reply: null, error: t.ai };
 }
 
-export async function answerJarvis(messages: Array<{role:"user"|"assistant";content:string}>): Promise<GeminiResult> {
+export async function answerJarvis(messages: Array<{role:"user"|"assistant";content:string}>, locale: JarvisLocale = "en"): Promise<GeminiResult> {
+  const t=jarvisServerCopy(locale);
   const query = messages.at(-1)?.content?.trim() ?? "";
-  if (!query) return { reply: null, error: "Envie uma pergunta válida." };
+  if (!query) return { reply: null, error: t.invalidQuestion };
   const start = Date.now();
   let flags: string[] = [];
   let flagged = false, tier = "core", searchMs = 0, embedMs = 0;
   try {
     // Concurrent independent I/O: quota and KB fetch must not add their latencies.
     const [facts, quota] = await Promise.all([getVerifiedFacts(), acquireQuota()]);
-    if (!approved(facts, "pt").some(x => x.key === "contact.email")) throw Error("MISSING_VERIFIED_CONTACT");
-    if (!quota) return { reply: null, error: "Limite de pedidos atingido. Tente mais tarde." };
-    const locale = shortLocale(query);
+    if (!approved(facts, locale).some(x => x.key === "contact.email")) throw Error("MISSING_VERIFIED_CONTACT");
+    if (!quota) return { reply: null, error: t.quota };
     let reply = answerContactQuestion(query, facts, locale);
     if (!reply) {
       const context = buildFactsBlock(facts, locale);
@@ -220,7 +218,7 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
       let chunks: SearchResult[] = [];
       if (focus) {
         try {
-          const result = await searchKnowledge(query);
+          const result = await searchKnowledge(query, locale);
           chunks = result.chunks; searchMs = result.searchMs; embedMs = result.embedMs;
           tier = chunks.length ? "retrieval" : "core";
         } catch { /* retrieval failure falls back to verified facts */ }
@@ -232,7 +230,7 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
         role: m.role === "assistant" ? "model" as const : "user" as const,
         parts: [{ text: m.content.slice(0, 2000) }],
       }));
-      const model = await generate(recent, prompt);
+      const model = await generate(recent, prompt, locale);
       reply = model.reply;
       if (!reply) {
         void logQuery({ query, locale, answer: false, tier,
@@ -248,24 +246,27 @@ export async function answerJarvis(messages: Array<{role:"user"|"assistant";cont
     return { reply: safe.text, error: null };
   } catch (error) {
     console.error("JARVIS_KB_UNAVAILABLE", error instanceof Error ? error.message.slice(0,70) : "unknown");
-    return { reply: null, error: "Não foi possível confirmar a informação. Tente novamente mais tarde." };
+    return { reply: null, error: t.information };
   }
 }
 
-export async function transcribeJarvis(base64: string, mimeType: string): Promise<GeminiResult> {
-  if (!await acquireQuota().catch(() => false)) return { reply: null, error: "Limite de pedidos atingido." };
+export async function transcribeJarvis(base64: string, mimeType: string, locale: JarvisLocale = "en"): Promise<GeminiResult> {
+  const t=jarvisServerCopy(locale);
+  if (!await acquireQuota().catch(() => false)) return { reply: null, error: t.quota };
   const key = process.env["GEMINI_API_KEY"];
-  if (!key) return { reply: null, error: "Transcrição indisponível." };
+  if (!key) return { reply: null, error: t.transcription };
   const result = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({ contents: [{ role: "user", parts: [
-      { text: "Transcreve fielmente apenas as palavras ditas. Não inventes palavras." },
+      { text: locale==="en"
+        ? "Transcribe exactly the spoken words in their original language. Do not translate or invent words."
+        : "Transcreve fielmente apenas as palavras ditas no idioma original. Não traduas nem inventes palavras." },
       { inline_data: { mime_type: mimeType, data: base64 } },
     ] }], generationConfig: { temperature: 0, maxOutputTokens: 350 } }),
     signal: AbortSignal.timeout(16_000),
   });
-  if (!result.ok) return { reply: null, error: "Não foi possível transcrever o áudio." };
+  if (!result.ok) return { reply: null, error: t.transcriptionFailed };
   const data = await result.json() as GeminiResponse;
   return { reply: data.candidates?.[0]?.content?.parts?.map(p => p.text ?? "").join("").trim() ?? null, error: null };
 }
