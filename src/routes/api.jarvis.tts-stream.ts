@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/jarvis/tts-stream")({
             cache: "no-store",
             signal: providerController.signal,
           });
-          if (!response.ok || !response.body) {
+          if (!response.ok || !response.body || !response.headers.get("content-type")?.includes("text/event-stream")) {
             console.warn("JARVIS_TTS_STREAM_HTTP", response.status);
             return new Response(null, { status: 503, headers });
           }
@@ -74,11 +74,13 @@ export const Route = createFileRoute("/api/jarvis/tts-stream")({
           const reader = response.body.getReader();
           const encoder = new TextEncoder();
           const decoder = new TextDecoder();
+          let connected = true;
           const stream = new ReadableStream<Uint8Array>({
             async start(controller) {
               let buffer = "", total = 0;
               let emitted = false;
               const write = (event: string, data: unknown) => {
+                if (!connected || providerController.signal.aborted) return;
                 controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
               };
               const handle = (block: string) => {
@@ -107,12 +109,16 @@ export const Route = createFileRoute("/api/jarvis/tts-stream")({
               } catch {
                 if (!providerController.signal.aborted) write("error", { reason: "interrupted" });
               } finally {
-                reader.cancel().catch(() => {});
-                controller.close();
+                void reader.cancel().catch(() => {});
+                if (connected) {
+                  connected = false;
+                  try { controller.close(); } catch { /* Already cancelled. */ }
+                }
                 request.signal.removeEventListener("abort", onAbort);
               }
             },
             cancel() {
+              connected = false;
               providerController.abort();
               request.signal.removeEventListener("abort", onAbort);
             },
@@ -125,6 +131,7 @@ export const Route = createFileRoute("/api/jarvis/tts-stream")({
             },
           });
         } catch {
+          request.signal.removeEventListener("abort", onAbort);
           return new Response(null, { status: 503, headers });
         } finally {
           // The streaming response owns providerController after headers are returned.
