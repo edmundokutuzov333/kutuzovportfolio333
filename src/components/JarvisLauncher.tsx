@@ -746,56 +746,58 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   if (!open) return null;
   return (
     <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true"
-      aria-label="Kutuzov, assistente de IA de Edmundo Kutuzov" className="jv-root">
+      aria-label={t.assistantDialog} className="jv-root">
       <div className="jv-atmosphere" aria-hidden="true"><span className="jv-horizon" /></div>
       <div className="jv-frame">
         <header className="jv-header">
-          <Link to="/" onClick={close} className="jv-brand" aria-label="Edmundo Kutuzov, página inicial">
+          <Link to="/" onClick={close} className="jv-brand" aria-label={t.home}>
             <EKMark className="jv-brand__mark" />
             <span>EDMUNDO KUTUZOV</span>
           </Link>
           <div className="jv-header__actions">
             <span className="jv-header__light" aria-hidden="true" />
-            <button type="button" onClick={close} aria-label="Fechar" className="jv-close"><X size={16} strokeWidth={1.4} /></button>
+            <button type="button" onClick={close} aria-label={t.close} className="jv-close"><X size={16} strokeWidth={1.4} /></button>
           </div>
         </header>
         <main className="jv-main">
           <section className="jv-panel" aria-labelledby="jv-title">
-            <p className="jv-eyebrow">ASSISTENTE DE IA DO E. KUTUZOV</p>
-            <h1 id="jv-title">Estou por aqui.</h1>
-            <p className="jv-description">Fala comigo. Explora o meu trabalho. Abre uma janela para cada ideia.</p>
-            <JarvisVoiceVisual voice={voice} onToggle={() => { void startVoice(); }} visualRef={visualRef} />
+            <p className="jv-eyebrow">{t.assistantEyebrow}</p>
+            <h1 id="jv-title">{t.assistantTitle}</h1>
+            <p className="jv-description">{t.assistantDescription}</p>
+            <JarvisVoiceVisual voice={voice} onToggle={() => { void startVoice(); }} visualRef={visualRef} locale={locale} />
             <div className="jv-voice-meta">
-              <button type="button" className="jv-voice-caption" onClick={() => { void startVoice(); }} disabled={voice === "processing"}>FALAR COM KUTUZOV</button>
+              <button type="button" className="jv-voice-caption" onClick={() => { void startVoice(); }} disabled={voice === "processing"}>{t.speakButton}</button>
               <span className="jv-voice-state" role="status" aria-live="polite">
                 <span className="jv-voice-state__dot" aria-hidden="true" />
-                {voice === "unavailable" ? (voiceMessage || convo.error || VOICE_LABEL[voice]) : VOICE_LABEL[voice]}
+                {voice === "unavailable" ? (voiceMessage || convo.error || t.voice[voice]) : t.voice[voice]}
               </span>
             </div>
             <button type="button" className="jv-chat-button" onClick={() => { stopVoice(); setChatOpen(true); }}>
               <MessageSquare size={21} strokeWidth={1.5} aria-hidden="true" />
-              Abrir conversa escrita
+              {t.openTextChat}
             </button>
           </section>
         </main>
         <footer className="jv-footer">
-          <span>PREFERE FALAR COM O KUTUZOV REAL?</span>
-          <nav aria-label="Contactos" className="jv-footer__links">
+          <span>{t.realKutuzov}</span>
+          <nav aria-label={t.contacts} className="jv-footer__links">
             {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer">WHATSAPP ↗</a>}
-            <Link to="/contact" onClick={close}>ENVIAR BRIEFING →</Link>
+            <Link to="/contact" onClick={close}>{t.sendBrief}</Link>
           </nav>
         </footer>
       </div>
-      {chatOpen && <ChatWindow convo={convo} onClose={closeChat} onCloseAll={close} />}
+      {chatOpen && <ChatWindow key={locale} locale={locale} convo={convo} onClose={closeChat} onCloseAll={close} />}
     </div>
   );
 }
 
-function ChatWindow({ convo, onClose, onCloseAll }: {
+function ChatWindow({ convo, onClose, onCloseAll, locale }: {
   convo: ReturnType<typeof useConversation>;
   onClose: () => void;
   onCloseAll: () => void;
+  locale: JarvisLocale;
 }) {
+  const t = jarvisCopy(locale);
   const [draft, setDraft] = useState("");
   const [showWorks, setShowWorks] = useState(false);
   const [lead, setLead] = useState({name:"",contact:"",brief:"",deadline:"",budget:"",consent:false});
@@ -807,7 +809,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
   const content = useRef<HTMLDivElement>(null);
   const hasMessages = convo.messages.length > 0;
   const wantsLead = convo.messages.some(message => message.role==="user"
-    && /(?:contratar|orçamento|orcamento|briefing|hire|iniciar (?:um )?projecto|quero trabalhar com)/i.test(message.content));
+    && /(?:contratar|orçamento|orcamento|briefing|hire|want to work with|work together|start a project|project enquiry|quote|iniciar (?:um )?projecto|quero trabalhar com)/i.test(message.content));
   const submitLead = async () => {
     if(leadSending||!lead.consent)return;
     setLeadSending(true);setLeadError("");
@@ -817,9 +819,9 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
         body:JSON.stringify(lead),
       });
       const data=await reply.json() as {ok?:boolean;reference?:string;error?:string};
-      if(!reply.ok||data.ok!==true||!data.reference)throw Error(data.error||"Sem confirmação da base de dados.");
+      if(!reply.ok||data.ok!==true||!data.reference)throw Error(data.error ? t.leadFailed : t.leadNotConfirmed);
       setLeadReference(data.reference);
-    }catch(error){setLeadError(error instanceof Error?error.message:"Falha ao enviar. Tente novamente.");}
+    }catch(error){setLeadError(error instanceof Error?error.message:t.leadFailed);}
     finally{setLeadSending(false);}
   };
 
@@ -871,11 +873,11 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
       <section role="dialog" aria-modal="true" aria-labelledby="jv-chat-title" className="jv-chat-card">
         <header className="jv-chat-head">
           <span aria-hidden="true" className="jv-window-lights"><i /><i /><i /></span>
-          <h2 id="jv-chat-title">CONVERSA COMIGO</h2>
+          <h2 id="jv-chat-title">{t.chatTitle}</h2>
           <div className="jv-chat-head__actions">
             {(hasMessages || showWorks) && <button type="button" className="jv-chat-reset" onClick={() => { convo.reset(); setShowWorks(false); }}
-              aria-label="Nova conversa" title="Nova conversa"><Plus size={20} /></button>}
-            <button type="button" onClick={onClose} aria-label="Fechar conversa" className="jv-chat-close"><X size={23} strokeWidth={1.7} /></button>
+              aria-label={t.newChat} title={t.newChat}><Plus size={20} /></button>}
+            <button type="button" onClick={onClose} aria-label={t.closeChat} className="jv-chat-close"><X size={23} strokeWidth={1.7} /></button>
           </div>
         </header>
 
@@ -884,18 +886,18 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
           className={"jv-chat-content" + (showWorks ? " jv-chat-content--gallery" : "")}
           tabIndex={showWorks ? 0 : undefined}
           role={showWorks ? "region" : undefined}
-          aria-label={showWorks ? "Galeria de projectos" : undefined}
+          aria-label={showWorks ? t.projectsGallery : undefined}
           data-lenis-prevent={showWorks ? "" : undefined}
         >
           {showWorks ? (
-            <WorksPanel onPick={onCloseAll} />
+            <WorksPanel onPick={onCloseAll} locale={locale} />
           ) : !hasMessages ? (
             <div className="jv-chat-welcome">
-              <p className="jv-chat-available"><span /> DISPONÍVEL</p>
-              <h3>Olá. Sou o JARVIS.</h3>
-              <p className="jv-chat-intro">Sou a versão IA do Kutuzov. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
+              <p className="jv-chat-available"><span /> {t.available}</p>
+              <h3>{t.welcomeTitle}</h3>
+              <p className="jv-chat-intro">{t.welcomeDescription}</p>
               <div className="jv-suggestions">
-                {SUGGESTIONS.map((suggestion) => (
+                {t.suggestions.map((suggestion) => (
                   <button key={suggestion.id} type="button" disabled={convo.pending}
                     onClick={() => suggestion.prompt ? void submit(suggestion.prompt) : setShowWorks(true)}>
                     <span>{suggestion.label}</span><ArrowRight size={22} strokeWidth={1.8} aria-hidden="true" />
@@ -913,44 +915,44 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
               ))}
               {convo.pending && <li className="jv-chat-message jv-chat-message--assistant">
                 <span className="jv-chat-avatar"><EKMark className="jv-chat-avatar__logo" /></span>
-                <span className="jv-chat-typing" aria-label="A responder…" role="status"><i /><i /><i /></span>
+                <span className="jv-chat-typing" aria-label={t.replying} role="status"><i /><i /><i /></span>
               </li>}
             </ol>
           )}
           {convo.error && !showWorks && <p className="jv-chat-error" role="alert">{convo.error}</p>}
           {wantsLead && !showWorks && (
-            <section className="jv-lead" aria-label="Pedir projecto com consentimento">
+            <section className="jv-lead" aria-label={t.leadSection}>
               {leadReference ? (
-                <p className="jv-lead__success" role="status">Pedido recebido e confirmado. Referência: {leadReference.slice(0,8).toUpperCase()}.</p>
+                <p className="jv-lead__success" role="status">{t.leadSuccess} {leadReference.slice(0,8).toUpperCase()}.</p>
               ) : (
                 <form className="jv-lead__form" onSubmit={event=>{event.preventDefault();void submitLead();}}>
-                  <p className="jv-lead__eyebrow">NOVO PROJECTO</p>
-                  <h3>Tem uma ideia? Vamos dar-lhe forma.</h3>
-                  <p className="jv-lead__intro">Deixe os dados do briefing. O envio só acontece após a sua autorização.</p>
+                  <p className="jv-lead__eyebrow">{t.newProject}</p>
+                  <h3>{t.leadTitle}</h3>
+                  <p className="jv-lead__intro">{t.leadDescription}</p>
                   <div className="jv-lead__grid">
-                    <label>Nome<input required minLength={2} maxLength={120} value={lead.name}
+                    <label>{t.name}<input required minLength={2} maxLength={120} value={lead.name}
                       onChange={event=>setLead(value=>({...value,name:event.target.value}))}
-                      placeholder="Como devemos tratar?" /></label>
-                    <label>Email ou WhatsApp<input required minLength={5} maxLength={160} value={lead.contact}
+                      placeholder={t.namePlaceholder} /></label>
+                    <label>{t.emailOrWhatsapp}<input required minLength={5} maxLength={160} value={lead.contact}
                       onChange={event=>setLead(value=>({...value,contact:event.target.value}))}
-                      placeholder="Contacto para resposta" /></label>
-                    <label>Prazo (opcional)<input maxLength={100} value={lead.deadline}
+                      placeholder={t.contactPlaceholder} /></label>
+                    <label>{t.deadline}<input maxLength={100} value={lead.deadline}
                       onChange={event=>setLead(value=>({...value,deadline:event.target.value}))}
-                      placeholder="Quando pretende iniciar?" /></label>
-                    <label>Orçamento (opcional)<input maxLength={100} value={lead.budget}
+                      placeholder={t.deadlinePlaceholder} /></label>
+                    <label>{t.budget}<input maxLength={100} value={lead.budget}
                       onChange={event=>setLead(value=>({...value,budget:event.target.value}))}
-                      placeholder="Intervalo estimado" /></label>
+                      placeholder={t.budgetPlaceholder} /></label>
                   </div>
-                  <label className="jv-lead__brief">Resumo do projecto<textarea required minLength={10} maxLength={2000}
+                  <label className="jv-lead__brief">{t.projectSummary}<textarea required minLength={10} maxLength={2000}
                     value={lead.brief} onChange={event=>setLead(value=>({...value,brief:event.target.value}))}
-                    placeholder="O que pretende criar?" rows={3}/></label>
+                    placeholder={t.summaryPlaceholder} rows={3}/></label>
                   <label className="jv-lead__consent">
                     <input type="checkbox" checked={lead.consent}
                       onChange={event=>setLead(value=>({...value,consent:event.target.checked}))} required/>
-                    <span>Autorizo a guardar estes dados para contacto profissional sobre este projecto.</span>
+                    <span>{t.leadConsent}</span>
                   </label>
                   <button className="jv-lead__submit" type="submit" disabled={leadSending||!lead.consent}>
-                    {leadSending?"A enviar…":"Enviar briefing"} <ArrowRight size={16} aria-hidden="true"/>
+                    {leadSending?t.sending:t.submitBrief} <ArrowRight size={16} aria-hidden="true"/>
                   </button>
                   {leadError && <p className="jv-lead__error" role="alert">{leadError}</p>}
                 </form>
@@ -962,7 +964,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
         <form className="jv-chat-composer" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
           <div className="jv-chat-composer__stack">
           <div className="jv-chat-input-wrap">
-            <label htmlFor="jv-input" className="sr-only">Mensagem para Kutuzov</label>
+            <label htmlFor="jv-input" className="sr-only">{t.messageFor}</label>
             <textarea id="jv-input" ref={textarea} rows={1} maxLength={2000} value={draft}
               onChange={(event) => { setDraft(event.target.value); resize(); }}
               onKeyDown={(event) => {
@@ -970,8 +972,8 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
                   event.preventDefault(); void submit();
                 }
               }}
-              placeholder="Escreva-me uma mensagem…" />
-            <button type="submit" className="jv-chat-send" aria-label="Enviar mensagem"
+              placeholder={t.inputPlaceholder} />
+            <button type="submit" className="jv-chat-send" aria-label={t.sendMessage}
               disabled={!draft.trim() || convo.pending}>
               {convo.pending ? <span className="jv-chat-spinner" /> : <Send size={22} strokeWidth={1.8} />}
             </button>
