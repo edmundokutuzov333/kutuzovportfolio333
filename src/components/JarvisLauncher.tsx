@@ -6,8 +6,11 @@ import { EKMark } from "./EKMark";
 import { askJarvis, transcribeJarvisAudio } from "@/lib/jarvis.functions";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
-import { choosePortugueseMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
+import { chooseJarvisMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
 import { buildJarvisHistory } from "@/lib/jarvis/history";
+import { useI18n } from "@/lib/i18n";
+import { jarvisCopy, siteToJarvisLocale } from "@/lib/jarvis/locale";
+import type { JarvisLocale } from "@/lib/jarvis/facts";
 import "./JarvisLauncher.css";
 
 export const JARVIS_OPEN_EVENT = "ek:jarvis-open";
@@ -40,18 +43,6 @@ type SpeechRec = {
   onend: (() => void) | null;
 };
 
-const VOICE_LABEL: Record<VoiceState, string> = {
-  idle: "Disponível para conversar",
-  listening: "A ouvir…",
-  processing: "A processar…",
-  speaking: "A responder…",
-  unavailable: "Voz indisponível. Tente novamente.",
-};
-const SUGGESTIONS = [
-  { id: "percurso", label: "Conhecer o meu percurso.", prompt: "Fala-me do teu percurso profissional." },
-  { id: "projectos", label: "Explorar os meus projectos.", prompt: null },
-  { id: "marcas", label: "Ver as marcas com que trabalhei.", prompt: "Com que marcas já trabalhaste?" },
-] as const;
 const WAVEFORM = [2, 3, 4, 8, 14, 23, 34, 47, 57, 47, 35, 25, 16, 9, 5, 3, 2];
 
 function getRecognition(): SpeechRec | null {
@@ -64,7 +55,8 @@ function getRecognition(): SpeechRec | null {
 }
 
 /** Only update React when a whole message changes, never for microphone frames. */
-function useConversation() {
+function useConversation(locale: JarvisLocale) {
+  const t = jarvisCopy(locale);
   const ask = useServerFn(askJarvis);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [pending, setPending] = useState(false);
@@ -80,7 +72,7 @@ function useConversation() {
     busy.current = true;
     const version = ++epoch.current;
     const next: Msg[] = [...current.current, { role: "user" as const, content }].slice(-100);
-    const modelHistory = buildJarvisHistory(next);
+    const modelHistory = buildJarvisHistory(next, locale);
     current.current = next;
     setMessages(next);
     setPending(true);
@@ -102,7 +94,7 @@ function useConversation() {
       const response = await fetch("/api/jarvis/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-        body: JSON.stringify({ messages: modelHistory }),
+        body: JSON.stringify({ messages: modelHistory, locale }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error("stream_unavailable");
@@ -116,7 +108,7 @@ function useConversation() {
         try {
           const message = JSON.parse(data) as { text?: string; message?: string };
           if (kind === "chunk" && typeof message.text === "string") addText(message.text);
-          if (kind === "error") receivedError = message.message ?? "Não foi possível obter resposta.";
+          if (kind === "error") receivedError = message.message ?? t.noResponse;
         } catch { /* Discard invalid server event without exposing raw fragments. */ }
       };
       while (true) {
@@ -130,27 +122,27 @@ function useConversation() {
       if (unread.trim()) parse(unread);
       if (epoch.current !== version) return null;
       if (receivedError && !reply) setError(receivedError);
-      if (receivedError && reply) setError("A resposta foi interrompida. Pode voltar a tentar.");
+      if (receivedError && reply) setError(t.interrupted);
       if (reply) return cleanJarvisReply(reply);
       if (receivedError) return null;
       throw new Error("empty_stream");
     } catch {
       if (epoch.current !== version || controller.signal.aborted) return null;
       if (reply) {
-        setError("A ligação foi interrompida. Pode voltar a tentar.");
+        setError(t.interrupted);
         return cleanJarvisReply(reply);
       }
       // Older browsers / route incompatibilities: preserve original server function.
       try {
-        const response = await ask({ data: { messages: modelHistory } });
+        const response = await ask({ data: { messages: modelHistory, locale } });
         if (epoch.current !== version) return null;
         if (response.reply) {
           addText(cleanJarvisReply(response.reply));
           return cleanJarvisReply(reply);
         }
-        setError(response.error || "Não foi possível obter resposta. Tente novamente.");
+        setError(response.error || t.noResponseRetry);
       } catch {
-        if (epoch.current === version) setError("Não foi possível contactar o servidor. Tente novamente.");
+        if (epoch.current === version) setError(t.serverUnavailable);
       }
     } finally {
       if (epoch.current === version) {
@@ -160,7 +152,7 @@ function useConversation() {
       }
     }
     return null;
-  }, [ask]);
+  }, [ask, locale, t]);
 
   const reset = useCallback(() => {
     streamingController.current?.abort();
@@ -185,11 +177,13 @@ function useConversation() {
 }
 
 /** The SVG bars take a real microphone RMS level from the Web Audio API. */
-function JarvisVoiceVisual({ voice, onToggle, visualRef }: {
+function JarvisVoiceVisual({ voice, onToggle, visualRef, locale }: {
   voice: VoiceState;
   onToggle: () => void;
   visualRef: React.RefObject<HTMLDivElement | null>;
+  locale: JarvisLocale;
 }) {
+  const t = jarvisCopy(locale);
   return (
     <div className="jv-visual" data-state={voice} ref={visualRef}>
       <svg className="jv-visual__svg" viewBox="0 0 660 250" aria-hidden="true" focusable="false">
@@ -236,7 +230,7 @@ function JarvisVoiceVisual({ voice, onToggle, visualRef }: {
       </svg>
       <button type="button" className="jv-orbit-hit" onClick={onToggle} disabled={voice === "processing"}
         aria-pressed={voice === "listening"}
-        aria-label={voice === "listening" ? "Parar de ouvir" : voice === "speaking" ? "Parar resposta falada" : "Falar com Kutuzov por voz"} />
+        aria-label={voice === "listening" ? t.speakStop : voice === "speaking" ? t.speakStopReply : t.speakStart} />
     </div>
   );
 }
@@ -298,7 +292,8 @@ function HologramWork({ work, onPick }: { work: GalleryWork; onPick: () => void 
   );
 }
 
-function WorksPanel({ onPick }: { onPick: () => void }) {
+function WorksPanel({ onPick, locale }: { onPick: () => void; locale: JarvisLocale }) {
+  const t = jarvisCopy(locale);
   const [works, setWorks] = useState<GalleryWork[]>(() => worksCache ?? []);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(worksCache ? "ready" : "loading");
   const [count, setCount] = useState(12);
@@ -314,26 +309,29 @@ function WorksPanel({ onPick }: { onPick: () => void }) {
   return (
     <div className="jv-works">
       <div className="jv-works__top">
-        <span>PROJECTOS</span><span>{status === "ready" ? works.length : "—"}</span>
+        <span>{t.projects}</span><span>{status === "ready" ? works.length : "—"}</span>
       </div>
-      {status === "loading" && <div className="jv-gallery-loading" role="status" aria-label="A carregar projectos"><i /><i /><i /><i /></div>}
-      {status === "error" && <div className="jv-gallery-error" role="alert">Não foi possível carregar o portfólio. <button type="button" onClick={() => { setStatus("loading"); void getJarvisWorks().then((items) => { setWorks(items); setStatus("ready"); }).catch(() => setStatus("error")); }}>Tentar novamente</button></div>}
-      {status === "ready" && works.length === 0 && <p className="jv-gallery-error">Não há projectos publicados para mostrar.</p>}
+      {status === "loading" && <div className="jv-gallery-loading" role="status" aria-label={t.loadingProjects}><i /><i /><i /><i /></div>}
+      {status === "error" && <div className="jv-gallery-error" role="alert">{t.projectsError} <button type="button" onClick={() => { setStatus("loading"); void getJarvisWorks().then((items) => { setWorks(items); setStatus("ready"); }).catch(() => setStatus("error")); }}>{t.retry}</button></div>}
+      {status === "ready" && works.length === 0 && <p className="jv-gallery-error">{t.noProjects}</p>}
       <ul className="jv-works__grid">
         {works.slice(0, count).map((work) => <HologramWork key={work.slug} work={work} onPick={onPick} />)}
       </ul>
       {status === "ready" && works.length > count &&
-        <button type="button" className="jv-more" onClick={() => setCount((n) => n + 12)}>Ver mais projectos <ArrowRight size={17} /></button>}
+        <button type="button" className="jv-more" onClick={() => setCount((n) => n + 12)}>{t.moreProjects} <ArrowRight size={17} /></button>}
     </div>
   );
 }
 
 export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefined }) {
+  const { language } = useI18n();
+  const locale = siteToJarvisLocale(language);
+  const t = jarvisCopy(locale);
   const [open, setOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [voice, setVoice] = useState<VoiceState>("idle");
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
-  const convo = useConversation();
+  const convo = useConversation(locale);
   const transcribe = useServerFn(transcribeJarvisAudio);
   const recRef = useRef<SpeechRec | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -428,6 +426,14 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     setVoiceMessage(null);
   }, [stopMeter]);
 
+  const previousLocale = useRef(locale);
+  useEffect(() => {
+    if (previousLocale.current === locale) return;
+    previousLocale.current = locale;
+    stopVoice();
+    convo.reset();
+  }, [locale, stopVoice, convo.reset]);
+
   const close = useCallback(() => {
     stopVoice();
     setChatOpen(false);
@@ -517,22 +523,22 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       voices=speech.getVoices();
     }
     if(voiceSession.current!==session)return;
-    const selected=choosePortugueseMaleVoice(voices);
+    const selected=chooseJarvisMaleVoice(voices,locale);
     if(selected && speech && typeof SpeechSynthesisUtterance!=="undefined"){
-      const utterance=new SpeechSynthesisUtterance(spokenJarvisText(text));
+      const utterance=new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
       utterance.voice=selected;
       utterance.lang=selected.lang;
       utterance.rate=1.02;
       utterance.pitch=.91;
       utterance.onend=()=>{if(voiceSession.current===session)setVoice("idle");};
       utterance.onerror=()=>{if(voiceSession.current===session){
-        setVoice("unavailable");setVoiceMessage("Não foi possível reproduzir a resposta em voz.");
+        setVoice("unavailable");setVoiceMessage(t.speechFailed);
       }};
       speech.cancel();
       setVoice("speaking");speech.speak(utterance);
       return;
     }
-    // Male PT/MZ speech unavailable locally: use the verified Google Orus
+    // No suitable local male voice: use the verified Google Orus
     // audio endpoint. Preserve text-only graceful fallback on unsupported devices.
     const controller=new AbortController();
     ttsAbortRef.current=controller;
@@ -540,7 +546,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     try{
       const response=await fetch("/api/jarvis/tts",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({text:text.slice(0,650)}),signal:controller.signal,
+        body:JSON.stringify({text:text.slice(0,650),locale}),signal:controller.signal,
       });
       if(!response.ok)throw Error("tts_unavailable");
       const audioBlob=await response.blob();
@@ -556,14 +562,14 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       };
       audio.onerror=()=>{
         if(voiceSession.current===session){setVoice("unavailable");
-          setVoiceMessage("Não foi possível reproduzir o áudio. Pode continuar por escrito.");}
+          setVoiceMessage(t.audioFailed);}
       };
       await audio.play();
       if(voiceSession.current===session)setVoice("speaking");
     }catch{
       if(voiceSession.current===session && !controller.signal.aborted){
         setVoice("unavailable");
-        setVoiceMessage(describeVoiceFallback(voices)??"Não foi possível obter voz masculina neste momento. A resposta está na conversa escrita.");
+        setVoiceMessage(describeVoiceFallback(voices, locale)??t.maleVoiceUnavailable);
       }
     }finally {
       if(ttsAbortRef.current===controller)ttsAbortRef.current=null;
@@ -580,7 +586,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (response) void speak(response, session);
     else {
       setVoice("unavailable");
-      setVoiceMessage("Não foi possível obter resposta. Abra a conversa escrita para tentar novamente.");
+      setVoiceMessage(t.voiceReplyFailed);
     }
   };
 
@@ -604,7 +610,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     setVoice("listening");
     if (!navigator.mediaDevices?.getUserMedia) {
       setVoice("unavailable");
-      setVoiceMessage("Este navegador não permite aceder ao microfone.");
+      setVoiceMessage(t.micUnsupported);
       return;
     }
     try {
@@ -639,7 +645,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
             setVoice("unavailable");
             setVoiceMessage(message);
           },
-        })).catch(() => null) : null;
+        }, locale)).catch(() => null) : null;
       if (voiceSession.current !== session) {
         live?.stop(); stream.getTracks().forEach(track => track.stop()); return;
       }
@@ -648,7 +654,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       const recognition = getRecognition();
       if (recognition) {
         recRef.current = recognition;
-        recognition.lang = "pt-PT";
+        recognition.lang = locale === "en" ? "en-GB" : "pt-PT";
         recognition.interimResults = false;
         recognition.continuous = false;
         let transcript = "";
@@ -662,7 +668,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           stopMeter();
           if (voiceSession.current !== session) return;
           setVoice("unavailable");
-          setVoiceMessage(event.error === "not-allowed" ? "Autorize o microfone nas definições do navegador." : "Reconhecimento de voz indisponível. Tente novamente.");
+          setVoiceMessage(event.error === "not-allowed" ? t.micPermission : t.recognitionFailed);
         };
         recognition.onend = () => {
           if (voiceSession.current !== session || errored) return;
@@ -695,7 +701,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current !== session) return;
         if (bytes === 0 || bytes > 2_500_000) {
           setVoice("unavailable");
-          setVoiceMessage("Gravação inválida ou demasiado longa. Tente novamente.");
+          setVoiceMessage(t.invalidRecording);
           return;
         }
         setVoice("processing");
@@ -710,18 +716,18 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           });
           if (voiceSession.current !== session) return;
           const result = await transcribe({
-            data: { base64, mimeType: mimeType as "audio/webm" | "audio/mp4" | "audio/ogg" },
+            data: { base64, mimeType: mimeType as "audio/webm" | "audio/mp4" | "audio/ogg", locale },
           });
           if (voiceSession.current !== session) return;
           if (result.transcript) void handleSpeech(result.transcript, session);
           else {
             setVoice("unavailable");
-            setVoiceMessage(result.error || "Não foi possível reconhecer a fala.");
+            setVoiceMessage(result.error || t.recognitionEmpty);
           }
         } catch {
           if (voiceSession.current === session) {
             setVoice("unavailable");
-            setVoiceMessage("A transcrição falhou. Tente novamente.");
+            setVoiceMessage(t.transcriptionFailed);
           }
         }
       };
@@ -733,7 +739,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       stopMeter();
       if (voiceSession.current !== session) return;
       setVoice("unavailable");
-      setVoiceMessage("Não foi possível utilizar o microfone. Verifique as permissões.");
+      setVoiceMessage(t.micFailed);
     }
   };
 
