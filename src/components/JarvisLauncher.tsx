@@ -654,13 +654,54 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (voiceSession.current !== session) return;
     if (!text.trim()) { setVoice("idle"); return; }
     setVoice("processing");
-    const response = await convo.send(text.trim());
+
+    // Start TTS as soon as the FIRST verified SSE sentence arrives; the LLM
+    // continues generating later sentences in parallel with voice playback.
+    // Never feed partial/unverified contact data directly into speech.
+    const queue: string[] = [];
+    let firstChunk = "";
+    let active = false;
+    let completed = false;
+    const pump = () => {
+      if (voiceSession.current !== session || active) return;
+      const next = queue.shift();
+      if (!next) {
+        setVoice(completed ? "idle" : "processing");
+        return;
+      }
+      active = true;
+      void speak(next, session, () => {
+        if (voiceSession.current !== session) return;
+        active = false;
+        pump();
+      });
+    };
+    const enqueue = (part: string) => {
+      queue.push(...splitVoiceSegments(part));
+      pump();
+    };
+
+    const response = await convo.send(text.trim(), {
+      mode: "voice",
+      onFirstChunk: (chunk) => {
+        if (voiceSession.current !== session || firstChunk) return;
+        firstChunk = chunk;
+        enqueue(chunk);
+      },
+    });
     if (voiceSession.current !== session) return;
-    if (response) void speak(response, session);
-    else {
+    completed = true;
+    if (response) {
+      // Avoid repeating the sentence already spoken while SSE was running.
+      const remaining = firstChunk && response.startsWith(firstChunk)
+        ? response.slice(firstChunk.length).trim()
+        : firstChunk ? response.replace(firstChunk, "").trim() : response;
+      if (remaining) enqueue(remaining);
+      pump();
+    } else if (!firstChunk) {
       setVoice("unavailable");
       setVoiceMessage(t.voiceReplyFailed);
-    }
+    } else pump();
   };
 
   const startVoice = async () => {
