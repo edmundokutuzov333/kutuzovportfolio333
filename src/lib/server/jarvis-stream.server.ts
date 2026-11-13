@@ -78,10 +78,11 @@ async function findRelevant(query:string,locale:JarvisLocale):Promise<string> {
   }catch {return "";}
 }
 function bodyFor(model:string,instruction:string,messages:Message[]) {
+  const first = messages[0];
   return JSON.stringify({
     systemInstruction:{parts:[{text:instruction}]},
     contents:([
-      ...(/^(?:CONTEXTO ANTERIOR DA MESMA CONVERSA|EARLIER CONTEXT FROM THIS CONVERSATION)/.test(messages[0]?.content??"")?[messages[0]]:[]),
+      ...(first && /^(?:CONTEXTO ANTERIOR DA MESMA CONVERSA|EARLIER CONTEXT FROM THIS CONVERSATION)/.test(first.content)?[first]:[]),
       ...messages.slice(-10),
     ]).map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content.slice(0,1500)}]})),
     generationConfig:{maxOutputTokens:220,
