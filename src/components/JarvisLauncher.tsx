@@ -535,13 +535,19 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   }, [stopMeter]);
 
   /** Cloud Orus is preferred for a consistent male voice; device speech is a nonblocking fallback. */
-  const speak = async (text: string, session: number) => {
+  const speak = async (text: string, session: number, onFinished?: () => void) => {
+    const finish = () => {
+      if (voiceSession.current !== session) return;
+      if (onFinished) onFinished();
+      else setVoice("idle");
+    };
     const fallbackDeviceSpeech = async (): Promise<void> => {
       const speech = window.speechSynthesis;
       if (!speech || typeof SpeechSynthesisUtterance === "undefined") {
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
+          finish();
         }
         return;
       }
@@ -565,6 +571,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       if (!selected) {
         setVoice("unavailable");
         setVoiceMessage(describeVoiceFallback(voices, locale) ?? t.maleVoiceUnavailable);
+        finish();
         return;
       }
       const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
@@ -572,11 +579,12 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       utterance.lang = selected.lang;
       utterance.rate = 1.02;
       utterance.pitch = 0.91;
-      utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
+      utterance.onend = finish;
       utterance.onerror = () => {
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
+          finish();
         }
       };
       try {
@@ -587,6 +595,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
+          finish();
         }
       }
     };
@@ -626,7 +635,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       playbackSourceRef.current = source;
       source.onended = () => {
         if (playbackSourceRef.current === source) playbackSourceRef.current = null;
-        if (voiceSession.current === session) setVoice("idle");
+        finish();
       };
       source.start();
       setVoice("speaking");
