@@ -637,7 +637,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       const decoder = new TextDecoder();
       let buffer = "";
       let nextAudioTime = context.currentTime;
-      let lastNode: AudioBufferSourceNode | null = null;
+      let lastPlaybackEnd: Promise<void> = Promise.resolve();
       let playedAny = false;
       let streamFailed = false;
       const schedule = (base64: string) => {
@@ -645,16 +645,20 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         const floats = bytes ? pcmToFloat32(bytes) : null;
         if (!floats || !floats.length || voiceSession.current !== session || controller.signal.aborted) return;
         const audio = context.createBuffer(1, floats.length, JARVIS_PCM_SAMPLE_RATE);
-        audio.copyToChannel(floats, 0);
+        audio.copyToChannel(new Float32Array(floats), 0);
         const node = context.createBufferSource();
         node.buffer = audio;
         node.connect(context.destination);
         playbackNodesRef.current.add(node);
-        node.onended = () => playbackNodesRef.current.delete(node);
+        lastPlaybackEnd = new Promise<void>(resolve => {
+          node.onended = () => {
+            playbackNodesRef.current.delete(node);
+            resolve();
+          };
+        });
         const when = Math.max(context.currentTime + 0.025, nextAudioTime);
         nextAudioTime = when + audio.duration;
         node.start(when);
-        lastNode = node;
         playedAny = true;
         setVoice("speaking");
       };
@@ -685,20 +689,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       if (voiceSession.current !== session || controller.signal.aborted) return true;
       // Finish after the final scheduled audio block; the next sentence can
       // then follow without overlapping this one or cutting off its tail.
-      if (lastNode) {
-        const finalNode = lastNode;
-        await new Promise<void>(resolve => {
-          let settled = false;
-          const done = () => {
-            if (settled) return;
-            settled = true;
-            playbackNodesRef.current.delete(finalNode);
-            resolve();
-          };
-          finalNode.addEventListener("ended", done, { once: true });
-          if (!playbackNodesRef.current.has(finalNode)) done();
-        });
-      }
+      await lastPlaybackEnd;
       if (streamFailed) console.warn("JARVIS_TTS_STREAM_PARTIAL");
       return true;
     };
