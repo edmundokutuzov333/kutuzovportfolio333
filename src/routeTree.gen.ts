@@ -27,6 +27,7 @@ import { Route as ApiJarvisLiveTokenRouteImport } from './routes/api.jarvis.live
 import { Route as ApiJarvisProbeRouteImport } from './routes/api.jarvis.probe'
 import { Route as ApiJarvisStreamRouteImport } from './routes/api.jarvis.stream'
 import { Route as ApiJarvisSyncRouteImport } from './routes/api.jarvis.sync'
+import { Route as ApiJarvisTranscribeRouteImport } from './routes/api.jarvis.transcribe'
 import { Route as ApiJarvisTtsRouteImport } from './routes/api.jarvis.tts'
 
 const IndexRoute = IndexRouteImport.update({
@@ -119,6 +120,11 @@ const ApiJarvisSyncRoute = ApiJarvisSyncRouteImport.update({
   path: '/api/jarvis/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiJarvisTranscribeRoute = ApiJarvisTranscribeRouteImport.update({
+  id: '/api/jarvis/transcribe',
+  path: '/api/jarvis/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiJarvisTtsRoute = ApiJarvisTtsRouteImport.update({
   id: '/api/jarvis/tts',
   path: '/api/jarvis/tts',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/api/jarvis/probe': typeof ApiJarvisProbeRoute
   '/api/jarvis/stream': typeof ApiJarvisStreamRoute
   '/api/jarvis/sync': typeof ApiJarvisSyncRoute
+  '/api/jarvis/transcribe': typeof ApiJarvisTranscribeRoute
   '/api/jarvis/tts': typeof ApiJarvisTtsRoute
 }
 export interface FileRoutesByTo {
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/api/jarvis/probe': typeof ApiJarvisProbeRoute
   '/api/jarvis/stream': typeof ApiJarvisStreamRoute
   '/api/jarvis/sync': typeof ApiJarvisSyncRoute
+  '/api/jarvis/transcribe': typeof ApiJarvisTranscribeRoute
   '/api/jarvis/tts': typeof ApiJarvisTtsRoute
 }
 export interface FileRoutesById {
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/api/jarvis/probe': typeof ApiJarvisProbeRoute
   '/api/jarvis/stream': typeof ApiJarvisStreamRoute
   '/api/jarvis/sync': typeof ApiJarvisSyncRoute
+  '/api/jarvis/transcribe': typeof ApiJarvisTranscribeRoute
   '/api/jarvis/tts': typeof ApiJarvisTtsRoute
 }
 export interface FileRouteTypes {
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/api/jarvis/probe'
     | '/api/jarvis/stream'
     | '/api/jarvis/sync'
+    | '/api/jarvis/transcribe'
     | '/api/jarvis/tts'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/api/jarvis/probe'
     | '/api/jarvis/stream'
     | '/api/jarvis/sync'
+    | '/api/jarvis/transcribe'
     | '/api/jarvis/tts'
   id:
     | '__root__'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/api/jarvis/probe'
     | '/api/jarvis/stream'
     | '/api/jarvis/sync'
+    | '/api/jarvis/transcribe'
     | '/api/jarvis/tts'
   fileRoutesById: FileRoutesById
 }
@@ -273,6 +285,7 @@ export interface RootRouteChildren {
   ApiJarvisProbeRoute: typeof ApiJarvisProbeRoute
   ApiJarvisStreamRoute: typeof ApiJarvisStreamRoute
   ApiJarvisSyncRoute: typeof ApiJarvisSyncRoute
+  ApiJarvisTranscribeRoute: typeof ApiJarvisTranscribeRoute
   ApiJarvisTtsRoute: typeof ApiJarvisTtsRoute
 }
 
@@ -404,6 +417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiJarvisSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/jarvis/transcribe': {
+      id: '/api/jarvis/transcribe'
+      path: '/api/jarvis/transcribe'
+      fullPath: '/api/jarvis/transcribe'
+      preLoaderRoute: typeof ApiJarvisTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/jarvis/tts': {
       id: '/api/jarvis/tts'
       path: '/api/jarvis/tts'
@@ -442,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJarvisProbeRoute: ApiJarvisProbeRoute,
   ApiJarvisStreamRoute: ApiJarvisStreamRoute,
   ApiJarvisSyncRoute: ApiJarvisSyncRoute,
+  ApiJarvisTranscribeRoute: ApiJarvisTranscribeRoute,
   ApiJarvisTtsRoute: ApiJarvisTtsRoute,
 }
 export const routeTree = rootRouteImport
