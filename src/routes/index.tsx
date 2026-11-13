@@ -6,6 +6,7 @@ import { Logo3D } from "@/components/Logo3D";
 import { Reveal } from "@/components/Reveal";
 import { ClientsMarquee } from "@/components/Clients";
 import { ProjectCardFan } from "@/components/ProjectCardFan";
+import { DirectionIcon } from "@/components/DirectionIcon";
 import { buildProjectFanArtwork } from "@/lib/project-artwork";
 import { loadHomeContent } from "@/lib/cms/loaders";
 import type { Profile } from "@/lib/cms/types";
@@ -127,8 +128,8 @@ function Home() {
                       ))}
                     </h2>
                   </div>
-                  <Link to="/work" className="eyebrow shrink-0 whitespace-nowrap hover:text-primary">
-                    {tx(section.config.link_label)} →
+                  <Link to="/work" className="eyebrow inline-flex shrink-0 items-center gap-2 whitespace-nowrap hover:text-primary">
+                    {tx(section.config.link_label)}<DirectionIcon direction="forward" className="h-3.5 w-3.5" />
                   </Link>
                 </div>
                 {artwork.length > 0 && (
@@ -181,8 +182,8 @@ function Home() {
                 </div>
                 <ClientsMarquee clients={clients} />
                 <div className="mt-10 px-6 md:px-12">
-                  <Link to="/clients" className="eyebrow hover:text-primary">
-                    {tx(section.config.link_label)} {clients.length} →
+                  <Link to="/clients" className="eyebrow inline-flex items-center gap-2 hover:text-primary">
+                    {tx(section.config.link_label)} {clients.length}<DirectionIcon direction="forward" className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </section>
