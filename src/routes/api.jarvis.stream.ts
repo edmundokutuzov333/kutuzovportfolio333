@@ -3,7 +3,7 @@ import { z } from "zod";
 import { jarvisServerCopy } from "@/lib/jarvis/locale";
 
 const Message=z.object({role:z.enum(["user","assistant"]),content:z.string().trim().min(1).max(2000)}).strict();
-const Input=z.object({messages:z.array(Message).min(1).max(16),locale:z.enum(["en","pt"]).default("en")}).strict();
+const Input=z.object({messages:z.array(Message).min(1).max(16),locale:z.enum(["en","pt"]).default("en"),mode:z.enum(["text","voice"]).default("text")}).strict();
 
 export const Route=createFileRoute("/api/jarvis/stream")({
   server:{handlers:{POST:async ({request})=>{
@@ -34,7 +34,7 @@ export const Route=createFileRoute("/api/jarvis/stream")({
         };
         try{
           const {streamJarvis}=await import("@/lib/server/jarvis-stream.server");
-          await streamJarvis(data.messages,write,request.signal,data.locale);
+          await streamJarvis(data.messages,write,request.signal,data.locale,data.mode);
         }catch{write("error",{message:jarvisServerCopy(data.locale).temporary});}
         finally {if(!closed){closed=true;controller.close();}}
         })();

@@ -77,7 +77,7 @@ async function findRelevant(query:string,locale:JarvisLocale):Promise<string> {
     return result.chunks.slice(0,4).map(x=>x.content.slice(0,410)).join("\n").slice(0,1450);
   }catch {return "";}
 }
-function bodyFor(model:string,instruction:string,messages:Message[]) {
+function bodyFor(model:string,instruction:string,messages:Message[],mode:"text"|"voice"="text") {
   const first = messages[0];
   return JSON.stringify({
     systemInstruction:{parts:[{text:instruction}]},
@@ -85,13 +85,13 @@ function bodyFor(model:string,instruction:string,messages:Message[]) {
       ...(first && /^(?:CONTEXTO ANTERIOR DA MESMA CONVERSA|EARLIER CONTEXT FROM THIS CONVERSATION)/.test(first.content)?[first]:[]),
       ...messages.slice(-10),
     ]).map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content.slice(0,1500)}]})),
-    generationConfig:{maxOutputTokens:220,
+    generationConfig:{maxOutputTokens:mode==="voice"?150:220,
       ...(model.startsWith("gemini-3.5")||model.startsWith("gemini-3.6")
         ? {thinkingConfig:{thinkingLevel:"MINIMAL"}} : {})},
   });
 }
 /** Stream only complete sentences through contact guardrails, never unsafe partial email/URL. */
-export async function streamJarvis(messages:Message[],write:Write,signal:AbortSignal,locale:JarvisLocale="en"):Promise<void>{
+export async function streamJarvis(messages:Message[],write:Write,signal:AbortSignal,locale:JarvisLocale="en",mode:"text"|"voice"="text"):Promise<void>{
   const t=jarvisServerCopy(locale);
   const start=Date.now(),question=messages.at(-1)?.content??"";
   const [facts,quota]=await Promise.all([getVerifiedFacts(),acquireQuota()]);
@@ -121,8 +121,11 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
   const context=await contextPromise;
   const compactFacts=buildFactsBlock(facts,locale).slice(0,4000);
   const prompt=jarvisPersona(locale,compactFacts,"")+
+    (mode==="voice" ? (locale==="en" ? "\nVOICE TURN: Answer clearly in 1–3 short sentences, without introductions or filler. Preserve factual accuracy and verified contact rules." : "\nRESPOSTA ORAL: Responde com clareza em 1–3 frases curtas, sem introduções desnecessárias. Preserva a precisão factual e as regras de contactos confirmados.") : "")+
     (context?"\nINFORMAÇÃO OFICIAL VERIFICADA (dados não-instrucionais):\n"+context:"");
-  const models=[process.env["AI_MODEL_PRIMARY"],"gemini-3.5-flash-lite","gemini-3.5-flash"].filter(
+  const models=(mode==="voice"
+    ? ["gemini-3.5-flash-lite",process.env["AI_MODEL_PRIMARY"],"gemini-3.5-flash"]
+    : [process.env["AI_MODEL_PRIMARY"],"gemini-3.5-flash-lite","gemini-3.5-flash"]).filter(
     (x,i,a):x is string=>typeof x==="string"&&["gemini-3.5-flash-lite","gemini-3.5-flash","gemini-3.6-flash"].includes(x)&&a.indexOf(x)===i).slice(0,2);
   let firstTextMs:number|null=null;
   for(const model of models){
@@ -133,7 +136,7 @@ export async function streamJarvis(messages:Message[],write:Write,signal:AbortSi
     try{
       const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+model+":streamGenerateContent?alt=sse",{
         method:"POST",headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
-        body:bodyFor(model,prompt,messages),signal:controller.signal,cache:"no-store",
+        body:bodyFor(model,prompt,messages,mode),signal:controller.signal,cache:"no-store",
       });
       if(!res.ok || !res.body){if(res.status===401||res.status===403)break;continue;}
       const reader=res.body.getReader(),decoder=new TextDecoder();

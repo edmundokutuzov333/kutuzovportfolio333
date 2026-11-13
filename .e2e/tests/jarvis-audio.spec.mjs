@@ -107,3 +107,55 @@ test("audio transcription failure reports an error without sending a false text 
   await expect(jarvis.locator(".jv-voice-state")).toContainText("Transcription is temporarily unavailable.");
   expect(answers).toBe(0);
 });
+
+test("voice begins TTS before the LLM finishes streaming, without duplicating the first sentence", async ({ page }) => {
+  await installFakeMicrophone(page);
+  await page.addInitScript(() => {
+    window.__jarvisStreamFinished = false;
+    window.__jarvisVoiceMode = "";
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (input, init) => {
+      if (input === "/api/jarvis/stream") {
+        window.__jarvisVoiceMode = JSON.parse(String(init?.body || "{}")).mode;
+        const encoder = new TextEncoder();
+        const body = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode('event: chunk\ndata: {"text":"I direct art and visual identities. "}\n\n'));
+            setTimeout(() => {
+              controller.enqueue(encoder.encode('event: chunk\ndata: {"text":"I also create brand campaigns."}\n\n'));
+              controller.enqueue(encoder.encode('event: done\ndata: {}\n\n'));
+              controller.close();
+              window.__jarvisStreamFinished = true;
+            }, 1800);
+          },
+        });
+        return Promise.resolve(new Response(body, {
+          status: 200, headers: { "Content-Type": "text/event-stream" },
+        }));
+      }
+      return originalFetch(input, init);
+    };
+  });
+  await page.route("**/api/jarvis/transcribe", async route =>
+    route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ transcript: "Tell me what you do.", error: null }) }));
+  const tts = [];
+  await page.route("**/api/jarvis/tts", async route => {
+    const text = route.request().postDataJSON().text;
+    const finished = await page.evaluate(() => window.__jarvisStreamFinished);
+    tts.push({ text, finished });
+    await route.fulfill({ status: 200, contentType: "audio/wav", body: mockWav() });
+  });
+  await openJarvis(page);
+  const jarvis = page.locator(".jv-root");
+  await jarvis.getByRole("button", { name: "TALK TO KUTUZOV" }).click();
+  await jarvis.locator(".jv-orbit-hit").click();
+  await expect.poll(() => tts.length, { timeout: 10_000 }).toBeGreaterThan(0);
+  expect(tts[0]).toEqual({ text: "I direct art and visual identities.", finished: false });
+  expect(await page.evaluate(() => window.__jarvisVoiceMode)).toBe("voice");
+  await expect.poll(() => page.evaluate(() => window.__jarvisStreamFinished)).toBe(true);
+  await expect(jarvis.getByRole("button", { name: "Open text chat" })).toBeVisible();
+  await jarvis.getByRole("button", { name: "Open text chat" }).click();
+  await expect(jarvis.locator(".jv-chat-message--assistant").last())
+    .toContainText("I direct art and visual identities. I also create brand campaigns.");
+});

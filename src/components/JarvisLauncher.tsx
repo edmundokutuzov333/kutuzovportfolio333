@@ -6,6 +6,7 @@ import { EKMark } from "./EKMark";
 import { DirectionIcon } from "./DirectionIcon";
 import { askJarvis } from "@/lib/jarvis.functions";
 import { MAX_JARVIS_AUDIO_BYTES, MAX_JARVIS_RECORDING_MS, normalizedAudioMime, preferredRecordingMime, shouldEndRecording } from "@/lib/jarvis/audio-capture";
+import { splitVoiceSegments } from "@/lib/jarvis/voice-chunks";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
 import { chooseJarvisMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
@@ -69,7 +70,7 @@ function useConversation(locale: JarvisLocale) {
   const epoch = useRef(0);
 
   const streamingController = useRef<AbortController | null>(null);
-  const send = useCallback(async (raw: string): Promise<string | null> => {
+  const send = useCallback(async (raw: string, options?: { mode?: "voice"; onFirstChunk?: (text: string) => void }): Promise<string | null> => {
     const content = raw.trim();
     if (!content || busy.current) return null;
     busy.current = true;
@@ -81,6 +82,7 @@ function useConversation(locale: JarvisLocale) {
     setPending(true);
     setError(null);
     let reply = "";
+    let firstChunkDelivered = false;
     let receivedError: string | null = null;
     const controller = new AbortController();
     streamingController.current = controller;
@@ -92,12 +94,21 @@ function useConversation(locale: JarvisLocale) {
       const displayed = [...next, { role: "assistant" as const, content: cleanJarvisReply(reply) }].slice(-100);
       current.current = displayed;
       setMessages(displayed);
+      if (!firstChunkDelivered && options?.onFirstChunk) {
+        const first = cleanJarvisReply(fragment).trim();
+        if (first) {
+          firstChunkDelivered = true;
+          options.onFirstChunk(first);
+        }
+      }
     };
     try {
       const response = await fetch("/api/jarvis/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-        body: JSON.stringify({ messages: modelHistory, locale }),
+        body: JSON.stringify(options?.mode === "voice"
+          ? { messages: modelHistory, locale, mode: "voice" }
+          : { messages: modelHistory, locale }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error("stream_unavailable");
@@ -524,13 +535,19 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   }, [stopMeter]);
 
   /** Cloud Orus is preferred for a consistent male voice; device speech is a nonblocking fallback. */
-  const speak = async (text: string, session: number) => {
+  const speak = async (text: string, session: number, onFinished?: () => void) => {
+    const finish = (failed = false) => {
+      if (voiceSession.current !== session || failed) return;
+      if (onFinished) onFinished();
+      else setVoice("idle");
+    };
     const fallbackDeviceSpeech = async (): Promise<void> => {
       const speech = window.speechSynthesis;
       if (!speech || typeof SpeechSynthesisUtterance === "undefined") {
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
+          finish(true);
         }
         return;
       }
@@ -554,6 +571,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       if (!selected) {
         setVoice("unavailable");
         setVoiceMessage(describeVoiceFallback(voices, locale) ?? t.maleVoiceUnavailable);
+        finish(true);
         return;
       }
       const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
@@ -561,11 +579,12 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       utterance.lang = selected.lang;
       utterance.rate = 1.02;
       utterance.pitch = 0.91;
-      utterance.onend = () => { if (voiceSession.current === session) setVoice("idle"); };
+      utterance.onend = () => finish();
       utterance.onerror = () => {
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
+          finish(true);
         }
       };
       try {
@@ -576,6 +595,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
+          finish(true);
         }
       }
     };
@@ -615,7 +635,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       playbackSourceRef.current = source;
       source.onended = () => {
         if (playbackSourceRef.current === source) playbackSourceRef.current = null;
-        if (voiceSession.current === session) setVoice("idle");
+        finish();
       };
       source.start();
       setVoice("speaking");
@@ -634,13 +654,54 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (voiceSession.current !== session) return;
     if (!text.trim()) { setVoice("idle"); return; }
     setVoice("processing");
-    const response = await convo.send(text.trim());
+
+    // Start TTS as soon as the FIRST verified SSE sentence arrives; the LLM
+    // continues generating later sentences in parallel with voice playback.
+    // Never feed partial/unverified contact data directly into speech.
+    const queue: string[] = [];
+    let firstChunk = "";
+    let active = false;
+    let completed = false;
+    const pump = () => {
+      if (voiceSession.current !== session || active) return;
+      const next = queue.shift();
+      if (!next) {
+        setVoice(completed ? "idle" : "processing");
+        return;
+      }
+      active = true;
+      void speak(next, session, () => {
+        if (voiceSession.current !== session) return;
+        active = false;
+        pump();
+      });
+    };
+    const enqueue = (part: string) => {
+      queue.push(...splitVoiceSegments(part));
+      pump();
+    };
+
+    const response = await convo.send(text.trim(), {
+      mode: "voice",
+      onFirstChunk: (chunk) => {
+        if (voiceSession.current !== session || firstChunk) return;
+        firstChunk = chunk;
+        enqueue(chunk);
+      },
+    });
     if (voiceSession.current !== session) return;
-    if (response) void speak(response, session);
-    else {
+    completed = true;
+    if (response) {
+      // Avoid repeating the sentence already spoken while SSE was running.
+      const remaining = firstChunk && response.startsWith(firstChunk)
+        ? response.slice(firstChunk.length).trim()
+        : firstChunk ? response.replace(firstChunk, "").trim() : response;
+      if (remaining) enqueue(remaining);
+      pump();
+    } else if (!firstChunk) {
       setVoice("unavailable");
       setVoiceMessage(t.voiceReplyFailed);
-    }
+    } else pump();
   };
 
   const startVoice = async () => {
