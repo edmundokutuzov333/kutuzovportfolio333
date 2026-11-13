@@ -647,11 +647,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (voice === "listening") {
       if (liveRef.current) { stopVoice(); return; }
       const recorder = recorderRef.current;
-      if (recorder && recorder.state === "recording") {
-        recorder.stop();
-      } else {
-        recRef.current?.stop();
-      }
+      if (recorder?.state === "recording") recorder.stop();
+      else recRef.current?.stop();
       return;
     }
     if (voice === "speaking") { stopVoice(); return; }
@@ -666,56 +663,161 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       setVoiceMessage(t.micUnsupported);
       return;
     }
+
+    // Must run synchronously in the click/tap activation, BEFORE any network or microphone await.
+    // Otherwise iOS Safari may reject the synthesized answer despite receiving a valid WAV.
+    try {
+      const context = new window.AudioContext({ latencyHint: "interactive" });
+      playbackContextRef.current = context;
+      void context.resume().catch(() => {});
+    } catch {
+      // Web Speech fallback remains available if this device cannot create Web Audio.
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       if (voiceSession.current !== session) {
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach(track => track.stop());
         return;
       }
       microphone.current = stream;
-      startMeter(stream);
 
-      // Native Gemini Live is an opt-in transport. A 404 or provider issue falls
-      // through to the proven browser speech / transcription path without losing
-      // the microphone or disturbing the visual design.
-      const live = import.meta.env["VITE_JARVIS_LIVE_ENABLED"] === "true"
-        ? await import("@/lib/jarvis/live-browser")
-        .then(({ connectJarvisLive }) => connectJarvisLive(stream, {
-          onState: (next) => { if (voiceSession.current === session) setVoice(next); },
-          onUserTranscript: (text) => {
-            if (voiceSession.current === session) convo.remember("user", text);
-          },
-          onAssistantTranscript: (text) => {
-            if (voiceSession.current === session) convo.remember("assistant", text);
-          },
-          onError: (message) => {
+      const beginRecordedTurn = () => {
+        if (voiceSession.current !== session) return;
+
+        let recorder: MediaRecorder | null = null;
+        if (typeof MediaRecorder !== "undefined") {
+          try {
+            const preferred = preferredRecordingMime(type => MediaRecorder.isTypeSupported(type));
+            recorder = new MediaRecorder(stream,
+              preferred ? { mimeType: preferred, audioBitsPerSecond: 64000 } : { audioBitsPerSecond: 64000 });
+          } catch {
+            try { recorder = new MediaRecorder(stream); } catch { recorder = null; }
+          }
+        }
+
+        if (recorder) {
+          recorderRef.current = recorder;
+          const chunks: Blob[] = [];
+          let bytes = 0;
+          let speechDetected = false;
+          let voicedFrames = 0;
+          let lastVoiceAt = 0;
+          const recordingStart = performance.now();
+
+          recorder.ondataavailable = (event: BlobEvent) => {
+            if (event.data.size <= 0) return;
+            chunks.push(event.data);
+            bytes += event.data.size;
+            if (bytes > MAX_JARVIS_AUDIO_BYTES && recorder?.state === "recording") recorder.stop();
+          };
+          recorder.onerror = () => {
             if (voiceSession.current !== session) return;
-            liveRef.current?.stop();
-            liveRef.current = null;
-            stopMeter();
             setVoice("unavailable");
-            setVoiceMessage(message);
-          },
-        }, locale)).catch(() => null) : null;
-      if (voiceSession.current !== session) {
-        live?.stop(); stream.getTracks().forEach(track => track.stop()); return;
-      }
-      if (live) { liveRef.current = live; return; }
+            setVoiceMessage(t.invalidRecording);
+          };
+          recorder.onstop = async () => {
+            recorderRef.current = null;
+            stopMeter();
+            if (voiceSession.current !== session) return;
+            if (bytes < 300 || bytes > MAX_JARVIS_AUDIO_BYTES) {
+              setVoice("unavailable");
+              setVoiceMessage(t.invalidRecording);
+              return;
+            }
+            const format = normalizedAudioMime(recorder?.mimeType || chunks[0]?.type || "");
+            if (!format) {
+              setVoice("unavailable");
+              setVoiceMessage(t.invalidRecording);
+              return;
+            }
+            setVoice("processing");
 
-      const recognition = getRecognition();
-      if (recognition) {
+            const controller = new AbortController();
+            transcriptionAbortRef.current = controller;
+            const timeout = window.setTimeout(() => controller.abort(), 26_000);
+            try {
+              // Send the native audio bytes: not a JSON/base64 server-function payload.
+              const response = await fetch("/api/jarvis/transcribe", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": format, "X-Jarvis-Locale": locale },
+                body: new Blob(chunks, { type: format }),
+                signal: controller.signal,
+              });
+              if (voiceSession.current !== session) return;
+              const result = await response.json() as { transcript?: string | null; error?: string | null };
+              if (voiceSession.current !== session) return;
+              if (!response.ok || !result.transcript?.trim()) {
+                setVoice("unavailable");
+                setVoiceMessage(result.error || t.recognitionEmpty);
+                return;
+              }
+              void handleSpeech(result.transcript.trim(), session);
+            } catch (error) {
+              if (voiceSession.current !== session) return;
+              console.warn("JARVIS_TRANSCRIPTION_STAGE", error instanceof Error ? error.name : "unknown");
+              setVoice("unavailable");
+              setVoiceMessage(t.transcriptionFailed);
+            } finally {
+              window.clearTimeout(timeout);
+              if (transcriptionAbortRef.current === controller) transcriptionAbortRef.current = null;
+            }
+          };
+
+          try { recorder.start(250); }
+          catch {
+            recorderRef.current = null;
+            recorder = null;
+          }
+
+          if (recorder) {
+            const activeRecorder = recorder;
+            startMeter(stream, rms => {
+              if (activeRecorder.state !== "recording" || voiceSession.current !== session) return;
+              const now = performance.now();
+              if (rms > 0.018) {
+                voicedFrames = Math.min(voicedFrames + 1, 6);
+                if (voicedFrames >= 3) {
+                  speechDetected = true;
+                  lastVoiceAt = now;
+                }
+              } else voicedFrames = Math.max(0, voicedFrames - 1);
+              if (shouldEndRecording({
+                speechDetected,
+                silenceMs: now - lastVoiceAt,
+                elapsedMs: now - recordingStart,
+              })) activeRecorder.stop();
+            });
+            window.setTimeout(() => {
+              if (voiceSession.current === session && activeRecorder.state === "recording") activeRecorder.stop();
+            }, MAX_JARVIS_RECORDING_MS);
+            return;
+          }
+        }
+
+        // Legacy fallback only for browsers with no usable MediaRecorder.
+        // SpeechRecognition is NOT the main capture path on iOS/Android.
+        const recognition = getRecognition();
+        if (!recognition) {
+          stopMeter();
+          setVoice("unavailable");
+          setVoiceMessage(t.micUnsupported);
+          return;
+        }
+        startMeter(stream);
         recRef.current = recognition;
         recognition.lang = locale === "en" ? "en-GB" : "pt-PT";
         recognition.interimResults = false;
         recognition.continuous = false;
         let transcript = "";
         let errored = false;
-        recognition.onresult = (event) => {
-          transcript = Array.from(event.results).map((result) => result[0]?.transcript ?? "").join(" ");
+        recognition.onresult = event => {
+          transcript = Array.from(event.results).map(result => result[0]?.transcript ?? "").join(" ");
         };
-        recognition.onerror = (event) => {
+        recognition.onerror = event => {
           errored = true;
           recRef.current = null;
           stopMeter();
@@ -728,71 +830,61 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           recRef.current = null;
           void handleSpeech(transcript, session);
         };
-        try { recognition.start(); return; }
-        catch { recRef.current = null; }
-      }
-
-      // MediaRecorder + server-side Gemini transcription for browsers without SpeechRecognition.
-      if (typeof MediaRecorder === "undefined") throw new Error("recording-not-supported");
-      const supported = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg"]
-        .find((type) => MediaRecorder.isTypeSupported(type));
-      if (!supported) throw new Error("recording-not-supported");
-      const recorder = new MediaRecorder(stream, { mimeType: supported, audioBitsPerSecond: 64000 });
-      recorderRef.current = recorder;
-      const chunks: Blob[] = [];
-      let bytes = 0;
-      recorder.ondataavailable = (event: BlobEvent) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
-          bytes += event.data.size;
-          if (bytes > 2_500_000 && recorder.state === "recording") recorder.stop();
+        try { recognition.start(); }
+        catch {
+          stopMeter();
+          setVoice("unavailable");
+          setVoiceMessage(t.recognitionFailed);
         }
       };
-      recorder.onstop = async () => {
-        recorderRef.current = null;
-        stopMeter();
-        if (voiceSession.current !== session) return;
-        if (bytes === 0 || bytes > 2_500_000) {
-          setVoice("unavailable");
-          setVoiceMessage(t.invalidRecording);
+
+      // Explicit experimental opt-in only. Production defaults to the reliable recorded-turn
+      // transport even when the old VITE_JARVIS_LIVE_ENABLED flag remains configured.
+      if (import.meta.env["VITE_JARVIS_VOICE_ENGINE"] === "live" &&
+          import.meta.env["VITE_JARVIS_LIVE_ENABLED"] === "true") {
+        const live = await import("@/lib/jarvis/live-browser")
+          .then(({ connectJarvisLive }) => connectJarvisLive(stream, {
+            onState: next => { if (voiceSession.current === session) setVoice(next); },
+            onUserTranscript: text => {
+              if (voiceSession.current === session) convo.remember("user", text);
+            },
+            onAssistantTranscript: text => {
+              if (voiceSession.current === session) convo.remember("assistant", text);
+            },
+            onError: message => {
+              if (voiceSession.current !== session) return;
+              liveRef.current?.stop();
+              liveRef.current = null;
+              if (stream.getTracks().some(track => track.readyState === "live")) {
+                setVoiceMessage(null);
+                setVoice("listening");
+                beginRecordedTurn();
+              } else {
+                stopMeter();
+                setVoice("unavailable");
+                setVoiceMessage(message);
+              }
+            },
+          }, locale)).catch(() => null);
+        if (voiceSession.current !== session) {
+          live?.stop();
+          stream.getTracks().forEach(track => track.stop());
           return;
         }
-        setVoice("processing");
-        const blob = new Blob(chunks, { type: supported });
-        const mimeType = supported.split(";")[0] || "audio/webm";
-        try {
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
-            reader.onerror = () => reject(new Error("read-failed"));
-            reader.readAsDataURL(blob);
-          });
-          if (voiceSession.current !== session) return;
-          const result = await transcribe({
-            data: { base64, mimeType: mimeType as "audio/webm" | "audio/mp4" | "audio/ogg", locale },
-          });
-          if (voiceSession.current !== session) return;
-          if (result.transcript) void handleSpeech(result.transcript, session);
-          else {
-            setVoice("unavailable");
-            setVoiceMessage(result.error || t.recognitionEmpty);
-          }
-        } catch {
-          if (voiceSession.current === session) {
-            setVoice("unavailable");
-            setVoiceMessage(t.transcriptionFailed);
-          }
+        if (live) {
+          liveRef.current = live;
+          startMeter(stream);
+          return;
         }
-      };
-      recorder.start(250);
-      window.setTimeout(() => {
-        if (voiceSession.current === session && recorder.state === "recording") recorder.stop();
-      }, 15_000);
-    } catch {
+      }
+      beginRecordedTurn();
+    } catch (error) {
       stopMeter();
       if (voiceSession.current !== session) return;
+      const name = error instanceof Error ? error.name : "";
       setVoice("unavailable");
-      setVoiceMessage(t.micFailed);
+      setVoiceMessage(name === "NotAllowedError" || name === "SecurityError" ?
+        t.micPermission : name === "NotFoundError" ? t.micUnsupported : t.micFailed);
     }
   };
 
