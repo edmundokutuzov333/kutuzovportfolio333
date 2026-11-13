@@ -536,8 +536,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
 
   /** Cloud Orus is preferred for a consistent male voice; device speech is a nonblocking fallback. */
   const speak = async (text: string, session: number, onFinished?: () => void) => {
-    const finish = () => {
-      if (voiceSession.current !== session) return;
+    const finish = (failed = false) => {
+      if (voiceSession.current !== session || failed) return;
       if (onFinished) onFinished();
       else setVoice("idle");
     };
@@ -547,7 +547,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
-          finish();
+          finish(true);
         }
         return;
       }
@@ -571,7 +571,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       if (!selected) {
         setVoice("unavailable");
         setVoiceMessage(describeVoiceFallback(voices, locale) ?? t.maleVoiceUnavailable);
-        finish();
+        finish(true);
         return;
       }
       const utterance = new SpeechSynthesisUtterance(spokenJarvisText(text, locale));
@@ -584,7 +584,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
-          finish();
+          finish(true);
         }
       };
       try {
@@ -595,7 +595,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current === session) {
           setVoice("unavailable");
           setVoiceMessage(t.audioFailed);
-          finish();
+          finish(true);
         }
       }
     };
