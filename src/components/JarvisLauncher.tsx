@@ -755,7 +755,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         </header>
         <main className="jv-main">
           <section className="jv-panel" aria-labelledby="jv-title">
-            <p className="jv-eyebrow">KUTUZOV · IA DE EDMUNDO</p>
+            <p className="jv-eyebrow">ASSISTENTE DE IA DO E. KUTUZOV</p>
             <h1 id="jv-title">Estou por aqui.</h1>
             <p className="jv-description">Fala comigo. Explora o meu trabalho. Abre uma janela para cada ideia.</p>
             <JarvisVoiceVisual voice={voice} onToggle={() => { void startVoice(); }} visualRef={visualRef} />
@@ -773,7 +773,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
           </section>
         </main>
         <footer className="jv-footer">
-          <span>PREFERE FALAR COM O EDMUNDO REAL?</span>
+          <span>PREFERE FALAR COM O KUTUZOV REAL?</span>
           <nav aria-label="Contactos" className="jv-footer__links">
             {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer">WHATSAPP ↗</a>}
             <Link to="/contact" onClick={close}>ENVIAR BRIEFING →</Link>
@@ -887,7 +887,7 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
             <div className="jv-chat-welcome">
               <p className="jv-chat-available"><span /> DISPONÍVEL</p>
               <h3>Olá. Sou o JARVIS.</h3>
-              <p className="jv-chat-intro">Sou a versão IA do Edmundo. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
+              <p className="jv-chat-intro">Sou a versão IA do Kutuzov. Pergunta-me sobre o meu trabalho, as marcas com que colaborei ou como podemos criar juntos.</p>
               <div className="jv-suggestions">
                 {SUGGESTIONS.map((suggestion) => (
                   <button key={suggestion.id} type="button" disabled={convo.pending}
