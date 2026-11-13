@@ -6,10 +6,10 @@ import { splitVoiceSegments } from "@/lib/jarvis/voice-chunks";
 describe("JARVIS low-latency audio without losing user speech", () => {
   it("ends after shorter silence for established speech, but tolerates short-question pauses", () => {
     expect(shouldEndRecording({speechDetected:false,silenceMs:10_000,elapsedMs:10_000})).toBe(false);
-    expect(shouldEndRecording({speechDetected:true,silenceMs:1000,elapsedMs:1800})).toBe(false);
-    expect(shouldEndRecording({speechDetected:true,silenceMs:1300,elapsedMs:1800})).toBe(true);
-    expect(shouldEndRecording({speechDetected:true,silenceMs:950,elapsedMs:3500})).toBe(true);
-    expect(shouldEndRecording({speechDetected:true,silenceMs:800,elapsedMs:3500})).toBe(false);
+    expect(shouldEndRecording({speechDetected:true,silenceMs:850,elapsedMs:1800})).toBe(false);
+    expect(shouldEndRecording({speechDetected:true,silenceMs:920,elapsedMs:1800})).toBe(true);
+    expect(shouldEndRecording({speechDetected:true,silenceMs:720,elapsedMs:3500})).toBe(true);
+    expect(shouldEndRecording({speechDetected:true,silenceMs:650,elapsedMs:3500})).toBe(false);
   });
 
   it("splits natural speech into bounded ordered pieces without dropping information", () => {

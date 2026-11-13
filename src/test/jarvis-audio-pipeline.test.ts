@@ -16,7 +16,9 @@ describe("Jarvis microphone transport", () => {
 
   it("waits for natural speech pauses, with bounded recording and request sizes", () => {
     expect(shouldEndRecording({ speechDetected: false, silenceMs: 9999, elapsedMs: 9999 })).toBe(false);
-    expect(shouldEndRecording({ speechDetected: true, silenceMs: 900, elapsedMs: 2500 })).toBe(false);
+    expect(shouldEndRecording({ speechDetected: true, silenceMs: 850, elapsedMs: 2500 })).toBe(false);
+    expect(shouldEndRecording({ speechDetected: true, silenceMs: 910, elapsedMs: 2500 })).toBe(true);
+    expect(shouldEndRecording({ speechDetected: true, silenceMs: 710, elapsedMs: 3300 })).toBe(true);
     expect(shouldEndRecording({ speechDetected: true, silenceMs: 2000, elapsedMs: 3000 })).toBe(true);
     expect(MAX_JARVIS_RECORDING_MS).toBeGreaterThanOrEqual(15_000);
     expect(MAX_JARVIS_AUDIO_BYTES).toBeLessThan(3_000_000);

@@ -263,7 +263,7 @@ export async function transcribeJarvis(base64: string, mimeType: string, locale:
         ? "Transcribe exactly the spoken words in their original language. Do not translate or invent words."
         : "Transcreve fielmente apenas as palavras ditas no idioma original. Não traduas nem inventes palavras." },
       { inline_data: { mime_type: mimeType, data: base64 } },
-    ] }], generationConfig: { temperature: 0, maxOutputTokens: 350 } }),
+    ] }], generationConfig: { temperature: 0, maxOutputTokens: 220, thinkingConfig: { thinkingLevel: "MINIMAL" } } }),
     signal: AbortSignal.timeout(16_000),
   });
   if (!result.ok) return { reply: null, error: t.transcriptionFailed };

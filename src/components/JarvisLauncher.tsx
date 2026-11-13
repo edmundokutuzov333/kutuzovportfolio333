@@ -6,6 +6,7 @@ import { EKMark } from "./EKMark";
 import { DirectionIcon } from "./DirectionIcon";
 import { askJarvis } from "@/lib/jarvis.functions";
 import { MAX_JARVIS_AUDIO_BYTES, MAX_JARVIS_RECORDING_MS, normalizedAudioMime, preferredRecordingMime, shouldEndRecording } from "@/lib/jarvis/audio-capture";
+import { JARVIS_PCM_SAMPLE_RATE, parseSseData, pcmBytesFromBase64, pcmToFloat32, takeSseEvents } from "@/lib/jarvis/pcm-stream";
 import { splitVoiceSegments } from "@/lib/jarvis/voice-chunks";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
@@ -351,6 +352,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const liveRef = useRef<{stop:()=>void} | null>(null);
   const playbackContextRef = useRef<AudioContext | null>(null);
   const playbackSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const playbackNodesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const ttsAbortRef = useRef<AbortController | null>(null);
   const transcriptionAbortRef = useRef<AbortController | null>(null);
   const voiceSession = useRef(0);
@@ -434,6 +436,10 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     ttsAbortRef.current=null;
     transcriptionAbortRef.current?.abort();
     transcriptionAbortRef.current=null;
+    for (const node of playbackNodesRef.current) {
+      try { node.stop(); } catch { /* Already completed. */ }
+    }
+    playbackNodesRef.current.clear();
     if (playbackSourceRef.current) {
       try { playbackSourceRef.current.stop(); } catch { /* Already completed. */ }
       playbackSourceRef.current = null;
@@ -527,6 +533,10 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     stopMeter();
     ttsAbortRef.current?.abort();
     transcriptionAbortRef.current?.abort();
+    for (const node of playbackNodesRef.current) {
+      try { node.stop(); } catch { /* Already stopped. */ }
+    }
+    playbackNodesRef.current.clear();
     if (playbackSourceRef.current) {
       try { playbackSourceRef.current.stop(); } catch { /* Already stopped. */ }
     }
@@ -603,7 +613,97 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     const controller = new AbortController();
     ttsAbortRef.current = controller;
     setVoice("processing");
+
+    // Prefer low-latency PCM chunks, preserving the existing WAV endpoint when
+    // the provider or browser cannot stream. Never replay already-heard audio.
+    const streamPcm = async (): Promise<boolean> => {
+      const response = await fetch("/api/jarvis/tts-stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
+        credentials: "same-origin",
+        body: JSON.stringify({ text: text.slice(0, 650), locale }),
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.body ||
+          !response.headers.get("content-type")?.includes("text/event-stream")) {
+        throw new Error("tts_stream_unavailable");
+      }
+      const context = playbackContextRef.current;
+      if (!context || context.state === "closed") throw new Error("missing_audio_context");
+      if (context.state !== "running") await context.resume();
+      if (context.state !== "running") throw new Error("audio_context_suspended");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let nextAudioTime = context.currentTime;
+      let lastPlaybackEnd: Promise<void> = Promise.resolve();
+      let playedAny = false;
+      let streamFailed = false;
+      const schedule = (base64: string) => {
+        const bytes = pcmBytesFromBase64(base64);
+        const floats = bytes ? pcmToFloat32(bytes) : null;
+        if (!floats || !floats.length || voiceSession.current !== session || controller.signal.aborted) return;
+        const audio = context.createBuffer(1, floats.length, JARVIS_PCM_SAMPLE_RATE);
+        audio.copyToChannel(new Float32Array(floats), 0);
+        const node = context.createBufferSource();
+        node.buffer = audio;
+        node.connect(context.destination);
+        playbackNodesRef.current.add(node);
+        lastPlaybackEnd = new Promise<void>(resolve => {
+          node.onended = () => {
+            playbackNodesRef.current.delete(node);
+            resolve();
+          };
+        });
+        const when = Math.max(context.currentTime + 0.025, nextAudioTime);
+        nextAudioTime = when + audio.duration;
+        node.start(when);
+        playedAny = true;
+        setVoice("speaking");
+      };
+      const process = (block: string) => {
+        const kind = /^event:\s*(\S+)/m.exec(block)?.[1];
+        const payload = parseSseData(block) as { data?: string } | null;
+        if (kind === "audio" && payload && typeof payload.data === "string") schedule(payload.data);
+        if (kind === "error") streamFailed = true;
+      };
+      try {
+        while (!controller.signal.aborted && voiceSession.current === session) {
+          const packet = await reader.read();
+          if (packet.done) break;
+          buffer += decoder.decode(packet.value, { stream: true });
+          if (buffer.length > 450_000) throw new Error("oversized_stream_chunk");
+          const parsed = takeSseEvents(buffer);
+          buffer = parsed.tail;
+          for (const event of parsed.events) process(event);
+        }
+        if (buffer.trim()) process(buffer);
+      } catch (error) {
+        if (!playedAny) throw error;
+        streamFailed = true;
+      } finally {
+        void reader.cancel().catch(() => {});
+      }
+      if (!playedAny) throw new Error(streamFailed ? "tts_stream_failed" : "tts_stream_empty");
+      if (voiceSession.current !== session || controller.signal.aborted) return true;
+      // Finish after the final scheduled audio block; the next sentence can
+      // then follow without overlapping this one or cutting off its tail.
+      await lastPlaybackEnd;
+      if (streamFailed) console.warn("JARVIS_TTS_STREAM_PARTIAL");
+      return true;
+    };
+
     try {
+      try {
+        if (await streamPcm()) {
+          finish();
+          return;
+        }
+      } catch (error) {
+        if (controller.signal.aborted || voiceSession.current !== session) return;
+        console.warn("JARVIS_PCM_FALLBACK", error instanceof Error ? error.message.slice(0, 48) : "unknown");
+      }
       const response = await fetch("/api/jarvis/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
