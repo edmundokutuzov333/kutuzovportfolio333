@@ -274,8 +274,8 @@ test("JARVIS stays in the site's EN/PT language even when the visitor writes in 
     const payload=route.request().postDataJSON();
     observed.push(payload.locale);
     await route.fulfill({status:200,contentType:"text/event-stream",
-      body:'event: chunk\\ndata: {"text":"Verified response"}\\n\\n'
-        +'event: done\\ndata: {}\\n\\n'});
+      body:'event: chunk\ndata: {"text":"Verified response"}\n\n'
+        +'event: done\ndata: {}\n\n'});
   });
   await page.goto("/",{waitUntil:"domcontentloaded"});
   await expect(page.locator("html")).toHaveAttribute("data-jarvis-ready","true",{timeout:30_000});
