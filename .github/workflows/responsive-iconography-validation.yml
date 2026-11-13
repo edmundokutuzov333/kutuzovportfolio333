@@ -32,3 +32,7 @@ jobs:
           .e2e/node_modules/.bin/playwright install --with-deps chromium
       - name: Browser regressions across public site and iconography
         run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs
+      - name: Install WebKit (Safari engine)
+        run: .e2e/node_modules/.bin/playwright install --with-deps webkit
+      - name: Verify iconography on mobile Safari engine
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.webkit.config.mjs .e2e/tests/responsive-iconography.spec.mjs
