@@ -27,7 +27,7 @@ test("JARVIS keeps the reference voice stage and native pointer navigation", asy
   await expect(chat.locator("h2")).toHaveText("LET'S TALK");
   await expect(chat.locator(".jv-suggestions button")).toHaveCount(3);
   await expect(chat.locator("#jv-input")).toBeFocused();
-  await expect(chat.getByRole("button", { name: "Mudar para conversa por voz" })).toHaveCount(0);
+  await expect(chat.getByRole("button", { name: "Switch to voice chat" })).toHaveCount(0);
 
   await page.keyboard.press("Escape");
   await expect(chat).toHaveCount(0);
@@ -245,7 +245,7 @@ test("JARVIS never submits a lead before explicit consent and DB acknowledgement
   await expect(form.getByRole("button",{name:"Send brief"})).toBeDisabled();
   expect(submissions).toBe(0);
   await form.getByLabel("Name").fill("Teste de Interface");
-  await form.getByLabel("Email ou WhatsApp").fill("teste@example.net");
+  await form.getByLabel("Email or WhatsApp").fill("teste@example.net");
   await form.getByLabel("Project overview").fill("Identidade visual para campanha.");
   await form.getByRole("checkbox").check();
   await form.getByRole("button",{name:"Send brief"}).click();
