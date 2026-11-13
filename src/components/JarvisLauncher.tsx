@@ -964,13 +964,12 @@ function ChatWindow({ convo, onClose, onCloseAll }: {
                   event.preventDefault(); void submit();
                 }
               }}
-              placeholder="Escreva-me uma mensagem…" aria-describedby="jv-privacy" />
+              placeholder="Escreva-me uma mensagem…" />
             <button type="submit" className="jv-chat-send" aria-label="Enviar mensagem"
               disabled={!draft.trim() || convo.pending}>
               {convo.pending ? <span className="jv-chat-spinner" /> : <Send size={22} strokeWidth={1.8} />}
             </button>
           </div>
-          <p id="jv-privacy" className="jv-privacy-note">IA Google Gemini · Registos sem emails, telefones ou links.</p>
           </div>
         </form>
       </section>
