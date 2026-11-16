@@ -63,7 +63,7 @@ function isTemporaryBackendFailure(status: number): boolean {
   return status === 402 || status === 408 || status === 429 || status >= 500;
 }
 
-async function usePublishedFallback(
+async function loadPublishedFallback(
   table: PublicCmsTable,
   query: Record<string, string>,
   reason: string,
@@ -83,7 +83,7 @@ export async function selectPublicRows(
   query: Record<string, string>,
 ): Promise<unknown[]> {
   if (Date.now() < temporarilyUnavailableUntil) {
-    return usePublishedFallback(table, query, "circuit-breaker", false);
+    return loadPublishedFallback(table, query, "circuit-breaker", false);
   }
 
   const url = new URL(`/rest/v1/${table}`, SUPABASE_URL);
@@ -102,12 +102,12 @@ export async function selectPublicRows(
       },
     });
   } catch {
-    return usePublishedFallback(table, query, "network/timeout");
+    return loadPublishedFallback(table, query, "network/timeout");
   }
 
   if (!response.ok) {
     if (isTemporaryBackendFailure(response.status)) {
-      return usePublishedFallback(table, query, `HTTP ${response.status}`);
+      return loadPublishedFallback(table, query, `HTTP ${response.status}`);
     }
     // Never obscure real authorization, schema or configuration errors.
     throw new CmsRequestError(table, response.status);
@@ -115,9 +115,9 @@ export async function selectPublicRows(
 
   try {
     const payload: unknown = await response.json();
-    if (!Array.isArray(payload)) return usePublishedFallback(table, query, "invalid array response");
+    if (!Array.isArray(payload)) return loadPublishedFallback(table, query, "invalid array response");
     return payload;
   } catch {
-    return usePublishedFallback(table, query, "invalid JSON response");
+    return loadPublishedFallback(table, query, "invalid JSON response");
   }
 }
