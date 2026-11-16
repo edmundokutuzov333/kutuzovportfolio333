@@ -157,7 +157,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     }
     const element = document.elementFromPoint(event.clientX, event.clientY);
     const target = element?.closest<HTMLElement>("[data-project-sort-id]");
-    const targetId = target?.dataset.projectSortId;
+    const targetId = target?.dataset["projectSortId"];
     if (targetId && targetId !== active.id) moveTo(active.id, order.indexOf(targetId));
   }
 
