@@ -374,6 +374,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const [organizingProjects, setOrganizingProjects] = useState(false);
   const [organizingDirty, setOrganizingDirty] = useState(false);
   const [lastPublishedOrder, setLastPublishedOrder] = useState<{ before: string[]; after: string[] } | null>(null);
+  const [lastKnownPublicProjects, setLastKnownPublicProjects] = useState<Row[]>([]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -395,6 +396,24 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const fields = active.fields ?? [];
   const tableState = active.table ? workspace?.tables[active.table] : undefined;
   const tableRows = useMemo(() => tableState?.rows ?? [], [tableState]);
+  // If the CMS is temporarily blocked, show ONLY an explicitly read-only copy
+  // of already-public project entries, never private/draft/archived data.
+  useEffect(() => {
+    if (!workspace?.tables["projects"]?.error) {
+      setLastKnownPublicProjects([]);
+      return;
+    }
+    let active = true;
+    void import("@/data/public-cms-snapshot.json")
+      .then(module => {
+        if (!active) return;
+        const records = module.default.tables.projects as unknown as Row[];
+        setLastKnownPublicProjects(records);
+      })
+      .catch(() => { if (active) setLastKnownPublicProjects([]); });
+    return () => { active = false; };
+  }, [workspace?.tables["projects"]?.error]);
+
   const sectionsPage = workspace?.tables["pages"]?.rows ?? [];
   const projectOrderRows = useMemo<ProjectOrderRecord[]>(() =>
     (workspace?.tables["projects"]?.rows ?? []).map(row => ({
@@ -972,6 +991,22 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
               ) : null}
             </div>
 
+            {tableState?.error && !loadError ? (
+              <div role="alert" className="mb-5 rounded-xl border border-[#d9b789] bg-[#fff8ec] p-4 text-sm text-[#684719] shadow-sm sm:p-5">
+                <p className="font-semibold">CMS temporariamente indisponível — acesso ao Admin preservado</p>
+                <p className="mt-2 leading-6">{tableState.error}</p>
+                {activeId === "projects" && lastKnownPublicProjects.length > 0 ? (
+                  <p className="mt-2 font-medium">Em baixo pode consultar {lastKnownPublicProjects.length} trabalhos publicados guardados na última cópia de segurança pública. Este modo é apenas de leitura: editar, arquivar e publicar estão desactivados até o Supabase recuperar.</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => void refresh()} disabled={loading || saving}
+                    className="rounded-lg border border-[#d5b581] bg-white px-3 py-2 text-xs font-semibold hover:bg-[#fff0d6] disabled:opacity-40">Verificar novamente</button>
+                  <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center rounded-lg border border-[#d5b581] bg-white px-3 py-2 text-xs font-semibold hover:bg-[#fff0d6]">Consultar Supabase</a>
+                </div>
+              </div>
+            ) : null}
+
             {loadError ? (
               <div role="alert" className="rounded-xl border border-[#e8b4ae] bg-[#fff3f1] p-5 text-sm text-[#8a2a20]">
                 <p className="font-semibold">Não foi possível abrir o espaço editorial.</p><p className="mt-1">{loadError}</p>
@@ -1075,8 +1110,8 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
               </div>
             ) : activeId === "projects" || activeId === "archived" ? (
               <ProjectGrid
-                records={records}
-                saving={saving}
+                records={tableState?.error && activeId === "projects" ? lastKnownPublicProjects : records}
+                saving={saving || !!tableState?.error}
                 onEdit={startEdit}
                 onMove={(index, direction) => void moveRecord(index, direction)}
                 onToggleFeatured={(row) => void toggleFeatured(row)}
