@@ -71,7 +71,10 @@ async function handleBackblazeMedia(request: Request): Promise<Response | null> 
   const config = getBackblazeConfig();
   const key = decodeURIComponent(url.pathname.slice(prefix.length)).replace(/^\/+/, "");
   if (!config || !key || key.includes("..")) return new Response("Not found", { status: 404 });
-  const response = await fetch(createBackblazeDownloadUrl(config, key), { method: request.method, cache: "no-store" });
+  // Backblaze's S3-compatible download endpoint is reliable for GET but may
+  // reject a signed HEAD request. Fetch the object headers through GET and
+  // suppress the body for the public HEAD response.
+  const response = await fetch(createBackblazeDownloadUrl(config, key), { method: "GET", cache: "no-store" });
   if (!response.ok) return new Response("Media unavailable", { status: response.status === 404 ? 404 : 502 });
   const headers = new Headers();
   for (const name of ["content-type", "content-length", "etag", "last-modified"]) {

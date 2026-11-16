@@ -7,42 +7,24 @@ const assetOrigin =
   process.env.PUBLIC_ASSET_ORIGIN?.trim() || "https://edmundokutuzov.art";
 
 const snapshot = JSON.parse(await readFile(path.join(root, "src/data/public-cms-snapshot.json"), "utf8"));
+const mediaManifest = JSON.parse(await readFile(path.join(root, "src/data/portfolio-media-manifest.json"), "utf8"));
 const projects = snapshot.tables.projects.filter((project) => project.status === "published");
 const normaliseVideo = (value) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const localImage = (alt) => {
-  if (alt === "POST 4 Wash & Go") return "POST_4-WASH&GO.webp";
-  if (alt === "01_MAY_BELA.webp") return " 01_MAY_BELA.webp";
-  const key = normaliseVideo(alt);
-  const aliases = {
-    "07-04-dia-da-mulher-mocambicana-version-1-webp": "alias-07-04-dia-da-mulher-mocambicana-version-1.webp",
-    "2026-instalacao-concluida-webmasters-webp": "alias-2026-instalacao-concluida-webmasters.webp",
-    "22-01-opcao-2-webp": "alias-22-01-opcao-2.webp",
-    "22-01-opcao-1-webp": "alias-22-01-opcao-1.webp",
-    "a-fisica-nao-mente-a-fibra-e-mais-rapida-do-que-o-espaco-webmasters-webp": "alias-a-fisica-nao-mente.webp",
-    "dia-dos-herois-mocambicanos-webmasters-webp": "alias-dia-dos-herois-mocambicanos.webp",
-    "espirito-festivo-webmasters-webp": "alias-espirito-festivo.webp",
-    "sm-webmasters-para-ver-jogar-e-trabalhar-sem-travoes-copy-2-webp": "alias-sm-webmasters-sem-travoes.webp",
-    "social-media-espirito-festivo-webp": "alias-social-media-espirito-festivo.webp",
-    "sao-votos-de-boas-entradas-e-boas-saidas-webmasters-webp": "alias-sao-votos-de-boas-entradas.webp",
-    "servimos-lhe-a-melhor-velocidade-ao-melhor-preco-webmasters-2026-webp": "alias-servimos-lhe-a-melhor-velocidade.webp",
-    "vivo-dia-dos-avos-webp": "alias-vivo-dia-dos-avos.webp",
-    "faca-actualizacoes-fora-do-pico-e-pare-de-sofrer-webmasters-2026-webp": "alias-faca-actualizacoes-fora-do-pico.webp",
-    "kv-a-depressao-e-real-webp": "alias-kv-a-depressao-e-real.webp",
-    "concurso-p-impressao-a6-webp": "alias-concurso-kitkat-a6.webp",
-    "concurso-p-impressao-a6-verso-webp": "alias-concurso-kitkat-a6-verso.webp",
-    "outdoor-1-diga-yes-campaign-copia-jpg": "alias-outdoor-diga-yes.jpg",
-  };
-  return aliases[key] || alt;
+const localImage = (alt, discipline) => mediaManifest[alt] || mediaManifest[`${discipline || ""}::${alt}`] || null;
+const imageUrl = (alt, discipline) => {
+  const relative = localImage(alt, discipline);
+  if (!relative) throw new Error(`No repository manifest entry for image: ${alt}`);
+  return `/portfolio-media/${relative.split("/").map(encodeURIComponent).join("/")}`;
 };
 
 const artwork = projects.flatMap((project) => [
   ...(typeof project.cover_path === "string" && project.cover_path.trim()
-    ? [{ slug: project.slug, source: /\.(mp4|webm|mov)(\?|$)/i.test(project.cover_path) ? `/api/media/portfolio/2026/video/${normaliseVideo(project.cover_alt || project.slug)}.mp4` : `/portfolio-media/${encodeURIComponent(localImage(project.cover_alt || project.slug))}` }]
+    ? [{ slug: project.slug, source: /\.(mp4|webm|mov)(\?|$)/i.test(project.cover_path) ? `/api/media/portfolio/2026/video/${normaliseVideo(project.cover_alt || project.slug)}.mp4` : imageUrl(project.cover_alt || project.slug, project.discipline) }]
     : []),
   ...(Array.isArray(project.gallery)
     ? project.gallery
         .filter((source) => typeof source === "string" && source.trim())
-        .map((source, index) => ({ slug: project.slug, source: /\.(mp4|webm|mov)(\?|$)/i.test(source) ? `/api/media/portfolio/2026/video/${normaliseVideo(project.gallery_alt?.[index] || project.slug)}.mp4` : `/portfolio-media/${encodeURIComponent(localImage(project.gallery_alt?.[index] || project.slug))}` }))
+        .map((source, index) => ({ slug: project.slug, source: /\.(mp4|webm|mov)(\?|$)/i.test(source) ? `/api/media/portfolio/2026/video/${normaliseVideo(project.gallery_alt?.[index] || project.slug)}.mp4` : imageUrl(project.gallery_alt?.[index] || project.slug, project.discipline) }))
     : []),
 ]);
 

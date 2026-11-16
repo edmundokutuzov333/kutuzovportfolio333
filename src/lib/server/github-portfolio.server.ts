@@ -1,4 +1,5 @@
 import { getAdminServerContext } from "./admin-auth.server";
+import mediaManifest from "@/data/portfolio-media-manifest.json";
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 export type PortfolioRow = { [key: string]: JsonValue };
@@ -60,14 +61,24 @@ function stamp(row: PortfolioRow, timestamp: string): PortfolioRow {
   const gallery = Array.isArray(row["gallery"]) ? row["gallery"] as JsonValue[] : [];
   const galleryAlt = Array.isArray(row["gallery_alt"]) ? row["gallery_alt"] as JsonValue[] : [];
   const localName = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const discipline = typeof row["discipline"] === "string" ? row["discipline"] : "";
   const media = (value: JsonValue, alt: JsonValue | undefined): JsonValue => {
     if (typeof value !== "string" || typeof alt !== "string") return value;
     if (/\.(mp4|webm|mov)(\?|$)/i.test(value)) return `/api/media/portfolio/2026/video/${encodeURIComponent(localName(alt))}.mp4`;
-    if (alt === "POST 4 Wash & Go") return "/portfolio-media/POST_4-WASH&GO.webp";
-    if (alt === "01_MAY_BELA.webp") return "/portfolio-media/%2001_MAY_BELA.webp";
-    return `/portfolio-media/${encodeURIComponent(alt)}`;
+    const relative = (mediaManifest as Record<string, string>)[String(alt)]
+      ?? (mediaManifest as Record<string, string>)[`${discipline}::${String(alt)}`];
+    return relative
+      ? `/portfolio-media/${relative.split("/").map(encodeURIComponent).join("/")}`
+      : value;
   };
-  return { ...row, gallery: gallery.map((value, index) => media(value, galleryAlt[index])), updated_at: timestamp };
+  const coverAlt = row["cover_alt"];
+  const cover = row["cover_path"] ?? null;
+  return {
+    ...row,
+    gallery: gallery.map((value, index) => media(value, galleryAlt[index])),
+    cover_path: media(cover, coverAlt),
+    updated_at: timestamp,
+  };
 }
 
 export async function loadGitHubProjects(): Promise<PortfolioRow[]> {
@@ -76,17 +87,19 @@ export async function loadGitHubProjects(): Promise<PortfolioRow[]> {
   return (snapshot.tables["projects"] as PortfolioRow[]).map(row => stamp(row, timestamp));
 }
 
-export async function uploadGitHubPortfolioImage(input: { originalName: string; contentType: string; base64: string }) {
+export async function uploadGitHubPortfolioImage(input: { originalName: string; contentType: string; base64: string; category?: string | undefined }) {
   await getAdminServerContext();
   if (!/^image\/(png|jpeg|webp)$/.test(input.contentType)) throw new GitHubPortfolioError("As imagens do portfolio devem ser PNG, JPG ou WebP.", "invalid");
   const originalName = input.originalName.replace(/[\\/]/g, "_").trim();
   if (!originalName || originalName.length > 180 || !/\.(png|jpe?g|webp)$/i.test(originalName)) throw new GitHubPortfolioError("O nome da imagem não é válido.", "invalid");
   if (!input.base64 || input.base64.length > 30 * 1024 * 1024) throw new GitHubPortfolioError("A imagem excede o limite seguro de upload.", "invalid");
-  const path = `public/portfolio-media/${originalName}`;
+  const category = input.category?.trim().replace(/[^a-z0-9-]/gi, "").toLowerCase() || "social-media";
+  const safeCategory = ["campaign-design", "manipulation", "social-media", "some-dezaines"].includes(category) ? category : "social-media";
+  const path = `public/portfolio-media/${safeCategory}/${originalName}`;
   let sha: string | undefined;
   try { sha = (await github<{ sha: string }>(`/repos/${OWNER}/${REPO}/contents/${path}?ref=${encodeURIComponent(BRANCH)}`)).sha; } catch { /* new file */ }
   await github(`/repos/${OWNER}/${REPO}/contents/${path}`, { method: "PUT", body: JSON.stringify({ message: `admin: upload portfolio image ${originalName}`, content: input.base64, ...(sha ? { sha } : {}), branch: BRANCH }) });
-  return { publicUrl: `/portfolio-media/${encodeURIComponent(originalName)}`, path };
+  return { publicUrl: `/portfolio-media/${safeCategory}/${encodeURIComponent(originalName)}`, path };
 }
 
 export async function mutateGitHubProject(input: {

@@ -592,7 +592,9 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
             const bytes = new Uint8Array(await file.arrayBuffer());
             let binary = "";
             for (let index = 0; index < bytes.length; index += 0x8000) binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
-            const uploaded = await uploadGitHubPortfolioImageFn({ data: { originalName: file.name, contentType, base64: btoa(binary) } }) as { publicUrl: string };
+            const discipline = asText(payload["discipline"]).toLowerCase();
+            const category = discipline.includes("campaign") ? "campaign-design" : discipline.includes("manipulation") ? "manipulation" : discipline.includes("some") ? "some-dezaines" : "social-media";
+            const uploaded = await uploadGitHubPortfolioImageFn({ data: { originalName: file.name, contentType, base64: btoa(binary), category } }) as { publicUrl: string };
             uploadedPaths.push(uploaded.publicUrl);
             continue;
           }

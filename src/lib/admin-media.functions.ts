@@ -34,6 +34,7 @@ const githubImageInput = z.object({
   originalName: z.string().trim().min(1).max(180),
   contentType: z.enum(["image/png", "image/jpeg", "image/webp"]),
   base64: z.string().min(1).max(30 * 1024 * 1024),
+  category: z.enum(["campaign-design", "manipulation", "social-media", "some-dezaines"]).optional(),
 }).strict();
 
 export const uploadGitHubPortfolioImageFn = createServerFn({ method: "POST" })
