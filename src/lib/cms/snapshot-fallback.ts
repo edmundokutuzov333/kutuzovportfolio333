@@ -12,6 +12,27 @@ function localMediaName(alt: string): string {
   // Keep the repository asset lookup tolerant of the one legacy filename that
   // was imported with a leading space on disk.
   if (alt === "01_MAY_BELA.webp") return " 01_MAY_BELA.webp";
+  const aliases: Record<string, string> = {
+    "07-04-dia-da-mulher-mocambicana-version-1-webp": "alias-07-04-dia-da-mulher-mocambicana-version-1.webp",
+    "2026-instalacao-concluida-webmasters-webp": "alias-2026-instalacao-concluida-webmasters.webp",
+    "22-01-opcao-2-webp": "alias-22-01-opcao-2.webp",
+    "22-01-opcao-1-webp": "alias-22-01-opcao-1.webp",
+    "a-fisica-nao-mente-a-fibra-e-mais-rapida-do-que-o-espaco-webmasters-webp": "alias-a-fisica-nao-mente.webp",
+    "dia-dos-herois-mocambicanos-webmasters-webp": "alias-dia-dos-herois-mocambicanos.webp",
+    "espirito-festivo-webmasters-webp": "alias-espirito-festivo.webp",
+    "sm-webmasters-para-ver-jogar-e-trabalhar-sem-travoes-copy-2-webp": "alias-sm-webmasters-sem-travoes.webp",
+    "social-media-espirito-festivo-webp": "alias-social-media-espirito-festivo.webp",
+    "sao-votos-de-boas-entradas-e-boas-saidas-webmasters-webp": "alias-sao-votos-de-boas-entradas.webp",
+    "servimos-lhe-a-melhor-velocidade-ao-melhor-preco-webmasters-2026-webp": "alias-servimos-lhe-a-melhor-velocidade.webp",
+    "vivo-dia-dos-avos-webp": "alias-vivo-dia-dos-avos.webp",
+    "faca-actualizacoes-fora-do-pico-e-pare-de-sofrer-webmasters-2026-webp": "alias-faca-actualizacoes-fora-do-pico.webp",
+    "kv-a-depressao-e-real-webp": "alias-kv-a-depressao-e-real.webp",
+    "concurso-p-impressao-a6-webp": "alias-concurso-kitkat-a6.webp",
+    "concurso-p-impressao-a6-verso-webp": "alias-concurso-kitkat-a6-verso.webp",
+    "outdoor-1-diga-yes-campaign-copia-jpg": "alias-outdoor-diga-yes.jpg",
+  };
+  const alias = aliases[localVideoName(alt)];
+  if (alias) return alias;
   return alt;
 }
 
