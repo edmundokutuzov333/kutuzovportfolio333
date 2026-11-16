@@ -1,5 +1,5 @@
 {
-  "snapshot_generated_at": "2026-11-16T13:49:47.337Z",
+  "snapshot_generated_at": "2026-11-16T13:57:18.695Z",
   "source": "Public CMS rows only; used when the live Supabase public API is unavailable",
   "tables": {
     "pages": [
@@ -1544,7 +1544,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 1,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -1555,7 +1555,8 @@
           "8th march WEBMASTERS.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "8e7c8293-39b5-499f-87cf-73ad3500c1c5",
@@ -1700,7 +1701,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 31,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -1711,7 +1712,8 @@
           "Champion - Webmasters 2026.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "2151804a-f5b1-440c-a6c6-27683c90a108",
@@ -2429,7 +2431,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 13,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -2440,7 +2442,8 @@
           "SM_WEBMASTERS_Para ver, jogar e trabalhar sem travões. copy 2.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "6cb0c5a6-5d00-4814-ab13-d2e7f60c99d1",
@@ -2481,7 +2484,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 58,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -2492,7 +2495,8 @@
           "SPOT_Eid al-Adha.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "7da083a7-b8f0-4233-9142-4bf07db8924c",
@@ -2507,7 +2511,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 59,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -2518,7 +2522,8 @@
           "SUBA DE NIVEL.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "560ad40e-c7b5-4fa3-88c3-172b8769cd2e",
@@ -2559,7 +2564,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 61,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -2570,7 +2575,8 @@
           "Servimos-lhe a melhor velocidade, ao melhor preço. - Webmasters 2026.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "62a363c6-91e1-4bd5-8181-bebfcef4dcc6",
@@ -2715,7 +2721,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 67,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -2726,7 +2732,8 @@
           "VIVO - DIA DOS AVÓS.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "2eb1c157-c4a7-46ff-9382-450aec7c4735",
@@ -3937,7 +3944,7 @@
         ],
         "outcome": "Uma imagem final com impacto de campanha: tecnicamente convincente, emocionalmente directa e capaz de sobreviver fora do contexto original.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 114,
         "challenge": "Fazer uma imagem impossível parecer inevitável: integrar conceito, luz, escala e detalhe numa única leitura visual.",
         "cover_alt": null,
@@ -3948,7 +3955,8 @@
           "280214133_3142217899440478_5024519019607496401_n.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "a37f3dbf-f9e9-4bc9-b586-ba42b5dd43fe",
@@ -3989,7 +3997,7 @@
         ],
         "outcome": "Uma imagem final com impacto de campanha: tecnicamente convincente, emocionalmente directa e capaz de sobreviver fora do contexto original.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 116,
         "challenge": "Fazer uma imagem impossível parecer inevitável: integrar conceito, luz, escala e detalhe numa única leitura visual.",
         "cover_alt": null,
@@ -4000,7 +4008,8 @@
           "298940907_3214568185538782_1410606561122880199_n.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "0840eddb-9715-4c46-8382-6388986b7c20",
@@ -4145,7 +4154,7 @@
         ],
         "outcome": "Uma imagem final com impacto de campanha: tecnicamente convincente, emocionalmente directa e capaz de sobreviver fora do contexto original.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 122,
         "challenge": "Fazer uma imagem impossível parecer inevitável: integrar conceito, luz, escala e detalhe numa única leitura visual.",
         "cover_alt": null,
@@ -4156,7 +4165,8 @@
           "301426885_3228402204155380_4949549521366277449_n.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "1f622275-f1c9-4d5a-9076-8d962250b7a9",
@@ -4301,7 +4311,7 @@
         ],
         "outcome": "Uma imagem final com impacto de campanha: tecnicamente convincente, emocionalmente directa e capaz de sobreviver fora do contexto original.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 6,
         "challenge": "Fazer uma imagem impossível parecer inevitável: integrar conceito, luz, escala e detalhe numa única leitura visual.",
         "cover_alt": null,
@@ -4312,7 +4322,8 @@
           "312219796_508053778000761_4545736806930750922_n.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "8a053e57-d82e-46ae-89ce-296b8805336c",
@@ -4327,7 +4338,7 @@
         ],
         "outcome": "Uma imagem final com impacto de campanha: tecnicamente convincente, emocionalmente directa e capaz de sobreviver fora do contexto original.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 33,
         "challenge": "Fazer uma imagem impossível parecer inevitável: integrar conceito, luz, escala e detalhe numa única leitura visual.",
         "cover_alt": null,
@@ -4338,7 +4349,8 @@
           "DIZER BEM.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "349fcf9d-60c1-41ee-90a4-df9cf560d0c3",
@@ -4405,7 +4417,7 @@
         ],
         "outcome": "Uma imagem final com impacto de campanha: tecnicamente convincente, emocionalmente directa e capaz de sobreviver fora do contexto original.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 130,
         "challenge": "Fazer uma imagem impossível parecer inevitável: integrar conceito, luz, escala e detalhe numa única leitura visual.",
         "cover_alt": null,
@@ -4416,7 +4428,8 @@
           "freepik__retire-o-icone-do-gemini-e-melhore-a-qualidade-par__88920.webp"
         ],
         "client_label": null,
-        "project_type": "image"
+        "project_type": "image",
+        "updated_at": "2026-11-16T13:57:18.695Z"
       },
       {
         "id": "37c61188-8e16-49f3-bbb9-21ef3d83401c",
