@@ -2,10 +2,14 @@ import { Link } from "@tanstack/react-router";
 import type { Project } from "@/lib/cms/types";
 import { ProjectMedia } from "./ProjectMedia";
 
-export function ArtSlot({ project, className }: { project: Project; className?: string }) {
+export function ArtSlot({ project, className, loading = "eager" }: {
+  project: Project;
+  className?: string;
+  loading?: "eager" | "lazy";
+}) {
   if (project.cover) {
     return <ProjectMedia src={project.cover} alt={project.coverAlt || project.title}
-      className={`block h-auto w-full ${className ?? ""}`} loading="eager" />;
+      className={`block h-auto w-full ${className ?? ""}`} loading={loading} />;
   }
   return (
     <div
@@ -24,7 +28,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
     <Link to="/work/$slug" params={{ slug: project.slug }} data-cursor="View" className="group block">
       <div className="overflow-hidden rounded-sm">
         <div className="w-full transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.02]">
-          <ArtSlot project={project} />
+          <ArtSlot project={project} loading={index < 3 ? "eager" : "lazy"} />
         </div>
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-4">
