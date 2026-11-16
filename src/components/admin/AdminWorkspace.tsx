@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
-  Activity, Archive, ArrowDown, ArrowUp, BookOpen, Check, ChevronRight,
+  Activity, Archive, BookOpen, Check, ChevronRight,
   Clock3, Contact, Database, FileImage, FileText, Globe2, History,
   LayoutDashboard, ListOrdered, LogOut, Mail, RefreshCw, Save, Search, Settings2,
   ShieldCheck, Users, BriefcaseBusiness, Layers3, Wrench,
@@ -19,7 +19,7 @@ import type { AdminEntity } from "@/lib/admin-cms.schema";
 import { getRestorableSnapshot } from "@/lib/admin-revisions";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import { ProjectOrderEditor } from "./ProjectOrderEditor";
-import { idsFromProjects, moveProjectId, publishedProjectRows, type ProjectOrderRecord } from "@/lib/admin-project-order";
+import type { ProjectOrderRecord } from "@/lib/admin-project-order";
 import { ContactInboxView as InboxView, EmailOutboxView, MediaLibraryView as MediaView, NewsletterManagementView as NewsletterView } from "@/components/admin/Phase4Modules";
 
 type Row = Record<string, unknown>;
@@ -104,7 +104,7 @@ const MODULES: ModuleDef[] = [
     { key: "page_id", label: "Página", type: "select", required: true },
     { key: "section_key", label: "Chave da secção", required: true },
     { key: "section_type", label: "Tipo suportado", type: "select", required: true, options: homeSectionTypeOptions },
-    { key: "position", label: "Posição", type: "number", required: true, help: "A ordem é gerida com os controlos Mover para cima e Mover para baixo." },
+    { key: "position", label: "Posição", type: "number", required: true, help: "Use o organizador de ordem para arrastar o trabalho ou indicar o número exacto." },
     { key: "is_visible", label: "Visível", type: "checkbox" },
     { key: "config", label: "Configuração tipada (JSON)", type: "json", required: true, help: "JSON estruturado de acordo com o tipo. Não é permitido HTML, CSS ou JavaScript arbitrário." },
   ] },
@@ -780,23 +780,6 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     }
   }
 
-  async function moveRecord(index: number, direction: -1 | 1) {
-    if (activeId !== "projects" || !active.entity || !active.reorder || search.trim() || saving) return;
-    const source = records[index];
-    const target = records[index + direction];
-    if (!source || !target || source["status"] !== "published" || target["status"] !== "published") return;
-    const published = publishedProjectRows(projectOrderRows);
-    const originalIds = idsFromProjects(published);
-    const movedIds = moveProjectId(originalIds, asText(source["id"]),
-      originalIds.indexOf(asText(target["id"])));
-    if (movedIds.every((id, i) => id === originalIds[i])) return;
-    try {
-      await publishProjectOrder(movedIds, originalIds);
-    } catch {
-      // publishProjectOrder already retains the error message in the Admin.
-    }
-  }
-
   async function toggleFeatured(row: Row) {
     if (!active.entity || saving) return;
     setSaving(true);
@@ -1125,7 +1108,6 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                 records={tableState?.error && activeId === "projects" ? lastKnownPublicProjects : records}
                 saving={saving || !!tableState?.error}
                 onEdit={startEdit}
-                onMove={(index, direction) => void moveRecord(index, direction)}
                 onToggleFeatured={(row) => void toggleFeatured(row)}
                 onArchive={(row) => void archiveRecord(row)}
                 archived={activeId === "archived"}
@@ -1155,12 +1137,6 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                           <span className="mt-1 block truncate text-xs text-[#767b86]">{activeId === "pages" ? asText(row["route_path"]) : activeId === "sections" ? `${asText(row["section_type"])} · ${asText(row["section_key"])}` : activeId === "clients" ? `/${asText(row["slug"])} · ${row["logo_path"] ? "Com logótipo" : "Apresentação textual"}` : `Actualizado: ${asText(row["updated_at"]) || asText(row["created_at"]) || "data indisponível"}`}</span>
                         </button>
                         <div className="flex items-center gap-2">{stateBadge(row["status"] ?? (row["is_visible"] === false ? "archived" : row["migration_status"]))}
-                          {active.reorder && !search.trim() ? (
-                            <div className="flex items-center gap-1">
-                              <button type="button" aria-label={`Mover ${rowTitle(row)} para cima`} onClick={() => void moveRecord(index, -1)} disabled={saving || index === 0} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] hover:bg-[#f1f3f7] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-30"><ArrowUp size={14} /></button>
-                              <button type="button" aria-label={`Mover ${rowTitle(row)} para baixo`} onClick={() => void moveRecord(index, 1)} disabled={saving || index === records.length - 1} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] hover:bg-[#f1f3f7] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-30"><ArrowDown size={14} /></button>
-                            </div>
-                          ) : null}
                           {active.fields && active.entity ? <button type="button" onClick={() => startEdit(row)} disabled={saving} className="h-8 rounded-md border border-[#dfe2e8] px-3 text-xs font-semibold text-[#343844] hover:bg-white focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-50">Editar</button> : null}
                         </div>
                       </div>
@@ -1191,7 +1167,6 @@ function ProjectGrid({
   records,
   saving,
   onEdit,
-  onMove,
   onToggleFeatured,
   onArchive,
   archived,
@@ -1201,7 +1176,6 @@ function ProjectGrid({
   records: Row[];
   saving: boolean;
   onEdit: (row: Row) => void;
-  onMove: (index: number, direction: -1 | 1) => void;
   onToggleFeatured: (row: Row) => void;
   onArchive: (row: Row) => void;
   archived: boolean;
@@ -1244,10 +1218,7 @@ function ProjectGrid({
                 {!archived ? <button type="button" onClick={() => onToggleFeatured(row)} disabled={saving} className="h-9 rounded-lg border border-[#dfe2e8] px-3 text-xs font-semibold text-[#343844] hover:bg-[#f8f9fb] disabled:opacity-50">{featured ? "Desfixar" : "Fixar"}</button> : <button type="button" onClick={() => onRestore(row)} disabled={saving} className="h-9 rounded-lg border border-[#b9c4e4] px-3 text-xs font-semibold text-[#253d86] hover:bg-[#f3f6ff] disabled:opacity-50">Restaurar</button>}
               </div>
               <div className="mt-2 flex items-center justify-between gap-2">
-                {!archived ? <div className="flex items-center gap-1">
-                  <button type="button" aria-label={`Mover ${rowTitle(row)} para cima`} onClick={() => onMove(index, -1)} disabled={saving || index === 0} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] text-sm hover:bg-[#f1f3f7] disabled:opacity-30">↑</button>
-                  <button type="button" aria-label={`Mover ${rowTitle(row)} para baixo`} onClick={() => onMove(index, 1)} disabled={saving || index === records.length - 1} className="inline-flex size-8 items-center justify-center rounded-md border border-[#e0e2e8] text-sm hover:bg-[#f1f3f7] disabled:opacity-30">↓</button>
-                </div> : <span className="text-[11px] text-[#7a7f8b]">Fora da publicação</span>}
+                {!archived ? <span className="text-[11px] text-[#6e7684]">Use “Organizar ordem” para mover este trabalho</span> : <span className="text-[11px] text-[#7a7f8b]">Fora da publicação</span>}
                 {archived ? <button type="button" onClick={() => onDeletePermanently(row)} disabled={saving} className="h-8 rounded-md border border-[#d8aaa4] px-3 text-[11px] font-semibold text-[#922f25] hover:bg-[#fff4f2] disabled:opacity-50">Apagar de vez</button> : <button type="button" onClick={() => onArchive(row)} disabled={saving} className="h-8 rounded-md border border-[#d8aaa4] px-3 text-[11px] font-semibold text-[#922f25] hover:bg-[#fff4f2] disabled:opacity-50">Arquivar</button>}
               </div>
             </div>

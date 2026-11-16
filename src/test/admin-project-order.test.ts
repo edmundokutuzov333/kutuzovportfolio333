@@ -91,4 +91,21 @@ describe("Admin published portfolio ordering", () => {
     expect(sql).toContain("status = 'published'");
     expect(sql).toContain("revoke all on function public.admin_reorder_published_projects");
   });
+
+  it("uses one local ordering flow instead of publishing every arrow click", () => {
+    const editor = readFileSync("src/components/admin/ProjectOrderEditor.tsx", "utf8");
+    const workspace = readFileSync("src/components/admin/AdminWorkspace.tsx", "utf8");
+    expect(editor).toContain("type=\"number\"");
+    expect(editor).toContain("Arraste pelo manípulo");
+    expect(editor).toContain("Guardar e publicar ordem");
+    expect(editor).not.toContain("ArrowUp,");
+    expect(editor).not.toContain("ArrowDown,");
+    expect(workspace).not.toContain("onMove={(index, direction)");
+  });
+
+  it("does not render the cursor displacement glitch effect", () => {
+    const shell = readFileSync("src/components/Shell.tsx", "utf8");
+    expect(shell).not.toContain("feDisplacementMap");
+    expect(shell).not.toContain("backdropFilter");
+  });
 });

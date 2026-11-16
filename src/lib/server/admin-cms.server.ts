@@ -154,9 +154,16 @@ async function readRows(context: AdminContext, table: (typeof TABLES)[number]): 
 
 export async function loadAdminWorkspace() {
   const context = await getAdminServerContext();
-  // Probe a single table first. During a free-tier quota outage, fan-out across
-  // every Admin table would generate dozens of identical HTTP 402 requests.
-  const projects = await readRows(context, "projects");
+  // Projects are repository-authoritative. Read the same GitHub snapshot that
+  // the public site renders so Admin order/edits never lag behind production.
+  let projects: TableState;
+  try {
+    projects = { rows: await loadGitHubProjects() as Row[], error: null };
+  } catch {
+    // Keep the Admin readable if GitHub is temporarily unavailable. Mutations
+    // still fail safely instead of silently writing a different source.
+    projects = await readRows(context, "projects");
+  }
   if (projects.error === ADMIN_QUOTA_MESSAGE) {
     let repositoryProjects: Row[] = [];
     let repositoryError: string | null = null;

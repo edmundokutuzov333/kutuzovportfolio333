@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import {
-  ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpToLine, Check, GripVertical,
-  ListOrdered, RotateCcw, Save, Search, Undo2, X,
-} from "lucide-react";
+import { Check, GripVertical, ListOrdered, RotateCcw, Save, Search, Undo2, X } from "lucide-react";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import {
   idsFromProjects, isExactOrder, moveProjectId, positionLabel,
@@ -28,7 +25,6 @@ function previewSource(project: ProjectOrderRecord): string {
   return resolvePublicAssetUrl(project.cover_path || first);
 }
 
-const control = "inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#dce1eb] bg-white text-[#37415c] transition hover:border-[#97a7d1] hover:bg-[#eef2fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-25";
 const secondary = "inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-[#dce1eb] bg-white px-3 text-xs font-semibold text-[#293b67] transition hover:bg-[#f0f3fa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-40";
 
 export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onClose, onDirtyChange }: Props) {
@@ -45,9 +41,15 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
-  const dragRef = useRef<{ id: string; startY: number; active: boolean } | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const dragRef = useRef<{ id: string; startY: number; active: boolean; lastTargetId: string | null } | null>(null);
+  const orderRef = useRef(order);
   const scrollRef = useRef<HTMLDivElement>(null);
   const skipPositionBlurRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    orderRef.current = order;
+  }, [order]);
 
   useEffect(() => {
     setOrder(baseline);
@@ -55,6 +57,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     setConfirming(false);
     setPositionDraft({});
     setDragId(null);
+    setDragOverId(null);
     setMessage("");
     setError("");
     // The baseline is deliberately the complete published order, not the search results.
@@ -143,7 +146,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
 
   function pointerDown(event: PointerEvent<HTMLButtonElement>, id: string) {
     if (!canDrag || event.button !== 0) return;
-    dragRef.current = { id, startY: event.clientY, active: false };
+    dragRef.current = { id, startY: event.clientY, active: false, lastTargetId: null };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
@@ -163,7 +166,13 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     const element = document.elementFromPoint(event.clientX, event.clientY);
     const target = element?.closest<HTMLElement>("[data-project-sort-id]");
     const targetId = target?.dataset["projectSortId"];
-    if (targetId && targetId !== active.id) moveTo(active.id, order.indexOf(targetId));
+    if (targetId && targetId !== active.id) {
+      setDragOverId(targetId);
+      if (active.lastTargetId !== targetId) {
+        active.lastTargetId = targetId;
+        moveTo(active.id, orderRef.current.indexOf(targetId));
+      }
+    }
   }
 
   function exitEditor() {
@@ -175,6 +184,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
   function pointerEnd() {
     dragRef.current = null;
     setDragId(null);
+    setDragOverId(null);
   }
 
   async function publish() {
@@ -202,7 +212,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-[#17295f]"><ListOrdered size={19} /><h2 className="text-base font-semibold sm:text-lg">Organizar trabalhos</h2></div>
         <p className="mt-2 max-w-2xl text-xs leading-5 text-[#636b79]">
-          Ordem global de {published.length} trabalhos publicados. Arraste pelo manípulo, use as setas ou escreva directamente a posição (1–{published.length}).
+          Ordem global de {published.length} trabalhos publicados. Arraste pelo manípulo para qualquer posição ou escreva directamente o número exacto (1–{published.length}).
           Tudo permanece em pré-visualização até confirmar a publicação.
         </p>
       </div>
@@ -256,7 +266,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
         const source = previewSource(row);
         const video = row.project_type === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(source);
         return <div key={id} data-project-sort-id={id} data-order-position={index + 1}
-          className={`flex flex-wrap items-center gap-3 px-3 py-2.5 transition-colors sm:px-5 ${dragId === id ? "bg-[#e9efff]" : "hover:bg-[#fafbfe]"}`}>
+          className={`flex flex-wrap items-center gap-3 border-l-2 px-3 py-2.5 transition-colors sm:px-5 ${dragId === id ? "border-[#536bc1] bg-[#e9efff]" : dragOverId === id ? "border-[#9bb1ec] bg-[#f1f5ff]" : "border-transparent hover:bg-[#fafbfe]"}`}>
           <button type="button" aria-label={`Arrastar ${row.title} para outra posição`}
             title={canDrag ? "Arraste para reorganizar; no teclado use ↑ e ↓" : "Limpe os filtros para arrastar"}
             disabled={!canDrag} onPointerDown={event => pointerDown(event, id)}
@@ -279,10 +289,6 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
             <p className="truncate text-[11px] text-[#6e7684]">{row.discipline || "Sem categoria"} · /{row.slug}</p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <button type="button" aria-label={`Colocar ${row.title} no início`} title="Primeiro"
-              className={control} onClick={() => moveTo(id, 0)} disabled={saving || index === 0}><ArrowUpToLine size={15}/></button>
-            <button type="button" aria-label={`Subir ${row.title}`} title="Subir um"
-              className={control} onClick={() => moveTo(id, index - 1)} disabled={saving || index === 0}><ArrowUp size={15}/></button>
             <label className="flex items-center gap-1 rounded-lg border border-[#dce1eb] bg-white px-2 text-[11px] font-medium text-[#606a7c]">
               <span className="sr-only">Nova posição de {row.title}</span>
               <span aria-hidden="true">N.º</span>
@@ -299,10 +305,6 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
                   }
                 }} className="h-8 w-12 bg-transparent text-center text-xs font-semibold tabular-nums text-[#263b70] outline-none disabled:opacity-40" />
             </label>
-            <button type="button" aria-label={`Descer ${row.title}`} title="Descer um"
-              className={control} onClick={() => moveTo(id, index + 1)} disabled={saving || index === order.length - 1}><ArrowDown size={15}/></button>
-            <button type="button" aria-label={`Colocar ${row.title} no fim`} title="Último"
-              className={control} onClick={() => moveTo(id, order.length - 1)} disabled={saving || index === order.length - 1}><ArrowDownToLine size={15}/></button>
           </div>
         </div>;
       })}
@@ -313,8 +315,8 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       {error && <p role="alert" className="text-xs font-medium text-[#aa352d]">{error}</p>}
       {confirming && changed && <div role="group" aria-label="Confirmar publicação da ordem" className="rounded-lg border border-[#c6d2ed] bg-[#f3f6ff] p-4">
         <p className="text-sm font-semibold text-[#233e83]">Publicar nova ordem dos {order.length} trabalhos?</p>
-        <p className="mt-1 text-xs leading-5 text-[#475b8b]">
-          {movingCount} posições serão actualizadas. O portfólio público só muda depois de a transacção no Supabase terminar com sucesso.
+          <p className="mt-1 text-xs leading-5 text-[#475b8b]">
+            {movingCount} posições serão actualizadas. O portfólio público só muda depois de o commit no GitHub ser confirmado e o Vercel publicar a nova versão.
           Os trabalhos arquivados, os destaques e os ficheiros não serão alterados.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
