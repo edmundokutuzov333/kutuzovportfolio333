@@ -2,7 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import { createBackblazeDownloadUrl, getBackblazeConfig } from "./lib/server/backblaze.server";
+import { downloadBackblazeFile, getBackblazeConfig } from "./lib/server/backblaze.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -74,7 +74,7 @@ async function handleBackblazeMedia(request: Request): Promise<Response | null> 
   // Backblaze's S3-compatible download endpoint is reliable for GET but may
   // reject a signed HEAD request. Fetch the object headers through GET and
   // suppress the body for the public HEAD response.
-  const response = await fetch(createBackblazeDownloadUrl(config, key), { method: "GET", cache: "no-store" });
+  const response = await downloadBackblazeFile(config, key);
   if (!response.ok) return new Response("Media unavailable", { status: response.status === 404 ? 404 : 502 });
   const headers = new Headers();
   for (const name of ["content-type", "content-length", "etag", "last-modified"]) {

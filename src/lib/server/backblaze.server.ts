@@ -117,6 +117,24 @@ export function createBackblazeDownloadUrl(config: BackblazeConfig, key: string)
   return signedUrl(config, "GET", key, undefined, "900");
 }
 
+export async function downloadBackblazeFile(config: BackblazeConfig, key: string): Promise<Response> {
+  const basic = Buffer.from(`${config.keyId}:${config.applicationKey}`).toString("base64");
+  const authResponse = await fetch("https://api.backblazeb2.com/b2api/v2/b2_authorize_account", {
+    headers: { Authorization: `Basic ${basic}` },
+    cache: "no-store",
+  });
+  if (!authResponse.ok) return new Response("Media unavailable", { status: 502 });
+
+  const auth = await authResponse.json() as { authorizationToken?: string; downloadUrl?: string };
+  if (!auth.authorizationToken || !auth.downloadUrl) return new Response("Media unavailable", { status: 502 });
+
+  const downloadUrl = `${auth.downloadUrl.replace(/\/+$/, "")}/file/${encodeURIComponent(config.bucket)}/${encodePath(key)}`;
+  return fetch(downloadUrl, {
+    headers: { Authorization: auth.authorizationToken },
+    cache: "no-store",
+  });
+}
+
 export async function headBackblazeObject(config: BackblazeConfig, key: string) {
   const response = await fetch(signedUrl(config, "HEAD", key), { method: "HEAD", cache: "no-store" });
   if (!response.ok) throw new Error("Backblaze não confirmou o ficheiro carregado.");
