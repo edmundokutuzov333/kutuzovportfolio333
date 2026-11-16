@@ -1,7 +1,8 @@
 import { getAdminServerContext } from "./admin-auth.server";
 
-type PortfolioRow = Record<string, any>;
-type Snapshot = { snapshot_generated_at?: string; tables: Record<string, any> };
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type PortfolioRow = { [key: string]: JsonValue };
+type Snapshot = { snapshot_generated_at?: string; tables: { [key: string]: JsonValue } };
 
 const OWNER = process.env["GITHUB_PORTFOLIO_OWNER"]?.trim() || "edmundokutuzov333";
 const REPO = process.env["GITHUB_PORTFOLIO_REPO"]?.trim() || "kutuzovportfolio333";
@@ -56,10 +57,10 @@ async function readSnapshot(): Promise<{ snapshot: Snapshot; sha: string }> {
 }
 
 function stamp(row: PortfolioRow, timestamp: string): PortfolioRow {
-  const gallery = Array.isArray(row["gallery"]) ? row["gallery"] : [];
-  const galleryAlt = Array.isArray(row["gallery_alt"]) ? row["gallery_alt"] : [];
+  const gallery = Array.isArray(row["gallery"]) ? row["gallery"] as JsonValue[] : [];
+  const galleryAlt = Array.isArray(row["gallery_alt"]) ? row["gallery_alt"] as JsonValue[] : [];
   const localName = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const media = (value: unknown, alt: unknown) => {
+  const media = (value: JsonValue, alt: JsonValue | undefined): JsonValue => {
     if (typeof value !== "string" || typeof alt !== "string") return value;
     if (/\.(mp4|webm|mov)(\?|$)/i.test(value)) return `/api/media/portfolio/2026/video/${encodeURIComponent(localName(alt))}.mp4`;
     if (alt === "POST 4 Wash & Go") return "/portfolio-media/POST_4-WASH&GO.webp";
@@ -91,12 +92,13 @@ export async function uploadGitHubPortfolioImage(input: { originalName: string; 
 export async function mutateGitHubProject(input: {
   action: "create" | "update" | "publish" | "archive" | "restore";
   id: string | null;
-  payload: PortfolioRow;
+  payload: Record<string, unknown>;
   expectedUpdatedAt: string | null;
   note?: string | null;
 }) {
   await getAdminServerContext();
   const current = await readSnapshot();
+  const payload = input.payload as PortfolioRow;
   const projects = current.snapshot.tables["projects"] as PortfolioRow[];
   const now = new Date().toISOString();
   let record: PortfolioRow | undefined;
@@ -109,7 +111,7 @@ export async function mutateGitHubProject(input: {
       project_type: "image",
       gallery: [],
       gallery_alt: [],
-      ...input.payload,
+      ...payload,
       updated_at: now,
     };
     projects.push(record);
@@ -120,12 +122,13 @@ export async function mutateGitHubProject(input: {
     if (input.expectedUpdatedAt && existing["updated_at"] && existing["updated_at"] !== input.expectedUpdatedAt) {
       throw new GitHubPortfolioError("O projecto foi alterado depois de abrir o Admin. Actualize os dados.", "conflict");
     }
-    record = { ...existing, ...input.payload, ["id"]: existing["id"], ["updated_at"]: now };
+    record = { ...existing, ...payload, ["id"]: existing["id"] ?? "", ["updated_at"]: now };
     if (input.action === "archive") record = { ...record, ["status"]: "archived", ["featured"]: false };
     if (input.action === "restore") record = { ...record, ["status"]: "draft" };
     if (input.action === "publish") record = { ...record, ["status"]: "published" };
     projects[index] = record;
   }
+  if (!record) throw new GitHubPortfolioError("O projecto não pôde ser preparado para gravação.", "invalid");
   current.snapshot.snapshot_generated_at = now;
   const content = Buffer.from(JSON.stringify(current.snapshot, null, 2) + "\n", "utf8").toString("base64");
   await github(`/repos/${OWNER}/${REPO}/contents/${PATH}`, {

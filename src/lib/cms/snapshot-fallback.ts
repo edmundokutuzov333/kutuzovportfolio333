@@ -35,9 +35,9 @@ function resolveSnapshotMedia(source: string, alt: string | undefined): string {
   return `${LOCAL_MEDIA_PREFIX}${encodeURIComponent(localMediaName(alt))}`;
 }
 
-function localiseSnapshotProject(row: Record<string, any>): Record<string, any> {
-  const gallery = Array.isArray(row["gallery"]) ? row["gallery"] : [];
-  const galleryAlt = Array.isArray(row["gallery_alt"]) ? row["gallery_alt"] : [];
+function localiseSnapshotProject(row: Record<string, unknown>): Record<string, unknown> {
+  const gallery = Array.isArray(row["gallery"]) ? row["gallery"] as unknown[] : [];
+  const galleryAlt = Array.isArray(row["gallery_alt"]) ? row["gallery_alt"] as unknown[] : [];
   const localGallery = gallery.map((source, index) =>
     typeof source === "string" ? resolveSnapshotMedia(source, typeof galleryAlt[index] === "string" ? galleryAlt[index] : undefined) : source,
   );
