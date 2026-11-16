@@ -25,6 +25,13 @@ test("production Home, Work and PIN-only Admin survive the Supabase quota incide
   const organize = page.getByRole("button", { name: "Organizar ordem" });
   await expect(organize).toBeVisible();
   const quotaBanner = page.getByRole("alert").filter({ hasText: "CMS temporariamente indisponível" });
+  await page.waitForFunction(() => {
+    const warning = Array.from(document.querySelectorAll('[role="alert"]'))
+      .some(node => node.textContent?.includes("CMS temporariamente indisponível"));
+    const button = Array.from(document.querySelectorAll('button'))
+      .find(node => node.textContent?.includes("Organizar ordem"));
+    return warning || (button && !button.disabled);
+  }, { timeout: 30_000 });
   const isQuotaBlocked = await quotaBanner.isVisible().catch(() => false);
   if (isQuotaBlocked) {
     await expect(quotaBanner).toContainText("Supabase");
@@ -36,5 +43,5 @@ test("production Home, Work and PIN-only Admin survive the Supabase quota incide
     await expect(organize).toBeEnabled({ timeout: 30_000 });
     await expect(page.locator("article")).toHaveCount(155);
   }
-  await expect(page.getByRole("button", { name: "Sair" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Projectos", exact: true })).toBeVisible();
 });
