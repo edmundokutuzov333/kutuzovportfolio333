@@ -11,6 +11,7 @@ import {
 describe("Supabase quota outage — published portfolio continuity", () => {
   const originalFetch = globalThis.fetch;
   let calls = 0;
+  const firstPublishedProject = [...snapshot.tables.projects].sort((a, b) => a.position - b.position)[0]!;
 
   beforeAll(() => {
     vi.stubGlobal("fetch", async () => {
@@ -48,12 +49,12 @@ describe("Supabase quota outage — published portfolio continuity", () => {
     expect(home.projects.length).toBe(155);
     expect(work.page.route_path).toBe("/work");
     expect(work.projects.length).toBe(155);
-    expect(work.projects[0]?.slug).toBe(snapshot.tables.projects[0]?.slug);
+    expect(work.projects[0]?.slug).toBe(firstPublishedProject.slug);
   });
 
   it("preserves project pages and every additional public route during quota suspension", async () => {
-    const project = await loadProjectDetailContent(snapshot.tables.projects[0]!.slug);
-    expect(project.project?.slug).toBe(snapshot.tables.projects[0]?.slug);
+    const project = await loadProjectDetailContent(firstPublishedProject.slug);
+    expect(project.project?.slug).toBe(firstPublishedProject.slug);
     const [about, services, process, clients, contact] = await Promise.all([
       loadAboutContent(), loadServicesContent(), loadProcessContent(),
       loadClientsContent(), loadContactContent(),
@@ -71,9 +72,9 @@ describe("Supabase quota outage — published portfolio continuity", () => {
       select: "slug,title,position", status: "eq.published", order: "position.asc", limit: "1",
     });
     expect(row).toEqual([{
-      slug: snapshot.tables.projects[0]?.slug,
-      title: snapshot.tables.projects[0]?.title,
-      position: snapshot.tables.projects[0]?.position,
+      slug: firstPublishedProject.slug,
+      title: firstPublishedProject.title,
+      position: firstPublishedProject.position,
     }]);
     const matching = await selectOfflinePublicRows("projects", {
       select: "slug", slug: `eq.${snapshot.tables.projects[10]?.slug}`,
