@@ -70,6 +70,12 @@ function publicError(status: number, message: string): never {
     throw new AdminCmsError("As funções de escrita da Fase 3 ainda não estão instaladas na base de dados. A gravação permanece bloqueada até a migração ser validada e aplicada.", "unavailable");
   }
   if (status === 401 || status === 403) throw new AdminCmsError("A sessão administrativa expirou ou não tem autorização. Volte a autenticar-se.", "forbidden");
+  if (message.includes("portfolio_order_conflict") || message.includes("order_must_include_every_record")) {
+    throw new AdminCmsError("A ordem foi alterada noutro lugar. Actualize o Admin antes de voltar a publicar.", "conflict");
+  }
+  if (message.includes("invalid_published_order")) {
+    throw new AdminCmsError("A ordenação não contém o conjunto exacto de trabalhos publicados.", "invalid");
+  }
   if (status === 409 || message.includes("record_conflict_or_missing") || message.includes("duplicate key")) {
     throw new AdminCmsError("O registo foi alterado por outra operação ou existe um slug/valor duplicado. Recarregue os dados antes de guardar.", "conflict");
   }
@@ -306,6 +312,28 @@ export async function mutateAdminContent(input: {
   return result;
 }
 
+export async function reorderPublishedProjects(input: {
+  ids: string[];
+  expectedIds: string[];
+}) {
+  const context = await getAdminServerContext();
+  if (input.ids.length === 0 || input.ids.length !== input.expectedIds.length ||
+      input.ids.length > 500 || new Set(input.ids).size !== input.ids.length ||
+      new Set(input.expectedIds).size !== input.expectedIds.length ||
+      !input.ids.every(id => input.expectedIds.includes(id))) {
+    throw new AdminCmsError("A lista de ordenação tem de incluir todos os trabalhos publicados, sem repetições.", "invalid");
+  }
+  return restRequest<{ count: number; changed: number; published_revision: number }>(
+    context, "/rest/v1/rpc/admin_reorder_published_projects", {
+      method: "POST",
+      body: JSON.stringify({
+        p_ids: input.ids,
+        p_expected_ids: input.expectedIds,
+      }),
+    },
+  );
+}
+
 export async function reorderAdminContent(input: {
   entity: string;
   ids: string[];
@@ -314,12 +342,7 @@ export async function reorderAdminContent(input: {
   const context = await getAdminServerContext();
   const entity = zReorderEntity(input.entity);
   if (entity === "projects") {
-    await Promise.all(input.ids.map((id, position) => restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify({ position }),
-    })));
-    return { count: input.ids.length, published_revision: 0 };
+    throw new AdminCmsError("Para reordenar os projectos, utilize o editor de organização com confirmação atómica.", "invalid");
   }
   const result = await restRequest<{ count: number; published_revision: number }>(
     context,
