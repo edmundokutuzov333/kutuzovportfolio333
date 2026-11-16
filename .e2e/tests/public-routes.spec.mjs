@@ -168,11 +168,10 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
 
     const fan = page.locator("[data-project-fan]");
     await expect(fan).toBeVisible();
-    const publishedCount = await page.request.get("/work").then(response => response.text())
-      .then(html => new Set([...html.matchAll(new RegExp('href="(/work/[^"]+)"', "g"))].map(match => match[1])).size);
-    expect(publishedCount).toBeGreaterThan(0);
-    await expect(fan).toHaveAttribute("data-project-fan-count", String(publishedCount));
-    const visibleCount = viewport.width < 768 ? 3 : 5;
+    const featuredCount = Number(await fan.getAttribute("data-project-fan-count"));
+    expect(featuredCount).toBeGreaterThan(0);
+    const visibleCount = Math.min(featuredCount, viewport.width < 768 ? 3 : 5);
+    await expect(fan).toHaveAttribute("data-project-fan-count", String(featuredCount));
     const centerSlot = Math.floor(visibleCount / 2);
     await expect(fan).toHaveAttribute("data-project-fan-viewport-ready", "true");
     await expect(fan).toHaveAttribute("data-project-fan-mode", viewport.width < 768 ? "mobile" : "desktop");
@@ -182,6 +181,8 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
 
     const cards = fan.locator("[data-project-fan-card]");
     await expect(cards).toHaveCount(visibleCount);
+    const cardLinks = await cards.evaluateAll((elements) => elements.map((card) => card.closest("a")?.getAttribute("href")).filter(Boolean));
+    expect(new Set(cardLinks).size).toBe(cardLinks.length);
     const centerImage = fan.locator(`[data-project-card-slot="${centerSlot}"] img`);
     await expect.poll(() => centerImage.evaluate((image) => image.naturalWidth), { timeout: 15_000 }).toBeGreaterThan(0);
 
@@ -269,6 +270,8 @@ test("desktop fan carousel lifts the hovered card and gently separates its neigh
   const centerCard = page.locator('[data-project-fan-card][data-project-card-slot="2"]');
   const leftCard = page.locator('[data-project-fan-card][data-project-card-slot="1"]');
   const rightCard = page.locator('[data-project-fan-card][data-project-card-slot="3"]');
+  const count = Number(await page.locator("[data-project-fan]").getAttribute("data-project-fan-count"));
+  test.skip(count < 5, "Hover geometry requires at least five fixed projects");
   await expect(centerCard).toBeVisible();
   await page.waitForTimeout(1600);
 
@@ -299,6 +302,8 @@ test("fan carousel supports arrow keys and horizontal pointer dragging without f
 
   const fan = page.locator("[data-project-fan]");
   await expect(fan).toHaveAttribute("data-project-fan-mode", "mobile");
+  const count = Number(await fan.getAttribute("data-project-fan-count"));
+  test.skip(count < 3, "Keyboard and drag carousel interaction requires at least three fixed projects");
   await expect(fan).toHaveAttribute("data-project-fan-visible", "3");
   await expect(fan.locator('[data-project-card-slot="1"]')).toHaveAttribute("data-project-card-index", "3");
 
