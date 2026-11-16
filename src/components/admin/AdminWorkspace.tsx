@@ -12,6 +12,7 @@ import {
   deleteArchivedProjectFn,
   reorderAdminContentFn,
   reorderPublishedProjectsFn,
+  setFeaturedPublishedProjectsFn,
   updateContactSubmissionFn,
 } from "@/lib/admin-cms.functions";
 import { cancelMediaUploadFn, completeMediaUploadFn, createMediaUploadFn, uploadGitHubPortfolioImageFn } from "@/lib/admin-media.functions";
@@ -371,7 +372,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const [notice, setNotice] = useState<{ tone: "success" | "error" | "info"; text: string } | null>(null);
   const [search, setSearch] = useState("");
   const [sectionPageId, setSectionPageId] = useState("");
-  const [organizingProjects, setOrganizingProjects] = useState(false);
+  const [organizingProjects, setOrganizingProjects] = useState(true);
   const [organizingDirty, setOrganizingDirty] = useState(false);
   const [lastPublishedOrder, setLastPublishedOrder] = useState<{ before: string[]; after: string[] } | null>(null);
   const [lastKnownPublicProjects, setLastKnownPublicProjects] = useState<Row[]>([]);
@@ -804,6 +805,22 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     }
   }
 
+  async function toggleFeaturedMany(ids: string[], featured: boolean) {
+    if (saving || !ids.length) return;
+    setSaving(true);
+    setNotice(null);
+    try {
+      const result = await setFeaturedPublishedProjectsFn({ data: { ids, featured } });
+      setNotice({ tone: "success", text: `${result.count} trabalho${result.count === 1 ? "" : "s"} ${featured ? "fixado" : "desfixado"}${result.count === 1 ? "" : "s"} na Home.` });
+      await refresh();
+    } catch (error) {
+      setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível actualizar os trabalhos fixados." });
+      throw error;
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function setContactStatus(row: Row, status: "new" | "in_review" | "replied" | "archived") {
     if (saving) return;
     setSaving(true);
@@ -1028,31 +1045,33 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                 savedOrder={lastPublishedOrder}
                 onDirtyChange={setOrganizingDirty}
                 onPublish={publishProjectOrder}
+                onEdit={(row) => { setOrganizingProjects(false); setOrganizingDirty(false); startEdit(row as Row); }}
+                onToggleFeatured={toggleFeaturedMany}
                 onClose={() => { setOrganizingProjects(false); setOrganizingDirty(false); }}
               />
             ) : editing ? (
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <form onSubmit={(event) => void saveContent(event)} className="min-w-0 rounded-xl border border-[#e1e4ea] bg-white p-4 shadow-sm sm:p-6">
+                <form onSubmit={(event) => void saveContent(event)} className="min-w-0 rounded-xl border border-[#c8d1df] bg-[#e9edf3] p-4 text-[#17191f] shadow-sm sm:p-6">
                   <div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eceef2] pb-4">
                     <div><p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7c818c]">{creating ? "Novo registo" : "A editar"}</p><h2 className="mt-1 text-lg font-semibold">{creating ? `Novo item: ${active.label}` : rowTitle(baseline ?? {})}</h2></div>
                     {baseline?.["status"] ? stateBadge(baseline["status"]) : null}
                   </div>
                   {activeId === "pages" ? <div className="mb-4 rounded-lg border border-[#eadcb4] bg-[#fff9e9] p-3 text-xs leading-5 text-[#6f5317]">Só estão disponíveis as oito rotas suportadas pelo router. Criar uma rota nova exige implementar e testar um renderer no código; o CMS não inventa páginas nem componentes.</div> : null}
                   {activeId === "projects" ? <>
-                    <section className="mb-6 rounded-xl border border-[#e1e4ea] bg-[#fbfcff] p-4 sm:p-5">
+                    <section className="mb-6 rounded-xl border border-[#c8d1df] bg-[#f1f4f8] p-4 sm:p-5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">01. Informação do projecto</p>
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
                         {fields.filter((field) => ["title", "client_label", "year_label", "discipline"].includes(field.key)).map((field) => renderField(field))}
                         <div className="sm:col-span-2"><p className="block text-sm font-medium text-[#2e3037]">Função desempenhada</p><p className="mt-1.5 rounded-lg border border-[#eceef2] bg-[#f7f8fa] px-3 py-2.5 text-sm text-[#343844]">Art Direction</p></div>
                       </div>
                     </section>
-                    <section className="mb-6 rounded-xl border border-[#e1e4ea] bg-white p-4 sm:p-5">
+                    <section className="mb-6 rounded-xl border border-[#c8d1df] bg-[#f1f4f8] p-4 sm:p-5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">02. Apresentação do projecto</p>
                       <div className="mt-4 grid gap-4">{fields.filter((field) => ["challenge", "idea", "outcome"].includes(field.key)).map((field) => renderField(field))}</div>
                     </section>
-                    <section className="mb-6 rounded-xl border border-[#e1e4ea] bg-white p-4 sm:p-5">
+                    <section className="mb-6 rounded-xl border border-[#c8d1df] bg-[#f1f4f8] p-4 sm:p-5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">03. Imagens e materiais</p>
-                      <div className="mt-4 rounded-xl border-2 border-dashed border-[#b9c4e4] bg-[#f7f9ff] p-5 text-center transition hover:border-[#536bc1]">
+                      <div className="mt-4 rounded-xl border-2 border-dashed border-[#8498bb] bg-[#e1e8f3] p-5 text-center transition hover:border-[#536bc1]">
                         <p className="text-sm font-semibold text-[#202b52]">Adicionar imagens do projecto</p>
                         <p className="mt-1 text-xs text-[#626774]">Arraste os ficheiros para aqui ou seleccione vários de uma vez. PNG, JPG, WebP e MP4. A qualidade original é preservada.</p>
                         <label className="mt-4 inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#17295f] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#243d82]">
@@ -1064,7 +1083,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                       </div>
                       {assetList(draft["gallery"]).length > 0 ? <div className="mt-5 space-y-3"><p className="text-xs font-semibold text-[#343844]">Materiais guardados. Arraste para reordenar.</p>{assetList(draft["gallery"]).map((source, index) => { const url = resolvePublicAssetUrl(source); const alt = assetList(draft["gallery_alt"])[index] ?? ""; const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(source); return <div key={`${source}-${index}`} draggable onDragStart={() => setProjectDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (projectDragIndex !== null) moveProjectMedia(projectDragIndex, index); setProjectDragIndex(null); }} className="grid gap-3 rounded-lg border border-[#e5e7ed] bg-[#fafbfc] p-3 sm:grid-cols-[100px_minmax(0,1fr)_auto] sm:items-center"><div className="flex h-20 items-center justify-center overflow-hidden rounded-md bg-[#11141c]">{url && (isVideo ? <video src={url} muted playsInline preload="metadata" className="max-h-20 w-full object-contain" /> : <img src={url} alt={alt || rowTitle(baseline ?? draft)} className="max-h-20 w-full object-contain" />)}</div><div className="min-w-0"><p className="truncate text-xs font-medium text-[#343844]">{index + 1}. {source.split("/").pop()}</p><label className="mt-2 block text-[11px] text-[#6f7480]">Texto alternativo<input value={alt} onChange={(event) => { const nextAlt = assetList(draft["gallery_alt"]); nextAlt[index] = event.target.value; updateProjectMedia(assetList(draft["gallery"]), nextAlt); }} className="mt-1 h-8 w-full rounded-md border border-[#dfe2e8] bg-white px-2 text-xs" /></label></div><div className="flex items-center gap-1 sm:flex-col"><button type="button" aria-label={`Mover material ${index + 1} para cima`} onClick={() => moveProjectMedia(index, index - 1)} disabled={saving || index === 0} className="size-8 rounded-md border border-[#dfe2e8] text-sm disabled:opacity-30">↑</button><button type="button" aria-label={`Mover material ${index + 1} para baixo`} onClick={() => moveProjectMedia(index, index + 1)} disabled={saving || index === assetList(draft["gallery"]).length - 1} className="size-8 rounded-md border border-[#dfe2e8] text-sm disabled:opacity-30">↓</button><button type="button" onClick={() => removeProjectMedia(index)} disabled={saving} className="size-8 rounded-md border border-[#e8b4ae] text-xs text-[#922f25] disabled:opacity-50">×</button></div></div>; })}</div> : null}
                     </section>
-                    <section className="rounded-xl border border-[#e1e4ea] bg-[#fbfcff] p-4 sm:p-5">
+                    <section className="rounded-xl border border-[#c8d1df] bg-[#f1f4f8] p-4 sm:p-5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7390]">04. Publicação</p>
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">{fields.filter((field) => ["featured", "status"].includes(field.key)).map((field) => renderField(field))}</div>
                     </section>

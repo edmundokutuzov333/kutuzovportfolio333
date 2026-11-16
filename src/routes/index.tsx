@@ -99,7 +99,7 @@ function Home() {
   const data = Route.useLoaderData();
   const { tx } = useI18n();
   const { profile, sections, projects, services, metrics, clients, principles } = data;
-  const artwork = useMemo(() => buildProjectFanArtwork(projects), [projects]);
+  const artwork = useMemo(() => buildProjectFanArtwork(projects.filter(project => project.featured)), [projects]);
   const numberedSectionTypes = new Set(["manifesto", "featured_work", "services", "clients"]);
 
   return (

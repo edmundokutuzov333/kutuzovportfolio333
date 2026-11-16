@@ -1,6 +1,6 @@
 import { getAdminServerContext } from "./admin-auth.server";
 import { selectOfflinePublicRows } from "../cms/snapshot-fallback";
-import { deleteGitHubProject, loadGitHubProjects, mutateGitHubProject, reorderGitHubProjects, GitHubPortfolioError } from "./github-portfolio.server";
+import { deleteGitHubProject, loadGitHubProjects, mutateGitHubProject, reorderGitHubProjects, setGitHubProjectsFeatured, GitHubPortfolioError } from "./github-portfolio.server";
 import {
   AdminEntitySchema,
   validateAdminPayload,
@@ -381,6 +381,15 @@ export async function reorderPublishedProjects(input: {
   }
   try {
     return await reorderGitHubProjects(input.ids, input.expectedIds);
+  } catch (error) {
+    if (error instanceof GitHubPortfolioError) throw new AdminCmsError(error.message, error.code === "conflict" ? "conflict" : error.code === "invalid" ? "invalid" : "unavailable");
+    throw error;
+  }
+}
+
+export async function setFeaturedPublishedProjects(input: { ids: string[]; featured: boolean }) {
+  try {
+    return await setGitHubProjectsFeatured(input.ids, input.featured);
   } catch (error) {
     if (error instanceof GitHubPortfolioError) throw new AdminCmsError(error.message, error.code === "conflict" ? "conflict" : error.code === "invalid" ? "invalid" : "unavailable");
     throw error;

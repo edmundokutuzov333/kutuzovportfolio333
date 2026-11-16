@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import {
-  idsFromProjects, isExactOrder, isValidReorder, moveProjectId,
-  positionLabel, publishedProjectRows, visibleProjectIds,
+  idsFromProjects, isExactOrder, isValidReorder, moveProjectId, moveSelectedProjectIds,
+  positionLabel, publishedProjectRows, selectProjectRange, toggleProjectSelection, visibleProjectIds,
 } from "@/lib/admin-project-order";
 
 const makeRows = (count = 155) => Array.from({ length: count }, (_, index) => ({
@@ -53,6 +53,15 @@ describe("Admin published portfolio ordering", () => {
     expect(moveProjectId(ids, "020", 999)).toEqual(ids);
     const changed = moveProjectId(ids, "155", 10);
     expect(moveProjectId(changed, "155", 154)).toEqual(ids);
+  });
+
+  it("selects with Cmd/Ctrl or Shift and moves a block without changing its internal order", () => {
+    expect(toggleProjectSelection(["001"], "003", true)).toEqual(["001", "003"]);
+    expect(toggleProjectSelection(["001", "003"], "001", true)).toEqual(["003"]);
+    expect(selectProjectRange(["001", "002", "003", "004"], "002", "004")).toEqual(["002", "003", "004"]);
+    const moved = moveSelectedProjectIds(["001", "002", "003", "004", "005"], ["002", "004"], 0);
+    expect(moved).toEqual(["002", "004", "001", "003", "005"]);
+    expect(moveSelectedProjectIds(["001", "002", "003", "004", "005"], ["002", "004"], 4)).toEqual(["001", "003", "002", "004", "005"]);
   });
 
   it("disallows incomplete, duplicate, cross-scope and out-of-date orders", () => {

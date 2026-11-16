@@ -11,6 +11,7 @@ import {
   deleteArchivedProject,
   reorderAdminContent,
   reorderPublishedProjects,
+  setFeaturedPublishedProjects,
   updateContactSubmission,
 } from "./server/admin-cms.server";
 
@@ -69,6 +70,10 @@ export const reorderAdminContentFn = createServerFn({ method: "POST" })
 export const reorderPublishedProjectsFn = createServerFn({ method: "POST" })
   .inputValidator(publishedProjectOrderInput)
   .handler(async ({ data }) => reorderPublishedProjects(data));
+
+export const setFeaturedPublishedProjectsFn = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ ids: z.array(z.string().uuid()).min(1).max(500), featured: z.boolean() }).strict())
+  .handler(async ({ data }) => setFeaturedPublishedProjects(data));
 
 export const deleteArchivedProjectFn = createServerFn({ method: "POST" })
   .inputValidator(z.object({

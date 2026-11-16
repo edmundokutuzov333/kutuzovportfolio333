@@ -171,6 +171,22 @@ export async function reorderGitHubProjects(ids: string[], expectedIds: string[]
   return { count: ids.length, changed: ids.length, published_revision: 0 };
 }
 
+export async function setGitHubProjectsFeatured(ids: string[], featured: boolean) {
+  await getAdminServerContext();
+  if (!ids.length || new Set(ids).size !== ids.length) throw new GitHubPortfolioError("Seleccione pelo menos um trabalho válido.", "invalid");
+  const current = await readSnapshot();
+  const projects = current.snapshot.tables["projects"] as PortfolioRow[];
+  const selected = new Set(ids);
+  const matched = projects.filter(row => selected.has(String(row["id"])) && row["status"] === "published");
+  if (matched.length !== ids.length) throw new GitHubPortfolioError("Um ou mais trabalhos já não estão publicados. Actualize o Admin.", "conflict");
+  const now = new Date().toISOString();
+  matched.forEach(row => { row["featured"] = featured; row["updated_at"] = now; });
+  current.snapshot.snapshot_generated_at = now;
+  const content = Buffer.from(JSON.stringify(current.snapshot, null, 2) + "\n", "utf8").toString("base64");
+  await github(`/repos/${OWNER}/${REPO}/contents/${PATH}`, { method: "PUT", body: JSON.stringify({ message: `admin: ${featured ? "feature" : "unfeature"} selected portfolio projects`, content, sha: current.sha, branch: BRANCH }) });
+  return { count: matched.length, featured, published_revision: 0 };
+}
+
 export async function deleteGitHubProject(id: string, expectedUpdatedAt: string | null) {
   await getAdminServerContext();
   const current = await readSnapshot();

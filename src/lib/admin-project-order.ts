@@ -49,6 +49,33 @@ export function moveProjectId(
   return next;
 }
 
+export function toggleProjectSelection(selected: readonly string[], id: string, extend: boolean): string[] {
+  if (!extend) return [id];
+  return selected.includes(id) ? selected.filter(value => value !== id) : [...selected, id];
+}
+
+export function selectProjectRange(order: readonly string[], anchorId: string, targetId: string): string[] {
+  const anchor = order.indexOf(anchorId);
+  const target = order.indexOf(targetId);
+  if (anchor < 0 || target < 0) return target < 0 ? [] : [targetId];
+  return order.slice(Math.min(anchor, target), Math.max(anchor, target) + 1);
+}
+
+/** Move a selected block as one unit while preserving the global order of its members. */
+export function moveSelectedProjectIds(
+  ids: readonly string[], selectedIds: readonly string[], destinationIndex: number,
+): string[] {
+  const selected = new Set(selectedIds);
+  const moving = ids.filter(id => selected.has(id));
+  if (!moving.length || !Number.isInteger(destinationIndex) || destinationIndex < 0 || destinationIndex >= ids.length) return [...ids];
+  const target = ids[destinationIndex];
+  if (target && selected.has(target)) return [...ids];
+  const remaining = ids.filter(id => !selected.has(id));
+  const insertion = ids.slice(0, destinationIndex).filter(id => !selected.has(id)).length;
+  remaining.splice(Math.min(insertion, remaining.length), 0, ...moving);
+  return remaining;
+}
+
 export function positionLabel(index: number, total: number): string {
   return String(index + 1).padStart(Math.max(3, String(total).length), "0");
 }

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { Check, GripVertical, ListOrdered, RotateCcw, Save, Search, Undo2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { Check, Edit3, GripVertical, ListOrdered, Pin, RotateCcw, Save, Search, Undo2, X } from "lucide-react";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
 import {
-  idsFromProjects, isExactOrder, moveProjectId, positionLabel,
-  publishedProjectRows, visibleProjectIds, type ProjectOrderRecord,
+  idsFromProjects, isExactOrder, moveProjectId, moveSelectedProjectIds, positionLabel,
+  publishedProjectRows, selectProjectRange, toggleProjectSelection, visibleProjectIds, type ProjectOrderRecord,
 } from "@/lib/admin-project-order";
 
 type SavedOrder = { before: string[]; after: string[] };
@@ -13,6 +13,8 @@ type Props = {
   savedOrder: SavedOrder | null;
   onPublish: (next: string[], previous: string[]) => Promise<void>;
   onClose: () => void;
+  onEdit?: (row: ProjectOrderRecord) => void;
+  onToggleFeatured?: (ids: string[], featured: boolean) => Promise<void>;
   onDirtyChange?: (dirty: boolean) => void;
 };
 
@@ -25,9 +27,9 @@ function previewSource(project: ProjectOrderRecord): string {
   return resolvePublicAssetUrl(project.cover_path || first);
 }
 
-const secondary = "inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-[#dce1eb] bg-white px-3 text-xs font-semibold text-[#293b67] transition hover:bg-[#f0f3fa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-40";
+const secondary = "inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-[#465777] bg-[#1d2940] px-3 text-xs font-semibold text-white transition hover:bg-[#2a3a59] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#91a9ea] disabled:opacity-40";
 
-export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onClose, onDirtyChange }: Props) {
+export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onClose, onEdit = () => undefined, onToggleFeatured = async () => undefined, onDirtyChange }: Props) {
   const published = useMemo(() => publishedProjectRows(records), [records]);
   const baseline = useMemo(() => idsFromProjects(published), [published]);
   const baselineKey = baseline.join("|");
@@ -40,16 +42,21 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectionAnchor, setSelectionAnchor] = useState<string | null>(null);
+  const [bulkPosition, setBulkPosition] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-  const dragRef = useRef<{ id: string; startY: number; active: boolean; lastTargetId: string | null } | null>(null);
+  const dragRef = useRef<{ id: string; startY: number; active: boolean; lastTargetId: string | null; selectedIds: string[] } | null>(null);
   const orderRef = useRef(order);
+  const selectedRef = useRef(selectedIds);
   const scrollRef = useRef<HTMLDivElement>(null);
   const skipPositionBlurRef = useRef<string | null>(null);
 
   useEffect(() => {
     orderRef.current = order;
   }, [order]);
+  useEffect(() => { selectedRef.current = selectedIds; }, [selectedIds]);
 
   useEffect(() => {
     setOrder(baseline);
@@ -60,12 +67,14 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     setDragOverId(null);
     setMessage("");
     setError("");
+    setSelectedIds([]);
+    setSelectionAnchor(null);
+    setBulkPosition("");
     // The baseline is deliberately the complete published order, not the search results.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baselineKey]);
 
-  const categories = useMemo(() => Array.from(new Set(published.map(row => row.discipline)))
-    .filter(Boolean).sort((a, b) => a.localeCompare(b)), [published]);
+  const categories = ["Social Media", "Campaign design", "Manipulation", "Some dezaines*", "Video"];
   const visible = useMemo(() => visibleProjectIds(order, byId, search, category),
     [order, byId, search, category]);
   const changed = !isExactOrder(order, baseline);
@@ -83,6 +92,25 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     setConfirming(false);
     setError("");
     setMessage(label);
+  }
+
+  function applyBulkPosition() {
+    const number = Number(bulkPosition.trim());
+    if (!selectedIds.length || !/^\d+$/.test(bulkPosition.trim()) || !Number.isSafeInteger(number) || number < 1 || number > order.length) {
+      setError(`Seleccione trabalhos e introduza uma posição entre 1 e ${order.length}.`);
+      return;
+    }
+    setNewOrder(moveSelectedProjectIds(order, selectedIds, number - 1), `${selectedIds.length} trabalhos movidos para a posição ${number}.`);
+    setBulkPosition("");
+  }
+
+  function selectRow(event: MouseEvent, id: string) {
+    const extend = event.metaKey || event.ctrlKey;
+    const next = event.shiftKey && selectionAnchor
+      ? selectProjectRange(order, selectionAnchor, id)
+      : toggleProjectSelection(selectedIds, id, extend);
+    setSelectedIds(next);
+    setSelectionAnchor(id);
   }
 
   function moveTo(id: string, targetIndex: number) {
@@ -146,7 +174,9 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
 
   function pointerDown(event: PointerEvent<HTMLButtonElement>, id: string) {
     if (!canDrag || event.button !== 0) return;
-    dragRef.current = { id, startY: event.clientY, active: false, lastTargetId: null };
+    const movingIds = selectedRef.current.includes(id) ? selectedRef.current : [id];
+    if (!selectedRef.current.includes(id)) { setSelectedIds([id]); setSelectionAnchor(id); }
+    dragRef.current = { id, startY: event.clientY, active: false, lastTargetId: null, selectedIds: movingIds };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
@@ -170,7 +200,8 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       setDragOverId(targetId);
       if (active.lastTargetId !== targetId) {
         active.lastTargetId = targetId;
-        moveTo(active.id, orderRef.current.indexOf(targetId));
+        const next = moveSelectedProjectIds(orderRef.current, active.selectedIds, orderRef.current.indexOf(targetId));
+        setNewOrder(next, `${active.selectedIds.length} trabalho${active.selectedIds.length === 1 ? "" : "s"} movido${active.selectedIds.length === 1 ? "" : "s"}.`);
       }
     }
   }
@@ -208,35 +239,35 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
   }
 
   return <section aria-label="Organizar ordem dos trabalhos" className="overflow-hidden rounded-xl border border-[#e1e4ea] bg-white shadow-sm" data-project-order-editor>
-    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e8eaf0] p-4 sm:p-6">
+    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#34425e] bg-[#111827] p-4 text-white sm:p-6">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 text-[#17295f]"><ListOrdered size={19} /><h2 className="text-base font-semibold sm:text-lg">Organizar trabalhos</h2></div>
-        <p className="mt-2 max-w-2xl text-xs leading-5 text-[#636b79]">
-          Ordem global de {published.length} trabalhos publicados. Arraste pelo manípulo para qualquer posição ou escreva directamente o número exacto (1–{published.length}).
+        <div className="flex items-center gap-2 text-white"><ListOrdered size={19} /><h2 className="text-base font-semibold sm:text-lg">Organizar trabalhos</h2></div>
+        <p className="mt-2 max-w-2xl text-xs leading-5 text-[#b8c3d8]">
+          Ordem global de {published.length} trabalhos publicados. Arraste pelo manípulo, seleccione vários com Cmd/Ctrl ou Shift, arraste o bloco ou escreva a posição exacta (1-{published.length}).
           Tudo permanece em pré-visualização até confirmar a publicação.
         </p>
       </div>
       <button type="button" onClick={exitEditor} disabled={saving}
-        className={secondary}><X size={15} /> Voltar à galeria</button>
+        className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-[#4b5c7a] bg-[#1d2940] px-3 text-xs font-semibold text-white transition hover:bg-[#2a3a59]"> <X size={15} /> Voltar à galeria</button>
     </header>
 
-    <div className="flex flex-wrap items-center gap-2 border-b border-[#edf0f5] bg-[#fcfcfe] p-4 sm:px-6">
+    <div className="flex flex-wrap items-center gap-2 border-b border-[#34425e] bg-[#182238] p-4 sm:px-6">
       <label className="relative min-w-[175px] flex-1">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888e9b]" />
         <input aria-label="Pesquisar trabalhos para organizar" value={search} onChange={event => setSearch(event.target.value)}
-          placeholder="Pesquisar trabalho ou código..." className="h-10 w-full rounded-lg border border-[#dfe2e9] bg-white pl-9 pr-3 text-sm outline-none focus-visible:border-[#4f69ba]" />
+          placeholder="Pesquisar trabalho ou código..." className="h-10 w-full rounded-lg border border-[#465777] bg-[#0f172a] pl-9 pr-3 text-sm text-white outline-none placeholder:text-[#93a1b8] focus-visible:border-[#91a9ea]" />
       </label>
       <select aria-label="Filtrar trabalhos por categoria" value={category} onChange={event => setCategory(event.target.value)}
-        className="h-10 min-w-0 max-w-full rounded-lg border border-[#dfe2e9] bg-white px-3 text-xs focus-visible:outline-2 focus-visible:outline-[#243d98]">
-        <option value="">Todas as categorias</option>
+        className="h-10 min-w-0 max-w-full rounded-lg border border-[#465777] bg-[#0f172a] px-3 text-xs text-white focus-visible:outline-2 focus-visible:outline-[#91a9ea]">
+        <option value="">All</option>
         {categories.map(value => <option key={value} value={value}>{value}</option>)}
       </select>
-      <span className="whitespace-nowrap rounded-lg bg-[#edf1fb] px-3 py-2 text-xs font-medium text-[#29427b]">
+      <span className="whitespace-nowrap rounded-lg bg-[#2b3c5e] px-3 py-2 text-xs font-medium text-white">
         {visible.length} / {order.length}
       </span>
     </div>
 
-    <div className="flex flex-wrap items-center gap-2 border-b border-[#e8eaf0] px-4 py-3 sm:px-6">
+    <div className="flex flex-wrap items-center gap-2 border-b border-[#34425e] bg-[#182238] px-4 py-3 text-white sm:px-6">
       <button type="button" className={secondary} onClick={undo} disabled={saving || !history.length}>
         <Undo2 size={14} /> Desfazer movimento
       </button>
@@ -249,7 +280,17 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       }} disabled={saving}>
         <RotateCcw size={14} /> Reverter última publicação
       </button>}
-      <span aria-live="polite" className="ml-auto text-xs text-[#606776]">
+      {selectedIds.length > 0 && <>
+        <span className="rounded-lg bg-[#314a80] px-3 py-2 text-xs font-semibold text-white">{selectedIds.length} seleccionados</span>
+        <label className="flex items-center gap-1 rounded-lg border border-[#465777] bg-[#0f172a] px-2 text-xs text-[#cbd5e1]">Posição
+          <input type="number" min={1} max={order.length} value={bulkPosition} onChange={event => setBulkPosition(event.target.value)} onKeyDown={event => { if (event.key === "Enter") applyBulkPosition(); }} placeholder="N.º" className="h-8 w-14 bg-transparent text-center text-white outline-none" />
+        </label>
+        <button type="button" className={secondary} onClick={applyBulkPosition} disabled={saving}>Mover bloco</button>
+        <button type="button" className={secondary} onClick={() => void onToggleFeatured(selectedIds, true)} disabled={saving}><Pin size={14}/> Fixar seleccionados</button>
+        <button type="button" className={secondary} onClick={() => void onToggleFeatured(selectedIds, false)} disabled={saving}>Desfixar seleccionados</button>
+        <button type="button" className={secondary} onClick={() => { setSelectedIds([]); setSelectionAnchor(null); }} disabled={saving}><X size={14}/> Limpar</button>
+      </>}
+      <span aria-live="polite" className="ml-auto text-xs text-[#b8c3d8]">
         {changed ? `${movingCount} posições alteradas · por publicar` : "Sem alterações pendentes"}
       </span>
     </div>
@@ -258,7 +299,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       A numeração apresentada é sempre global. Para arrastar, limpe os filtros; pode alterar a posição directamente mesmo com filtros activos.
     </p>}
 
-    <div ref={scrollRef} className="max-h-[min(67vh,780px)] divide-y divide-[#edf0f4] overflow-y-auto overscroll-contain" data-project-order-list>
+    <div ref={scrollRef} className="max-h-[min(67vh,780px)] divide-y divide-[#34425e] overflow-y-auto overscroll-contain bg-[#0f172a]" data-project-order-list>
       {visible.length === 0 ? <p className="p-10 text-center text-sm text-[#727986]">Nenhum trabalho corresponde à pesquisa.</p> :
       visible.map(id => {
         const row = byId.get(id)!;
@@ -266,9 +307,10 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
         const source = previewSource(row);
         const video = row.project_type === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(source);
         return <div key={id} data-project-sort-id={id} data-order-position={index + 1}
-          className={`flex flex-wrap items-center gap-3 border-l-2 px-3 py-2.5 transition-colors sm:px-5 ${dragId === id ? "border-[#536bc1] bg-[#e9efff]" : dragOverId === id ? "border-[#9bb1ec] bg-[#f1f5ff]" : "border-transparent hover:bg-[#fafbfe]"}`}>
+          className={`flex flex-wrap items-center gap-3 border-l-2 px-3 py-2.5 text-white transition-colors sm:px-5 ${selectedIds.includes(id) ? "border-[#7da2ff] bg-[#1b2c4e]" : dragId === id ? "border-[#536bc1] bg-[#1b315f]" : dragOverId === id ? "border-[#3f5b8c] bg-[#17243c]" : "border-transparent hover:bg-[#172238]"}`}>
+          <input type="checkbox" aria-label={`Seleccionar ${row.title}`} checked={selectedIds.includes(id)} onChange={() => {}} onClick={event => selectRow(event, id)} className="size-4 accent-[#7da2ff]" />
           <button type="button" aria-label={`Arrastar ${row.title} para outra posição`}
-            title={canDrag ? "Arraste para reorganizar; no teclado use ↑ e ↓" : "Limpe os filtros para arrastar"}
+            title={canDrag ? "Arraste para reorganizar; no teclado use as setas" : "Limpe os filtros para arrastar"}
             disabled={!canDrag} onPointerDown={event => pointerDown(event, id)}
             onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd}
             onKeyDown={event => {
@@ -276,20 +318,20 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
                 event.preventDefault();
                 moveTo(id, index + (event.key === "ArrowUp" ? -1 : 1));
               }
-            }} className="inline-flex h-10 w-8 shrink-0 touch-none items-center justify-center rounded-md text-[#738098] hover:bg-[#e8edf8] focus-visible:outline-2 focus-visible:outline-[#243d98] disabled:opacity-30">
+            }} className="inline-flex h-10 w-8 shrink-0 touch-none items-center justify-center rounded-md text-[#aab8cf] hover:bg-[#2a3a59] focus-visible:outline-2 focus-visible:outline-[#91a9ea] disabled:opacity-30">
             <GripVertical size={19} />
           </button>
-          <span className="w-10 shrink-0 font-mono text-xs font-semibold tabular-nums text-[#263b70]" aria-label={`Posição ${index + 1}`}>{positionLabel(index, order.length)}</span>
+          <span className="w-10 shrink-0 font-mono text-xs font-semibold tabular-nums text-[#b8c3d8]" aria-label={`Posição ${index + 1}`}>{positionLabel(index, order.length)}</span>
           <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171b25]">
             {source && !video ? <img src={source} alt="" loading="lazy" className="size-full object-cover" /> :
               <span className="text-[10px] font-medium text-white/75">{video ? "VIDEO" : "ARTE"}</span>}
           </div>
           <div className="min-w-[125px] flex-1">
-            <p className="truncate text-sm font-semibold text-[#272d3a]" title={row.title}>{row.title}</p>
-            <p className="truncate text-[11px] text-[#6e7684]">{row.discipline || "Sem categoria"} · /{row.slug}</p>
+            <p className="truncate text-sm font-semibold text-white" title={row.title}>{row.title}</p>
+            <p className="truncate text-[11px] text-[#aab8cf]">{row.discipline || "Sem categoria"} · /{row.slug}</p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <label className="flex items-center gap-1 rounded-lg border border-[#dce1eb] bg-white px-2 text-[11px] font-medium text-[#606a7c]">
+            <label className="flex items-center gap-1 rounded-lg border border-[#465777] bg-[#182238] px-2 text-[11px] font-medium text-[#cbd5e1]">
               <span className="sr-only">Nova posição de {row.title}</span>
               <span aria-hidden="true">N.º</span>
               <input type="number" min={1} max={order.length} step={1} disabled={saving}
@@ -303,14 +345,16 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
                     setPositionDraft(current => { const next = { ...current }; delete next[id]; return next; });
                     event.currentTarget.blur();
                   }
-                }} className="h-8 w-12 bg-transparent text-center text-xs font-semibold tabular-nums text-[#263b70] outline-none disabled:opacity-40" />
+                }} className="h-8 w-12 bg-transparent text-center text-xs font-semibold tabular-nums text-white outline-none disabled:opacity-40" />
             </label>
+            <button type="button" className="inline-flex h-9 items-center gap-1 rounded-lg border border-[#465777] bg-[#182238] px-2.5 text-xs font-semibold text-white hover:bg-[#2a3a59]" onClick={() => onToggleFeatured([id], !row.featured)} disabled={saving}><Pin size={13}/>{row.featured ? "Desfixar" : "Fixar"}</button>
+            <button type="button" className="inline-flex h-9 items-center gap-1 rounded-lg border border-[#465777] bg-[#182238] px-2.5 text-xs font-semibold text-white hover:bg-[#2a3a59]" onClick={() => onEdit(row)} disabled={saving}><Edit3 size={13}/>Editar</button>
           </div>
         </div>;
       })}
     </div>
 
-    <footer className="space-y-3 border-t border-[#e2e6ee] bg-white px-4 py-4 sm:px-6">
+    <footer className="space-y-3 border-t border-[#34425e] bg-[#111827] px-4 py-4 text-white sm:px-6">
       {message && <p role="status" aria-live="polite" className="flex items-center gap-2 text-xs text-[#316044]"><Check size={14}/>{message}</p>}
       {error && <p role="alert" className="text-xs font-medium text-[#aa352d]">{error}</p>}
       {confirming && changed && <div role="group" aria-label="Confirmar publicação da ordem" className="rounded-lg border border-[#c6d2ed] bg-[#f3f6ff] p-4">
