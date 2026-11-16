@@ -42,6 +42,7 @@ import {
   type ContactStep,
 } from "./types";
 import { selectPublicRows } from "./public-client";
+import { selectOfflinePublicRows } from "./snapshot-fallback";
 
 export class CmsContentError extends Error {
   constructor(message: string) {
@@ -192,14 +193,9 @@ export async function getProjects(featuredOnly = false): Promise<Project[]> {
     order: "position.asc",
   };
   if (featuredOnly) filters["featured"] = "eq.true";
-  let rows: unknown[];
-  try {
-    rows = await selectPublicRows("projects", filters);
-  } catch {
-    // Rolling deploy compatibility: an un-applied additive gallery_alt migration must not break public pages.
-    const legacyFilters = { ...filters, select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,featured,position,status,hue,locale" };
-    rows = await selectPublicRows("projects", legacyFilters);
-  }
+  // Portfolio work is repository content. It must not depend on Supabase
+  // availability, quota or schema migrations at request time.
+  const rows = await selectOfflinePublicRows("projects", filters);
   return rows.map((row) => toProject(ProjectRowSchema.parse(row)));
 }
 
@@ -210,13 +206,7 @@ export async function getPublishedProject(slug: string): Promise<Project | null>
     status: "eq.published",
     limit: "1",
   };
-  let rows: unknown[];
-  try {
-    rows = await selectPublicRows("projects", filters);
-  } catch {
-    // Keep the route online until the additive gallery_alt column is applied.
-    rows = await selectPublicRows("projects", { ...filters, select: "id,slug,title,client_label,year_label,discipline,project_type,summary,challenge,idea,outcome,cover_path,cover_alt,gallery,featured,position,status,hue,locale" });
-  }
+  const rows = await selectOfflinePublicRows("projects", filters);
   if (rows.length === 0) return null;
   return toProject(ProjectRowSchema.parse(rows[0]));
 }
