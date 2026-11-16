@@ -35,17 +35,17 @@ function resolveSnapshotMedia(source: string, alt: string | undefined): string {
   return `${LOCAL_MEDIA_PREFIX}${encodeURIComponent(localMediaName(alt))}`;
 }
 
-function localiseSnapshotProject(row: Record<string, unknown>): Record<string, unknown> {
-  const gallery = Array.isArray(row.gallery) ? row.gallery : [];
-  const galleryAlt = Array.isArray(row.gallery_alt) ? row.gallery_alt : [];
+function localiseSnapshotProject(row: Record<string, any>): Record<string, any> {
+  const gallery = Array.isArray(row["gallery"]) ? row["gallery"] : [];
+  const galleryAlt = Array.isArray(row["gallery_alt"]) ? row["gallery_alt"] : [];
   const localGallery = gallery.map((source, index) =>
     typeof source === "string" ? resolveSnapshotMedia(source, typeof galleryAlt[index] === "string" ? galleryAlt[index] : undefined) : source,
   );
-  const cover = typeof row.cover_path === "string" && row.cover_path ? row.cover_path : null;
+  const cover = typeof row["cover_path"] === "string" && row["cover_path"] ? row["cover_path"] : null;
   return {
     ...row,
     gallery: localGallery,
-    cover_path: cover ? resolveSnapshotMedia(cover, typeof row.cover_alt === "string" ? row.cover_alt : undefined) : cover,
+    cover_path: cover ? resolveSnapshotMedia(cover, typeof row["cover_alt"] === "string" ? row["cover_alt"] : undefined) : cover,
   };
 }
 

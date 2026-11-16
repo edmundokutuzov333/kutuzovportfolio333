@@ -9,6 +9,7 @@ import {
   getMediaAssetReferences,
   retryEmailOutbox,
 } from "@/lib/server/admin-media.server";
+import { uploadGitHubPortfolioImage } from "@/lib/server/github-portfolio.server";
 
 const imageType = z.enum(["image/png", "image/jpeg", "image/webp", "video/mp4"]);
 const storage = z.enum(["supabase", "backblaze"]).optional();
@@ -29,6 +30,15 @@ const attachmentInput = z.object({
   submissionId: z.string().uuid(),
   path: z.string().min(1).max(1024),
 }).strict();
+const githubImageInput = z.object({
+  originalName: z.string().trim().min(1).max(180),
+  contentType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+  base64: z.string().min(1).max(30 * 1024 * 1024),
+}).strict();
+
+export const uploadGitHubPortfolioImageFn = createServerFn({ method: "POST" })
+  .inputValidator(githubImageInput)
+  .handler(async ({ data }) => uploadGitHubPortfolioImage(data));
 
 export const createMediaUploadFn = createServerFn({ method: "POST" })
   .inputValidator(createUploadInput)

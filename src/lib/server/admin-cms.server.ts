@@ -1,4 +1,6 @@
 import { getAdminServerContext } from "./admin-auth.server";
+import { selectOfflinePublicRows } from "../cms/snapshot-fallback";
+import { deleteGitHubProject, loadGitHubProjects, mutateGitHubProject, reorderGitHubProjects, GitHubPortfolioError } from "./github-portfolio.server";
 import {
   AdminEntitySchema,
   validateAdminPayload,
@@ -156,8 +158,18 @@ export async function loadAdminWorkspace() {
   // every Admin table would generate dozens of identical HTTP 402 requests.
   const projects = await readRows(context, "projects");
   if (projects.error === ADMIN_QUOTA_MESSAGE) {
+    let repositoryProjects: Row[] = [];
+    let repositoryError: string | null = null;
+    try {
+      repositoryProjects = await loadGitHubProjects() as Row[];
+    } catch {
+      try { repositoryProjects = await selectOfflinePublicRows("projects", { order: "position.asc" }) as Row[]; }
+      catch { repositoryError = "Não foi possível carregar os projectos versionados no GitHub."; }
+    }
     const tables = Object.fromEntries(TABLES.map(table => [
-      table, { rows: [], error: ADMIN_QUOTA_MESSAGE },
+      table, table === "projects"
+        ? { rows: repositoryProjects, error: repositoryError }
+        : { rows: [], error: ADMIN_QUOTA_MESSAGE },
     ])) as Record<string, TableState>;
     return {
       actor: { id: context.actor.id, email: context.actor.email },
@@ -202,6 +214,14 @@ export async function mutateAdminContent(input: {
   note?: string | null;
 }) {
   const context = await getAdminServerContext();
+  if (String(input.entity) === "projects") {
+    try {
+      return await mutateGitHubProject(input);
+    } catch (error) {
+      if (error instanceof GitHubPortfolioError) throw new AdminCmsError(error.message, error.code === "conflict" ? "conflict" : error.code === "invalid" ? "invalid" : "unavailable");
+      throw error;
+    }
+  }
   const publicSiteUrl = process.env["PUBLIC_SITE_URL"]?.trim();
   let payload: Row;
   let validationInput = input.payload;
@@ -346,22 +366,18 @@ export async function reorderPublishedProjects(input: {
   ids: string[];
   expectedIds: string[];
 }) {
-  const context = await getAdminServerContext();
   if (input.ids.length === 0 || input.ids.length !== input.expectedIds.length ||
       input.ids.length > 500 || new Set(input.ids).size !== input.ids.length ||
       new Set(input.expectedIds).size !== input.expectedIds.length ||
       !input.ids.every(id => input.expectedIds.includes(id))) {
     throw new AdminCmsError("A lista de ordenação tem de incluir todos os trabalhos publicados, sem repetições.", "invalid");
   }
-  return restRequest<{ count: number; changed: number; published_revision: number }>(
-    context, "/rest/v1/rpc/admin_reorder_published_projects", {
-      method: "POST",
-      body: JSON.stringify({
-        p_ids: input.ids,
-        p_expected_ids: input.expectedIds,
-      }),
-    },
-  );
+  try {
+    return await reorderGitHubProjects(input.ids, input.expectedIds);
+  } catch (error) {
+    if (error instanceof GitHubPortfolioError) throw new AdminCmsError(error.message, error.code === "conflict" ? "conflict" : error.code === "invalid" ? "invalid" : "unavailable");
+    throw error;
+  }
 }
 
 export async function reorderAdminContent(input: {
@@ -395,24 +411,12 @@ export async function deleteArchivedProject(input: {
   expectedUpdatedAt: string;
   note?: string | null;
 }) {
-  const context = await getAdminServerContext();
-  const currentRows = await restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}`);
-  const current = currentRows[0];
-  if (!current) throw new AdminCmsError("O projecto já não existe. Actualize a lista.", "not_found");
-  if (current["updated_at"] !== input.expectedUpdatedAt) {
-    throw new AdminCmsError("Conflito: o projecto foi alterado depois de abrir a lista. Actualize os dados.", "conflict");
+  try {
+    return await deleteGitHubProject(input.id, input.expectedUpdatedAt);
+  } catch (error) {
+    if (error instanceof GitHubPortfolioError) throw new AdminCmsError(error.message, error.code === "conflict" ? "conflict" : error.code === "invalid" ? "invalid" : "unavailable");
+    throw error;
   }
-  if (current["status"] !== "archived") {
-    throw new AdminCmsError("Só é possível apagar definitivamente um projecto arquivado.", "invalid");
-  }
-  const deleted = await restRequest<Row[]>(context, `/rest/v1/projects?id=eq.${encodeURIComponent(input.id)}`, {
-    method: "DELETE",
-    headers: { Prefer: "return=representation" },
-  });
-  if (!Array.isArray(deleted) || deleted.length !== 1) {
-    throw new AdminCmsError("A base de dados não confirmou a eliminação definitiva.", "unknown");
-  }
-  return { record: deleted[0], published_revision: 0 };
 }
 
 function zReorderEntity(value: string): string {

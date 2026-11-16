@@ -14,7 +14,7 @@ import {
   reorderPublishedProjectsFn,
   updateContactSubmissionFn,
 } from "@/lib/admin-cms.functions";
-import { cancelMediaUploadFn, completeMediaUploadFn, createMediaUploadFn } from "@/lib/admin-media.functions";
+import { cancelMediaUploadFn, completeMediaUploadFn, createMediaUploadFn, uploadGitHubPortfolioImageFn } from "@/lib/admin-media.functions";
 import type { AdminEntity } from "@/lib/admin-cms.schema";
 import { getRestorableSnapshot } from "@/lib/admin-revisions";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
@@ -588,6 +588,14 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       try {
         for (const file of projectFiles) {
           const contentType = file.type === "video/mp4" ? "video/mp4" : file.type as "image/png" | "image/jpeg" | "image/webp";
+          if (contentType !== "video/mp4") {
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            let binary = "";
+            for (let index = 0; index < bytes.length; index += 0x8000) binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+            const uploaded = await uploadGitHubPortfolioImageFn({ data: { originalName: file.name, contentType, base64: btoa(binary) } }) as { publicUrl: string };
+            uploadedPaths.push(uploaded.publicUrl);
+            continue;
+          }
           const intent = await createMediaUploadFn({ data: { originalName: file.name, contentType, byteSize: file.size } }) as { path: string; uploadUrl: string; uploadHeaders?: Record<string, string>; storage?: "supabase" | "backblaze" };
           try {
             const response = await fetch(intent.uploadUrl, { method: intent.storage === "backblaze" ? "POST" : "PUT", headers: { "Content-Type": contentType, ...(intent.uploadHeaders ?? {}) }, body: file });
@@ -734,7 +742,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
         id: asText(row["id"]), expectedUpdatedAt: asText(row["updated_at"]),
         note: "Eliminação definitiva solicitada no Kutuzov Admin",
       } });
-      setNotice({ tone: "success", text: `“${rowTitle(row)}” foi eliminado definitivamente. Revisão ${result.published_revision} confirmada.` });
+      setNotice({ tone: "success", text: `“${rowTitle(row)}” foi eliminado definitivamente. Revisão ${(result as { published_revision: number }).published_revision} confirmada.` });
       await refresh();
     } catch (error) {
       setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível eliminar o projecto." });
