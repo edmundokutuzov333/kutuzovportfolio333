@@ -47,6 +47,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
   const [dragId, setDragId] = useState<string | null>(null);
   const dragRef = useRef<{ id: string; startY: number; active: boolean } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const skipPositionBlurRef = useRef<string | null>(null);
 
   useEffect(() => {
     setOrder(baseline);
@@ -95,6 +96,10 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
   }
 
   function commitPosition(id: string) {
+    if (skipPositionBlurRef.current === id) {
+      skipPositionBlurRef.current = null;
+      return;
+    }
     const raw = positionDraft[id];
     if (raw === undefined) return;
     const number = Number(raw);
@@ -288,6 +293,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
                 onKeyDown={event => {
                   if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); }
                   if (event.key === "Escape") {
+                    skipPositionBlurRef.current = id;
                     setPositionDraft(current => { const next = { ...current }; delete next[id]; return next; });
                     event.currentTarget.blur();
                   }
