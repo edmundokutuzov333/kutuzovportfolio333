@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNo
 import {
   Activity, Archive, ArrowDown, ArrowUp, BookOpen, Check, ChevronRight,
   Clock3, Contact, Database, FileImage, FileText, Globe2, History,
-  LayoutDashboard, LogOut, Mail, RefreshCw, Save, Search, Settings2,
+  LayoutDashboard, ListOrdered, LogOut, Mail, RefreshCw, Save, Search, Settings2,
   ShieldCheck, Users, BriefcaseBusiness, Layers3, Wrench,
 } from "lucide-react";
 
@@ -11,12 +11,15 @@ import {
   mutateAdminContentFn,
   deleteArchivedProjectFn,
   reorderAdminContentFn,
+  reorderPublishedProjectsFn,
   updateContactSubmissionFn,
 } from "@/lib/admin-cms.functions";
 import { cancelMediaUploadFn, completeMediaUploadFn, createMediaUploadFn } from "@/lib/admin-media.functions";
 import type { AdminEntity } from "@/lib/admin-cms.schema";
 import { getRestorableSnapshot } from "@/lib/admin-revisions";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
+import { ProjectOrderEditor } from "./ProjectOrderEditor";
+import { idsFromProjects, moveProjectId, publishedProjectRows, type ProjectOrderRecord } from "@/lib/admin-project-order";
 import { ContactInboxView as InboxView, EmailOutboxView, MediaLibraryView as MediaView, NewsletterManagementView as NewsletterView } from "@/components/admin/Phase4Modules";
 
 type Row = Record<string, unknown>;
@@ -368,6 +371,9 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const [notice, setNotice] = useState<{ tone: "success" | "error" | "info"; text: string } | null>(null);
   const [search, setSearch] = useState("");
   const [sectionPageId, setSectionPageId] = useState("");
+  const [organizingProjects, setOrganizingProjects] = useState(false);
+  const [organizingDirty, setOrganizingDirty] = useState(false);
+  const [lastPublishedOrder, setLastPublishedOrder] = useState<{ before: string[]; after: string[] } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -390,6 +396,21 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const tableState = active.table ? workspace?.tables[active.table] : undefined;
   const tableRows = useMemo(() => tableState?.rows ?? [], [tableState]);
   const sectionsPage = workspace?.tables["pages"]?.rows ?? [];
+  const projectOrderRows = useMemo<ProjectOrderRecord[]>(() =>
+    (workspace?.tables["projects"]?.rows ?? []).map(row => ({
+      id: asText(row["id"]),
+      title: rowTitle(row),
+      slug: asText(row["slug"]),
+      discipline: asText(row["discipline"]),
+      cover_path: asText(row["cover_path"]),
+      gallery: row["gallery"],
+      project_type: asText(row["project_type"]),
+      client_label: asText(row["client_label"]),
+      featured: asBool(row["featured"]),
+      position: asNumber(row["position"], 0),
+      status: asText(row["status"]),
+    })), [workspace?.tables["projects"]?.rows]);
+
 
   const records = useMemo(() => {
     let rows = tableRows;
@@ -403,6 +424,10 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   }, [tableRows, activeId, sectionPageId, search]);
 
   const navigateTo = (id: ModuleId) => {
+    if (organizingProjects && organizingDirty &&
+        !window.confirm("Descartar as alterações de ordem ainda não publicadas?")) return;
+    setOrganizingProjects(false);
+    setOrganizingDirty(false);
     setActiveId(id);
     setSelectedId(null);
     setDraft({});
@@ -697,26 +722,47 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
     }
   }
 
-  async function moveRecord(index: number, direction: -1 | 1) {
-    if (activeId !== "projects" || !active.entity || !active.reorder || search.trim() || saving) return;
-    const target = index + direction;
-    if (target < 0 || target >= records.length) return;
-    const ids = records.map((row) => asText(row["id"]));
-    [ids[index], ids[target]] = [ids[target]!, ids[index]!];
+  async function publishProjectOrder(ids: string[], expectedIds: string[]) {
+    if (saving) throw new Error("Aguarde até a operação anterior terminar.");
     setSaving(true);
     setNotice(null);
     try {
-      const result = await reorderAdminContentFn({ data: {
-        entity: active.entity as "page_sections" | "projects" | "clients" | "experience_items" | "metrics" | "skills" | "disciplines" | "principles" | "services" | "process_steps",
-        ids,
-        pageId: null,
-      } }) as { count: number; published_revision: number };
-      setNotice({ tone: "success", text: `Ordem actualizada para ${result.count} registos. Revisão ${result.published_revision} confirmada.` });
+      const result = await reorderPublishedProjectsFn({ data: { ids, expectedIds } });
+      if (result.count !== expectedIds.length) {
+        throw new Error("A base de dados não confirmou a quantidade de trabalhos.");
+      }
+      setLastPublishedOrder({ before: [...expectedIds], after: [...ids] });
+      // Leave the editor before reloading to avoid showing a stale baseline.
+      setOrganizingProjects(false);
+      setOrganizingDirty(false);
       await refresh();
+      setNotice({
+        tone: "success",
+        text: `Ordem global publicada: ${result.count} trabalhos, ${result.changed} posições actualizadas. Revisão ${result.published_revision}.`,
+      });
     } catch (error) {
-      setNotice({ tone: "error", text: error instanceof Error ? error.message : "A ordem não foi confirmada. Recarregue a lista." });
+      const message = error instanceof Error ? error.message : "Não foi possível publicar a nova ordem.";
+      setNotice({ tone: "error", text: message });
+      throw error;
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function moveRecord(index: number, direction: -1 | 1) {
+    if (activeId !== "projects" || !active.entity || !active.reorder || search.trim() || saving) return;
+    const source = records[index];
+    const target = records[index + direction];
+    if (!source || !target || source["status"] !== "published" || target["status"] !== "published") return;
+    const published = publishedProjectRows(projectOrderRows);
+    const originalIds = idsFromProjects(published);
+    const movedIds = moveProjectId(originalIds, asText(source["id"]),
+      originalIds.indexOf(asText(target["id"])));
+    if (movedIds.every((id, i) => id === originalIds[i])) return;
+    try {
+      await publishProjectOrder(movedIds, originalIds);
+    } catch {
+      // publishProjectOrder already retains the error message in the Admin.
     }
   }
 
@@ -871,7 +917,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
         <div className="flex items-center gap-2 sm:gap-4">
           <span className="hidden max-w-[200px] truncate text-xs text-[#666b76] md:inline">{email}</span>
           <span className="hidden items-center gap-1.5 rounded-full bg-[#eaf6ee] px-2.5 py-1 text-[11px] font-medium text-[#17653b] sm:inline-flex"><ShieldCheck size={13} /> Sessão autenticada</span>
-          <button type="button" onClick={() => void refresh()} disabled={loading || saving} className="inline-flex size-9 items-center justify-center rounded-lg border border-[#e0e2e8] text-[#464b56] hover:bg-[#f2f3f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50" aria-label="Actualizar dados do Admin" title="Actualizar dados"><RefreshCw size={16} /></button>
+          <button type="button" onClick={() => { if (organizingProjects && organizingDirty && !window.confirm("Descartar as alterações de ordem ainda não publicadas?")) return; void refresh(); }} disabled={loading || saving} className="inline-flex size-9 items-center justify-center rounded-lg border border-[#e0e2e8] text-[#464b56] hover:bg-[#f2f3f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50" aria-label="Actualizar dados do Admin" title="Actualizar dados"><RefreshCw size={16} /></button>
           <a href="/admin/knowledge" className="inline-flex h-9 items-center rounded-lg border border-[#ccd5ec] px-3 text-xs font-medium text-[#253c8d] hover:bg-[#eff3ff]">Conhecimento</a>
            <button type="button" onClick={onLogout} disabled={saving} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e0e2e8] px-3 text-xs font-medium text-[#454954] hover:bg-[#f2f3f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50"><LogOut size={14} /><span className="hidden sm:inline">Sair</span></button>
         </div>
@@ -913,7 +959,14 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
                 <h1 className="text-2xl font-semibold tracking-tight sm:text-[30px]">{active.label}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-[#626774]">{active.description}</p>
               </div>
-              {activeId !== "overview" && active.fields && active.create && !editing &&
+              {activeId === "projects" && !editing && !organizingProjects ? (
+                <button type="button" onClick={() => { setOrganizingProjects(true); setOrganizingDirty(false); setNotice(null); }}
+                  disabled={saving || loading || !!tableState?.error}
+                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#a6b6dc] bg-[#eef2fd] px-4 text-sm font-semibold text-[#203c83] shadow-sm transition hover:bg-[#e0e9fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-50">
+                  <ListOrdered size={17} /> Organizar ordem
+                </button>
+              ) : null}
+              {activeId !== "overview" && active.fields && active.create && !editing && !organizingProjects &&
         (activeId !== "sections" || sectionsPage.find((page) => page["id"] === sectionPageId)?.["route_path"] === "/") ? (
                 <button type="button" onClick={startCreate} disabled={saving || loading || !!tableState?.error} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#17295f] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#243d82] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-50"><span aria-hidden="true">+</span> Novo registo</button>
               ) : null}
@@ -938,6 +991,15 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
               <NewsletterView rows={tableRows} error={tableState?.error ?? null} stateBadge={stateBadge} />
             ) : activeId === "mail" ? (
               <EmailOutboxView rows={tableRows} error={tableState?.error ?? null} busy={saving} onRefresh={refresh} stateBadge={stateBadge} />
+            ) : activeId === "projects" && organizingProjects ? (
+              <ProjectOrderEditor
+                records={projectOrderRows}
+                saving={saving}
+                savedOrder={lastPublishedOrder}
+                onDirtyChange={setOrganizingDirty}
+                onPublish={publishProjectOrder}
+                onClose={() => { setOrganizingProjects(false); setOrganizingDirty(false); }}
+              />
             ) : editing ? (
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <form onSubmit={(event) => void saveContent(event)} className="min-w-0 rounded-xl border border-[#e1e4ea] bg-white p-4 shadow-sm sm:p-6">
