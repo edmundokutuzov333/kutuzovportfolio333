@@ -1,5 +1,5 @@
 {
-  "snapshot_generated_at": "2026-11-16T13:08:07.079Z",
+  "snapshot_generated_at": "2026-11-16T13:08:58.254Z",
   "source": "Public CMS rows only; used when the live Supabase public API is unavailable",
   "tables": {
     "pages": [
@@ -1129,7 +1129,7 @@
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
         "featured": false,
-        "position": 10,
+        "position": 9,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
         "cover_path": null,
@@ -1233,7 +1233,7 @@
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
         "featured": false,
-        "position": 9,
+        "position": 10,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
         "cover_path": null,
