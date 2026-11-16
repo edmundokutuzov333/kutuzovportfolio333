@@ -1,5 +1,5 @@
 {
-  "snapshot_generated_at": "2026-11-16T13:49:43.212Z",
+  "snapshot_generated_at": "2026-11-16T13:49:47.337Z",
   "source": "Public CMS rows only; used when the live Supabase public API is unavailable",
   "tables": {
     "pages": [
@@ -1934,7 +1934,7 @@
         ],
         "outcome": "Um conjunto de peças com leitura imediata e personalidade consistente, pronto para escalar entre canais e manter a marca reconhecível.",
         "summary": null,
-        "featured": false,
+        "featured": true,
         "position": 0,
         "challenge": "Transformar uma mensagem numa peça que conquiste atenção em poucos segundos, sem perder clareza, personalidade ou contexto de marca.",
         "cover_alt": null,
@@ -1946,7 +1946,7 @@
         ],
         "client_label": null,
         "project_type": "image",
-        "updated_at": "2026-11-16T13:49:43.212Z"
+        "updated_at": "2026-11-16T13:49:47.337Z"
       },
       {
         "id": "f37cde6b-12e3-48bc-a969-fbe277b4fddb",
