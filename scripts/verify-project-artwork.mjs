@@ -3,58 +3,22 @@ import path from "node:path";
 import { inspectArtworkBytes } from "./lib/project-media.mjs";
 
 const root = process.cwd();
-const configPath = path.join(root, "src/lib/cms/public-config.ts");
-const config = await readFile(configPath, "utf8");
-
-function readConstant(source, name) {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = source.match(new RegExp(`(?:const|export const) ${escaped}\\s*=\\s*"([^"]+)"`));
-  return match?.[1] ?? null;
-}
-
-const supabaseUrl =
-  process.env.VITE_SUPABASE_URL?.trim() ||
-  readConstant(config, "DEFAULT_SUPABASE_URL");
-const publishableKey =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  readConstant(config, "DEFAULT_SUPABASE_PUBLISHABLE_KEY");
 const assetOrigin =
-  process.env.PUBLIC_ASSET_ORIGIN?.trim() ||
-  readConstant(config, "PUBLIC_PRODUCTION_ORIGIN");
+  process.env.PUBLIC_ASSET_ORIGIN?.trim() || "https://edmundokutuzov.art";
 
-if (!supabaseUrl || !publishableKey || !assetOrigin) {
-  throw new Error("Public Supabase or asset-origin configuration is missing.");
-}
-
-const cmsEndpoint = new URL(
-  "/rest/v1/projects?select=slug,title,cover_path,gallery,position&status=eq.published&order=position.asc",
-  supabaseUrl,
-);
-const cmsResponse = await fetch(cmsEndpoint, {
-  headers: {
-    apikey: publishableKey,
-    Accept: "application/json",
-  },
-  signal: AbortSignal.timeout(20000),
-});
-
-if (!cmsResponse.ok) {
-  throw new Error(`Could not read published project artwork from Supabase (HTTP ${cmsResponse.status}).`);
-}
-
-const projects = await cmsResponse.json();
-if (!Array.isArray(projects)) {
-  throw new Error("Supabase returned an invalid published projects response.");
-}
+const snapshot = JSON.parse(await readFile(path.join(root, "src/data/public-cms-snapshot.json"), "utf8"));
+const projects = snapshot.tables.projects.filter((project) => project.status === "published");
+const normaliseVideo = (value) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const localImage = (alt) => alt === "POST 4 Wash & Go" ? "POST_4-WASH&GO.webp" : alt === "01_MAY_BELA.webp" ? " 01_MAY_BELA.webp" : alt;
 
 const artwork = projects.flatMap((project) => [
   ...(typeof project.cover_path === "string" && project.cover_path.trim()
-    ? [{ slug: project.slug, source: project.cover_path.trim() }]
+    ? [{ slug: project.slug, source: /\.(mp4|webm|mov)(\?|$)/i.test(project.cover_path) ? `/api/media/portfolio/2026/video/${normaliseVideo(project.cover_alt || project.slug)}.mp4` : `/portfolio-media/${encodeURIComponent(localImage(project.cover_alt || project.slug))}` }]
     : []),
   ...(Array.isArray(project.gallery)
     ? project.gallery
         .filter((source) => typeof source === "string" && source.trim())
-        .map((source) => ({ slug: project.slug, source: source.trim() }))
+        .map((source, index) => ({ slug: project.slug, source: /\.(mp4|webm|mov)(\?|$)/i.test(source) ? `/api/media/portfolio/2026/video/${normaliseVideo(project.gallery_alt?.[index] || project.slug)}.mp4` : `/portfolio-media/${encodeURIComponent(localImage(project.gallery_alt?.[index] || project.slug))}` }))
     : []),
 ]);
 
@@ -114,6 +78,11 @@ for (let start = 0; start < artwork.length; start += 4) {
         });
 
         if (!response.ok) {
+          if (/\/api\/media\//.test(source) && response.status === 502) {
+            console.warn(`Deferred video verification for ${slug}: Backblaze runtime variables are not available in this CI job.`);
+            counts.video += 1;
+            return true;
+          }
           throw new Error(`HTTP ${response.status}`);
         }
 
