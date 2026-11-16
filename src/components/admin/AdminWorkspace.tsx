@@ -396,10 +396,12 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
   const fields = active.fields ?? [];
   const tableState = active.table ? workspace?.tables[active.table] : undefined;
   const tableRows = useMemo(() => tableState?.rows ?? [], [tableState]);
+  const projectTableError = workspace?.tables["projects"]?.error;
+  const projectTableRows = workspace?.tables["projects"]?.rows;
   // If the CMS is temporarily blocked, show ONLY an explicitly read-only copy
   // of already-public project entries, never private/draft/archived data.
   useEffect(() => {
-    if (!workspace?.tables["projects"]?.error) {
+    if (!projectTableError) {
       setLastKnownPublicProjects([]);
       return;
     }
@@ -412,11 +414,11 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       })
       .catch(() => { if (active) setLastKnownPublicProjects([]); });
     return () => { active = false; };
-  }, [workspace?.tables["projects"]?.error]);
+  }, [projectTableError]);
 
   const sectionsPage = workspace?.tables["pages"]?.rows ?? [];
   const projectOrderRows = useMemo<ProjectOrderRecord[]>(() =>
-    (workspace?.tables["projects"]?.rows ?? []).map(row => ({
+    (projectTableRows ?? []).map(row => ({
       id: asText(row["id"]),
       title: rowTitle(row),
       slug: asText(row["slug"]),
@@ -428,7 +430,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       featured: asBool(row["featured"]),
       position: asNumber(row["position"], 0),
       status: asText(row["status"]),
-    })), [workspace?.tables["projects"]?.rows]);
+    })), [projectTableRows]);
 
 
   const records = useMemo(() => {
