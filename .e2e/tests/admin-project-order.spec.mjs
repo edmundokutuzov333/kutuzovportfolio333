@@ -10,6 +10,7 @@ async function signIn(page) {
 }
 
 test("PIN-only Admin access remains intact and the complete published order can be staged safely", async ({ page }) => {
+  test.skip(!process.env["ADMIN_E2E_WITH_BACKEND"], "Full editor test requires a provisioned server-side Supabase Admin backend; no fake login.");
   test.setTimeout(90000);
   await signIn(page);
   await page.getByRole("button", { name: "Organizar ordem" }).click();
