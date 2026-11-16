@@ -34,6 +34,8 @@ begin
 
   -- Serialise reorders; row locks prevent concurrent changes to published work.
   perform pg_catalog.pg_advisory_xact_lock(11211, 20261116);
+  -- Also serialize normal project publishing/archiving, not just editor RPC calls.
+  lock table public.projects in share row exclusive mode;
   perform 1 from public.projects where status = 'published' for update;
   select array_agg(project.id order by project.position, project.id),
          count(*)::integer
