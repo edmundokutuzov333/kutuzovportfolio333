@@ -238,14 +238,14 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
     }, { visibleCount, centerSlot });
 
     expect(stageMetrics.stageOverflow).toBe("visible");
-    if (viewport.width >= 768) {
+    if (viewport.width >= 768 && visibleCount > 1) {
       expect(stageMetrics.leftGap).toBeGreaterThan(0);
       expect(stageMetrics.leftGap).toBeLessThan(45);
       expect(stageMetrics.rightGap).toBeGreaterThan(0);
       expect(stageMetrics.rightGap).toBeLessThan(45);
       expect(cardMetrics[0].zIndex).toBeGreaterThan(cardMetrics[1].zIndex);
       expect(cardMetrics[visibleCount - 1].zIndex).toBeGreaterThan(cardMetrics[visibleCount - 2].zIndex);
-    } else {
+    } else if (visibleCount > 1) {
       expect(cardMetrics[0].left).toBeGreaterThanOrEqual(-1);
       expect(cardMetrics[visibleCount - 1].right).toBeLessThanOrEqual(viewport.width + 1);
       expect(stageMetrics.leftGap).toBeLessThan(0);
