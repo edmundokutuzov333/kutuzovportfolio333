@@ -1,4 +1,5 @@
 import { DEFAULT_SUPABASE_PUBLISHABLE_KEY, DEFAULT_SUPABASE_URL } from "./public-config";
+import { selectOfflinePublicRows } from "./snapshot-fallback";
 
 const env = import.meta.env;
 
@@ -52,25 +53,71 @@ export class CmsRequestError extends Error {
   }
 }
 
+// A restricted/free-tier Supabase Data API must not take the public portfolio
+// offline. This is an ephemeral circuit breaker, not a long-lived content cache.
+let temporarilyUnavailableUntil = 0;
+let lastFallbackNoticeAt = 0;
+const PUBLIC_API_RETRY_DELAY_MS = 45_000;
+
+function isTemporaryBackendFailure(status: number): boolean {
+  return status === 402 || status === 408 || status === 429 || status >= 500;
+}
+
+async function loadPublishedFallback(
+  table: PublicCmsTable,
+  query: Record<string, string>,
+  reason: string,
+  activateCircuit = true,
+): Promise<unknown[]> {
+  const now = Date.now();
+  if (activateCircuit) temporarilyUnavailableUntil = now + PUBLIC_API_RETRY_DELAY_MS;
+  if (now - lastFallbackNoticeAt > 120_000) {
+    console.warn("[cms] live Supabase public API temporarily unavailable; serving last published snapshot.", reason);
+    lastFallbackNoticeAt = now;
+  }
+  return selectOfflinePublicRows(table, query);
+}
+
 export async function selectPublicRows(
   table: PublicCmsTable,
   query: Record<string, string>,
 ): Promise<unknown[]> {
+  if (Date.now() < temporarilyUnavailableUntil) {
+    return loadPublishedFallback(table, query, "circuit-breaker", false);
+  }
+
   const url = new URL(`/rest/v1/${table}`, SUPABASE_URL);
   for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
 
-  const response = await fetch(url, {
-    method: "GET",
-    cache: "no-store",
-    headers: {
-      apikey: SUPABASE_API_KEY,
-      ...(AUTHORIZATION_KEY ? { Authorization: `Bearer ${AUTHORIZATION_KEY}` } : {}),
-      Accept: "application/json",
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      signal: AbortSignal.timeout(7_000),
+      headers: {
+        apikey: SUPABASE_API_KEY,
+        ...(AUTHORIZATION_KEY ? { Authorization: `Bearer ${AUTHORIZATION_KEY}` } : {}),
+        Accept: "application/json",
+      },
+    });
+  } catch {
+    return loadPublishedFallback(table, query, "network/timeout");
+  }
 
-  if (!response.ok) throw new CmsRequestError(table, response.status);
-  const payload: unknown = await response.json();
-  if (!Array.isArray(payload)) throw new CmsRequestError(table, 502);
-  return payload;
+  if (!response.ok) {
+    if (isTemporaryBackendFailure(response.status)) {
+      return loadPublishedFallback(table, query, `HTTP ${response.status}`);
+    }
+    // Never obscure real authorization, schema or configuration errors.
+    throw new CmsRequestError(table, response.status);
+  }
+
+  try {
+    const payload: unknown = await response.json();
+    if (!Array.isArray(payload)) return loadPublishedFallback(table, query, "invalid array response");
+    return payload;
+  } catch {
+    return loadPublishedFallback(table, query, "invalid JSON response");
+  }
 }
