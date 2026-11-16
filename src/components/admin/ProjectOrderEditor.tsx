@@ -16,6 +16,7 @@ type Props = {
   savedOrder: SavedOrder | null;
   onPublish: (next: string[], previous: string[]) => Promise<void>;
   onClose: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 };
 
 function previewSource(project: ProjectOrderRecord): string {
@@ -30,7 +31,7 @@ function previewSource(project: ProjectOrderRecord): string {
 const control = "inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#dce1eb] bg-white text-[#37415c] transition hover:border-[#97a7d1] hover:bg-[#eef2fc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:cursor-not-allowed disabled:opacity-25";
 const secondary = "inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-[#dce1eb] bg-white px-3 text-xs font-semibold text-[#293b67] transition hover:bg-[#f0f3fa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#243d98] disabled:opacity-40";
 
-export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onClose }: Props) {
+export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onClose, onDirtyChange }: Props) {
   const published = useMemo(() => publishedProjectRows(records), [records]);
   const baseline = useMemo(() => idsFromProjects(published), [published]);
   const baselineKey = baseline.join("|");
@@ -65,6 +66,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     [order, byId, search, category]);
   const changed = !isExactOrder(order, baseline);
   const movingCount = order.filter((id, index) => baseline[index] !== id).length;
+  useEffect(() => { onDirtyChange?.(changed); }, [changed, onDirtyChange]);
   const canDrag = !search.trim() && !category && !saving;
   const canRevertLastPublish = !changed && Boolean(savedOrder) &&
     savedOrder !== null && isExactOrder(savedOrder.after, baseline);
@@ -159,6 +161,12 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
     if (targetId && targetId !== active.id) moveTo(active.id, order.indexOf(targetId));
   }
 
+  function exitEditor() {
+    if (saving) return;
+    if (changed && !window.confirm("Descartar as alterações de ordem ainda não publicadas?")) return;
+    onClose();
+  }
+
   function pointerEnd() {
     dragRef.current = null;
     setDragId(null);
@@ -193,7 +201,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
           Tudo permanece em pré-visualização até confirmar a publicação.
         </p>
       </div>
-      <button type="button" onClick={onClose} disabled={saving}
+      <button type="button" onClick={exitEditor} disabled={saving}
         className={secondary}><X size={15} /> Voltar à galeria</button>
     </header>
 
