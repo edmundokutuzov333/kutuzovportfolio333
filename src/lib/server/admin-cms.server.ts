@@ -61,7 +61,21 @@ function headers(context: AdminContext, prefer?: string): HeadersInit {
   };
 }
 
+const ADMIN_QUOTA_MESSAGE =
+  "O Supabase suspendeu temporariamente o acesso ao CMS por excesso da quota de tráfego (HTTP 402). " +
+  "O login continua activo, mas a edição e a publicação estão bloqueadas até a quota ser restabelecida. " +
+  "Consulte Supabase Dashboard → Billing / Usage; nenhuma alteração foi perdida.";
+
+let lastQuotaLogAt = 0;
+
 function publicError(status: number, message: string): never {
+  if (status === 402 && /exceed_cached_egress_quota|restricted|spend caps/i.test(message)) {
+    if (Date.now() - lastQuotaLogAt > 120_000) {
+      console.warn("[admin-cms] Supabase public API is quota-restricted (HTTP 402).");
+      lastQuotaLogAt = Date.now();
+    }
+    throw new AdminCmsError(ADMIN_QUOTA_MESSAGE, "unavailable");
+  }
   console.error("[admin-cms] database error", status, message.slice(0, 500));
   if (/gallery_alt/.test(message) && /does not exist|schema cache|42703|PGRST/i.test(message)) {
     throw new AdminCmsError("O campo de texto alternativo da galeria ainda não foi instalado pela migração da Fase 3. A gravação está bloqueada até a migração ser validada e aplicada.", "unavailable");
@@ -138,8 +152,24 @@ async function readRows(context: AdminContext, table: (typeof TABLES)[number]): 
 
 export async function loadAdminWorkspace() {
   const context = await getAdminServerContext();
+  // Probe a single table first. During a free-tier quota outage, fan-out across
+  // every Admin table would generate dozens of identical HTTP 402 requests.
+  const projects = await readRows(context, "projects");
+  if (projects.error === ADMIN_QUOTA_MESSAGE) {
+    const tables = Object.fromEntries(TABLES.map(table => [
+      table, { rows: [], error: ADMIN_QUOTA_MESSAGE },
+    ])) as Record<string, TableState>;
+    return {
+      actor: { id: context.actor.id, email: context.actor.email },
+      tables,
+      storage: { status: "unavailable", buckets: [], error: ADMIN_QUOTA_MESSAGE },
+      loadedAt: new Date().toISOString(),
+    };
+  }
+
   const results = await Promise.all([
-    ...TABLES.map(async (table) => [table, await readRows(context, table)] as const),
+    ...TABLES.map(async (table) =>
+      [table, table === "projects" ? projects : await readRows(context, table)] as const),
     (async () => {
       try {
         const buckets = await restRequest<Array<{ id: string; name: string; public: boolean }>>(context, "/storage/v1/bucket");
