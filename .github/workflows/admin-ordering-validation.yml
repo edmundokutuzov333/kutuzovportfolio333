@@ -1,0 +1,36 @@
+name: Admin ordering pre-merge validation
+
+on:
+  push:
+    branches: [feat/admin-project-order-editor-20261116]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Test all unit contracts and admin access controls
+        run: bun run test
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Lint
+        run: bun run lint
+      - name: Production build
+        run: bun run build
+      - name: Install Chromium and Mobile Safari WebKit
+        run: |
+          npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Run complete public-site and PIN-only Admin E2E
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs
+      - name: Mobile WebKit protected-editor regression
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.webkit.config.mjs .e2e/tests/admin-project-order.spec.mjs
