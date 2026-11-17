@@ -26,7 +26,7 @@ export function ArtSlot({ project, className, loading = "eager" }: {
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
-    <Link to="/work/$slug" params={{ slug: project.slug }} data-cursor="View"
+    <Link to="/work/$slug" params={{ slug: project.slug }} reloadDocument data-cursor="View"
       data-work-campaign={isCampaignDiscipline(project.discipline) ? "true" : "false"}
       className="group block">
       <div className="overflow-hidden rounded-sm">
