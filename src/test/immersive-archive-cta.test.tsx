@@ -7,12 +7,13 @@ import { ARCHIVE_EXPERIENCE_URL, Component as ArchiveLauncher } from "@/componen
 describe("Work immersive archive floating launcher", () => {
   it("opens the real independently hosted immersive archive without navigating away from Work", () => {
     const html = renderToStaticMarkup(<ArchiveLauncher />);
-    expect(ARCHIVE_EXPERIENCE_URL).toBe("https://showreel-kutuzov-v2.vercel.app/");
+    expect(ARCHIVE_EXPERIENCE_URL).toBe("/work/immersive/index.html");
     expect(html).toContain('data-testid="work-immersive-archive-link"');
-    expect(html).toContain('href="https://showreel-kutuzov-v2.vercel.app/"');
-    expect(html).toContain('target="_blank"');
-    expect(html).toContain('rel="noopener noreferrer"');
-    expect(html).toContain('aria-label="Explore the immersive archive (opens in a new tab)"');
+    expect(html).toContain('href="/work/immersive/index.html"');
+    expect(html).not.toContain('target="_blank"');
+    expect(html).not.toContain('showreel-kutuzov-v2.vercel.app');
+    expect(html).toContain('data-native-document="true"');
+    expect(html).toContain('aria-label="Explore the immersive archive on this website"');
     expect(html).not.toContain('fixed inset-0');
   });
 
@@ -60,5 +61,7 @@ describe("Work immersive archive floating launcher", () => {
     expect(work).toContain("setFilter(value)");
     const shell = readFileSync("src/components/Shell.tsx", "utf8");
     expect(shell).not.toContain("ImmersiveArchiveCTA");
+    const transition = readFileSync("src/components/LiquidTransition.tsx", "utf8");
+    expect(transition).toContain('a.hasAttribute("data-native-document")');
   });
 });
