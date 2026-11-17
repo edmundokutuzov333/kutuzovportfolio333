@@ -110,3 +110,103 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
  .archive-preview .archive-media{animation:none!important}
  *,*::before,*::after{transition-duration:.01ms!important}
 }
+
+/* MOBILE ARCHIVE v4 — intentionally simple, non-overlapping interaction zones. */
+.archive-selected__controls{
+  position:relative;z-index:4;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;flex:none;min-height:38px;
+}
+.archive-selected__controls .archive-close,
+.archive-selected__controls .archive-expand{
+  position:static;top:auto;right:auto;left:auto;width:38px;height:38px;
+}
+.archive-selected__controls .archive-close{order:2}
+.archive-selected__controls .archive-expand{order:1}
+
+/* Pointer controls must use the canvas, while the selected sheet must scroll natively. */
+.cinema-stage{touch-action:pan-y}
+.cinema-canvas{touch-action:none}
+.archive-selected{overscroll-behavior:contain}
+.archive-selected button{touch-action:manipulation}
+
+@media(max-width:650px){
+  .cinema-toolbar{
+    top:calc(12px + env(safe-area-inset-top));right:12px;gap:4px;z-index:24;
+  }
+  .cinema-tool{width:38px;height:38px;min-width:38px}
+  .archive-filters{
+    top:calc(67px + env(safe-area-inset-top));left:12px;right:12px;
+    width:calc(100% - 24px);max-width:none;
+    display:flex;justify-content:space-between;gap:4px;
+    padding:2px 0;overflow-x:auto;z-index:23;
+  }
+  .archive-filter{width:43px;height:43px;min-width:43px}
+  .archive-hover{top:calc(155px + env(safe-area-inset-top));max-width:calc(100vw - 32px)}
+  .archive-selected{
+    position:absolute;z-index:35;
+    top:calc(119px + env(safe-area-inset-top));
+    right:12px;left:12px;
+    bottom:calc(12px + env(safe-area-inset-bottom));
+    width:auto;max-height:none;max-width:none;
+    padding:10px;border-radius:17px;
+    overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;touch-action:pan-y;
+    display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  }
+  .archive-selected__controls{
+    position:sticky;top:0;z-index:8;
+    background:rgba(7,13,26,.97);
+    padding:2px 2px 6px;min-height:44px;flex-shrink:0;
+    backdrop-filter:blur(12px);
+  }
+  .archive-selected__controls .archive-close,
+  .archive-selected__controls .archive-expand{
+    width:42px;height:42px;min-width:42px;min-height:42px;
+  }
+  .archive-preview,
+  .archive-selected--expanded .archive-preview{
+    flex:none;min-height:0;width:100%;height:auto;
+    overflow:visible;display:block;background:rgba(0,0,0,.25);
+    border-radius:10px;
+  }
+  .archive-media,
+  .archive-selected--expanded .archive-media{
+    display:block;width:100%;height:auto;max-width:100%;max-height:none;
+    object-fit:contain;object-position:center;
+    aspect-ratio:auto;min-height:0;border-radius:10px;
+  }
+  .archive-selected--expanded{
+    position:fixed;inset:calc(7px + env(safe-area-inset-top)) 7px
+      calc(7px + env(safe-area-inset-bottom));width:auto;
+    overflow-y:auto;touch-action:pan-y;
+  }
+  .archive-related{flex:none;gap:7px;padding:9px 0 0;margin-top:6px}
+  .archive-related__tile{height:60px}
+  .archive-related__arrow{width:40px;height:40px;min-height:40px}
+  .archive-metadata{flex:none;padding:5px 4px 8px}
+  .archive-metadata h2{font-size:clamp(17px,4.5vw,23px);margin:10px 0 13px}
+  .archive-metadata a{min-height:46px}
+  .cinema-hint-toggle{
+    right:12px;bottom:calc(15px + env(safe-area-inset-bottom));
+    width:43px;height:43px;
+  }
+  .cinema-gesture-guide{
+    bottom:calc(71px + env(safe-area-inset-bottom));
+    left:50%;gap:7px;
+    max-width:min(92vw,310px);z-index:24;
+  }
+  .cinema-gesture-guide>span{font-size:9px;padding:8px 10px}
+  .cinema-shell:has(.archive-selected) .cinema-toolbar,
+  .cinema-shell:has(.archive-selected) .archive-filters,
+  .cinema-shell:has(.archive-selected) .cinema-hint-toggle,
+  .cinema-shell:has(.archive-selected) .cinema-gesture-guide{
+    visibility:hidden;pointer-events:none;
+  }
+}
+@media(max-width:375px){
+  .cinema-tool{width:35px;height:35px;min-width:35px}
+  .archive-filter{width:40px;height:40px;min-width:40px}
+  .archive-filters{top:calc(63px + env(safe-area-inset-top))}
+  .archive-selected{top:calc(111px + env(safe-area-inset-top))}
+  .cinema-gesture-guide>span{padding:7px 8px}
+}
