@@ -117,7 +117,7 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
     >
       <nav className="flex flex-col">
         {presentation.navigation.map((item, index) => (
-          <motion.div key={item.to} className="overflow-hidden" initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + index * 0.03, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+          <motion.div key={item.to} className="site-menu-entry overflow-hidden" initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + index * 0.03, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <Link to={item.to} onClick={close} className="group flex items-baseline gap-4 font-display text-[11vw] font-bold leading-[0.95] md:text-[6.5vw]">
               <span className="font-mono text-xs">0{index + 1}</span>
               <span className="transition-transform duration-500 group-hover:translate-x-6">{navLabel(item.to, item.label)}</span>
