@@ -7,6 +7,11 @@ on:
       - ".github/workflows/mobile-cv-release.yml"
       - "vercel.json"
       - "src/routes/cv.css"
+      - "src/routes/cv.tsx"
+      - "src/components/Intro.tsx"
+      - "scripts/build-cv-pdfs.mjs"
+      - "scripts/verify-cv-pdf-visual.py"
+      - ".e2e/tests/editorial-cv.spec.mjs"
       - "vendor/immersive-archive/frontend/src/components/reel/Stage.jsx"
       - "vendor/immersive-archive/frontend/public/index.html"
       - "vendor/immersive-archive/frontend/src/App.css"
@@ -115,6 +120,9 @@ jobs:
           grep -Fq 'Art Director' /tmp/cv-EN.txt
           grep -Fq 'Director de Arte' /tmp/cv-PT.txt
           sha256sum public/edmundo-kutuzov-cv-2026.pdf | grep -Fq '4ebf841282ac47b386c8dab6e4f37dfc09950704aa925bd563ac08efb7ce9e37'
+
+      - name: Render-check PDF pages to reject any obscured or dark Intro export
+        run: python scripts/verify-cv-pdf-visual.py
 
       - name: Browser verify full CV, touch gestures and every nav route
         run: |
