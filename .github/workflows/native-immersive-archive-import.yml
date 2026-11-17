@@ -1,0 +1,170 @@
+name: Import native immersive archive
+
+on:
+  push:
+    branches: ["feat/native-immersive-archive"]
+    paths:
+      - ".github/workflows/native-immersive-archive-import.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor-build-verify:
+    name: Vendor pinned archive, build isolated app, verify, commit to feature branch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout the portfolio branch without rewriting history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+
+      - name: Set up Bun already used by the portfolio
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Vendor the precise approved archive source and all real artworks
+        env:
+          ARCHIVE_SHA: 01f195f6ff431af5a83ece58cc00293e5d0096a9
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/archive-source"
+          git clone --quiet --depth=1 --branch main \
+            https://github.com/edmundokutuzov333/showreel-kutuzov-v2.git "$source_dir"
+          actual_sha=$(git -C "$source_dir" rev-parse HEAD)
+          if [[ "$actual_sha" != "$ARCHIVE_SHA" ]]; then
+            echo "::error::Source main advanced. Refusing an unreviewed archive import."
+            exit 1
+          fi
+          mkdir -p vendor/immersive-archive/frontend public/work/immersive/reel
+          rsync -a \
+            --exclude='node_modules/' --exclude='build/' --exclude='.git/' \
+            --exclude='._*' --exclude='.DS_Store' \
+            --exclude='.env*' --exclude='/public/reel/' \
+            "$source_dir/frontend/" vendor/immersive-archive/frontend/
+          rsync -a --exclude='._*' \
+            "$source_dir/frontend/public/reel/" public/work/immersive/reel/
+          cat > vendor/immersive-archive/SOURCE.txt <<EOF
+          Snapshot of the approved standalone immersive archive.
+          Source: https://github.com/edmundokutuzov333/showreel-kutuzov-v2
+          Commit: $ARCHIVE_SHA
+          Runtime: self-hosted by www.edmundokutuzov.art
+          Artwork location: public/work/immersive/reel
+          The source and built site are committed to the portfolio repository.
+          EOF
+
+      - name: Prefix every static preload and add a minimal return-to-Work affordance
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'vendor/immersive-archive/frontend/public/index.html';
+          let html = fs.readFileSync(file,'utf8');
+          html = html.replaceAll('href="/reel/', 'href="/work/immersive/reel/');
+          html = html.replace(
+            'Edmundo Kutuzov — Versão 3. Showreel cinematográfico e arquivo criativo interactivo.',
+            'Arquivo imersivo de 155 trabalhos — Edmundo Kutuzov.'
+          );
+          html = html.replace('Edmundo Kutuzov — V3 / Immersive Archive',
+            'Immersive Archive — Edmundo Kutuzov');
+          const styles = [
+            '<style>',
+            '#ek-archive-back{position:fixed;z-index:500;left:max(14px,env(safe-area-inset-left));top:calc(16px + env(safe-area-inset-top));',
+            'display:inline-flex;align-items:center;gap:8px;padding:11px 14px;min-height:42px;max-width:calc(100vw - 30px);',
+            'border:1px solid rgba(153,203,255,.28);border-radius:24px;background:rgba(5,13,28,.78);',
+            'color:#e5f1ff;text-decoration:none;font:600 10px/1.1 "JetBrains Mono",monospace;letter-spacing:.11em;',
+            'box-shadow:0 8px 26px rgba(2,7,20,.38);backdrop-filter:blur(12px);transition:border-color .2s,background .2s}',
+            '#ek-archive-back:hover,#ek-archive-back:focus-visible{border-color:rgba(173,220,255,.88);background:rgba(12,39,87,.93)}',
+            '#ek-archive-back:focus-visible{outline:2px solid #9acbff;outline-offset:3px}',
+            '@media(prefers-reduced-motion:reduce){#ek-archive-back{transition:none}}',
+            '</style>'
+          ].join('');
+          html=html.replace('</head>',styles+'</head>');
+          html=html.replace('<div id="root"></div>',
+            '<div id="root"></div><a id="ek-archive-back" href="/work" aria-label="Back to Work">← &nbsp; BACK TO WORK</a>');
+          fs.writeFileSync(file,html);
+          NODE
+
+      - name: Install pinned classic Yarn and the standalone archive dependencies
+        run: |
+          npm install --global yarn@1.22.22
+          cd vendor/immersive-archive/frontend
+          yarn install --non-interactive --network-timeout 120000
+
+      - name: Run all original archive unit tests
+        working-directory: vendor/immersive-archive/frontend
+        run: yarn test:ci
+
+      - name: Build the archive exclusively for the portfolio's same-origin path
+        working-directory: vendor/immersive-archive/frontend
+        env:
+          PUBLIC_URL: /work/immersive
+          GENERATE_SOURCEMAP: "false"
+          CI: "true"
+        run: yarn build
+
+      - name: Copy only compiled JS and CSS; keep original artwork assets single-copy
+        run: |
+          set -euo pipefail
+          rsync -a --exclude='/reel/' --exclude='*.map' \
+            vendor/immersive-archive/frontend/build/ public/work/immersive/
+          node scripts/verify-native-immersive-archive.mjs
+          if grep -R -F -q 'showreel-kutuzov-v2.vercel.app' public/work/immersive/static; then
+            echo "::error::Archive bundle contains a dependency on the legacy showreel domain."
+            exit 1
+          fi
+
+      - name: Install portfolio's existing locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck, lint and existing unit tests
+        run: |
+          bun run typecheck
+          bun run lint
+          bun run test
+
+      - name: Build the portfolio unchanged except for its internal archive link
+        run: bun run build
+
+      - name: Install isolated Playwright Chromium runner
+        run: |
+          npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Browser-verify the archive and existing Work entry
+        run: |
+          .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
+            native-immersive-archive.spec.mjs work-immersive-archive.spec.mjs
+
+      - name: Commit the imported source and static media to feature branch
+        if: success()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A vendor/immersive-archive public/work/immersive
+          if git diff --cached --quiet; then
+            echo "Native archive already matches approved snapshot."
+          else
+            git commit -m "feat(archive): vendor 155-work immersive explorer and self-hosted production bundle"
+            git push origin HEAD:feat/native-immersive-archive
+          fi
+
+      - name: Upload browser verification evidence if a gate fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-archive-import-evidence-${{ github.sha }}
+          path: |
+            .e2e/test-results
+            .e2e/playwright-report
+          if-no-files-found: warn
+          retention-days: 14
