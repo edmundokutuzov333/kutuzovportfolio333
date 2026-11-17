@@ -26,7 +26,8 @@ for (const route of publicRoutes) {
 
 test("a currently published project opens from the work index", async ({ page }) => {
   await page.goto("/work");
-  const link = page.locator('a[href^="/work/"]').first();
+  // The native archive CTA also starts with /work/ but is not a project card.
+  const link = page.locator('a[href^="/work/"]:not([data-native-document])').first();
   await expect(link).toBeVisible();
   const href = await link.getAttribute("href");
   const response = await page.goto(href);
