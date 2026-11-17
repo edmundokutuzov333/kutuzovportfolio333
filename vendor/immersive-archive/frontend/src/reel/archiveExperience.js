@@ -1,4 +1,5 @@
 import { clamp01, smooth01 } from "./apertureTimeline";
+import { BASE_URL } from "./paths";
 
 /** Verified catalogue metadata only; never infer a campaign relationship from a title. */
 export function sameProject(a,b){
@@ -64,4 +65,9 @@ export function atlasTile(item,cols=10,rows=8){
     backgroundSize:`${cols*100}% ${rows*100}%`,
     backgroundPosition:`${(item.cell%cols)/(cols-1)*100}% ${Math.floor(item.cell/cols)/(rows-1)*100}%`
   };
+}
+\n/** Original-aspect, pre-sized preview for the compact DISCOVER rail. */
+export function discoverThumbnail(item){
+  if(!item || !Number.isInteger(item.id) || item.id < 0)return "";
+  return `${BASE_URL}/thumbs/${String(item.id).padStart(3,"0")}.webp`;
 }
