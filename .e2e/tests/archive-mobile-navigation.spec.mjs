@@ -158,5 +158,5 @@ test("Native menu navigates from server HTML without waiting for React hydration
   await expect(details).toHaveAttribute("open","");
   await expect(details.locator('nav a[href="/services"]')).toBeVisible();
   await details.locator('nav a[href="/services"]').click();
-  await expect(page).toHaveURL(/\\/services\\/?$/);
+  await expect(page).toHaveURL(new RegExp("/services/?$"));
 });
