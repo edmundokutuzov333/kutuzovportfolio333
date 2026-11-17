@@ -1,0 +1,117 @@
+name: Validate native-ratio DISCOVER thumbnails
+
+on:
+  push:
+    branches: ["feat/discover-native-proportions"]
+    paths:
+      - ".github/workflows/discover-thumbnails.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    name: Render faithful thumbnails, build local explorer, run visual/browser gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout without modifying published history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up existing Bun version
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install image generator dependencies
+        run: |
+          python -m pip install --disable-pip-version-check Pillow==11.3.0
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+
+      - name: Generate all original-ratio WEBP previews including seven video posters
+        run: python scripts/generate-discover-thumbnails.py
+
+      - name: Install existing standalone archive dependencies
+        run: |
+          npm install -g yarn@1.22.22
+          cd vendor/immersive-archive/frontend
+          yarn install --frozen-lockfile --non-interactive --network-timeout 120000
+
+      - name: Archive original and aspect-ratio regression unit tests
+        working-directory: vendor/immersive-archive/frontend
+        run: yarn test:ci
+
+      - name: Build standalone archive for the portfolio same-origin URL
+        working-directory: vendor/immersive-archive/frontend
+        env:
+          PUBLIC_URL: /work/immersive
+          GENERATE_SOURCEMAP: "false"
+          CI: "true"
+        run: yarn build
+
+      - name: Replace only compiled archive bundle, not original artworks
+        run: |
+          find public/work/immersive/static/js -maxdepth 1 -type f -name 'main.*.js' -delete
+          find public/work/immersive/static/css -maxdepth 1 -type f -name 'main.*.css' -delete
+          rsync -a --exclude='/reel/' --exclude='*.map' \
+            vendor/immersive-archive/frontend/build/ public/work/immersive/
+          node scripts/verify-native-immersive-archive.mjs
+
+      - name: Install existing locked portfolio dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify the unchanged portfolio
+        run: |
+          bun run typecheck
+          bun run lint
+          bun run test
+          bun run build
+
+      - name: Install Chromium for responsive visual regression
+        run: |
+          npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Browser test selected artwork and true-proportion DISCOVER thumbnails
+        run: |
+          .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
+            native-immersive-archive.spec.mjs work-immersive-archive.spec.mjs
+
+      - name: Commit verified thumbnails and compiled assets in feature branch
+        if: success()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public/work/immersive/reel/thumbs public/work/immersive/static public/work/immersive/index.html
+          if git diff --cached --quiet; then
+            echo "No generated asset differences."
+          else
+            git commit -m "fix(archive): ship 155 crisp, proportional DISCOVER previews and updated bundle"
+            git push origin HEAD:feat/discover-native-proportions
+          fi
+
+      - name: Save screenshots and traces on browser failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discover-qa-${{ github.sha }}
+          path: |
+            .e2e/test-results
+            .e2e/playwright-report
+          retention-days: 14
+          if-no-files-found: warn
