@@ -10,6 +10,7 @@ on:
       - "src/routes/cv.tsx"
       - "src/components/Intro.tsx"
       - "src/components/Shell.tsx"
+      - "src/components/ProjectCard.tsx"
       - "src/styles.css"
       - ".e2e/tests/archive-mobile-navigation.spec.mjs"
       - ".e2e/tests/public-routes.spec.mjs"
