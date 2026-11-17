@@ -86,7 +86,7 @@ test("Seven viewport widths retain hierarchy, full name and no horizontal overfl
       const name=heading.querySelectorAll(".cv-cover__name-line");
       const boxes=[...name].map(x=>x.getBoundingClientRect().toJSON());
       const portrait=root.querySelector("[data-testid=cv-portrait]").getBoundingClientRect();
-      const section=root.querySelector("#experiencia").getBoundingClientRect();
+      const section=root.querySelector(".cv-section--experience").getBoundingClientRect();
       return {viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,
         boxes,portrait:portrait.toJSON(),section:section.toJSON()};
     });
