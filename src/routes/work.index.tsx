@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { PageHero, Reveal } from "@/components/Reveal";
 import { ProjectCard } from "@/components/ProjectCard";
+import { Component as ImmersiveArchiveCTA } from "@/components/ui/ai-loader";
 import { loadWorkContent } from "@/lib/cms/loaders";
 import type { HeroSection } from "@/lib/cms/types";
 import { seoFromPage } from "@/lib/seo";
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/work/")({
 
 function Work() {
   const data = Route.useLoaderData();
-  const { t, tx } = useI18n();
+  const { t, tx, language } = useI18n();
   const hero = data.sections.find((section): section is HeroSection => section.section_type === "hero");
   if (!hero) throw new Error("The published Work page is missing its hero section.");
 
@@ -27,6 +28,15 @@ function Work() {
   return (
     <>
       <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro ?? ""} />
+      <ImmersiveArchiveCTA
+        size={98}
+        text={language === "pt-PT" ? "ENTRAR" : "ENTER"}
+        eyebrow={language === "pt-PT" ? "ENTRE NO UNIVERSO" : "ENTER THE SPACE"}
+        label={language === "pt-PT" ? "ARQUIVO IMERSIVO" : "IMMERSIVE ARCHIVE"}
+        ariaLabel={language === "pt-PT"
+          ? "Explorar o arquivo imersivo numa nova aba"
+          : "Explore the immersive archive in a new tab"}
+      />
       <div className="flex flex-wrap gap-2 px-6 pb-12 md:px-12">
         {filters.map((value) => (
           <button
