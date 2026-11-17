@@ -36,7 +36,7 @@ export function LiquidTransition() {
       if (busy.current || event.defaultPrevented || event.button !== 0) return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const a = (event.target as HTMLElement).closest("a") as HTMLAnchorElement | null;
-      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      if (!a || a.target === "_blank" || a.hasAttribute("download") || a.hasAttribute("data-native-document")) return;
       const href = a.getAttribute("href");
       if (!href || !href.startsWith("/") || href.startsWith("//") || href.startsWith("/admin")) return;
       const url = new URL(href, window.location.origin);
