@@ -5,6 +5,7 @@ on:
     branches: ["feat/native-immersive-archive"]
     paths:
       - ".github/workflows/native-immersive-archive-import.yml"
+      - "eslint.config.js"
   workflow_dispatch:
 
 permissions:
