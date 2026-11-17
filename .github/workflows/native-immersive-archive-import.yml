@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/native-immersive-archive-import.yml"
       - "eslint.config.js"
+      - ".e2e/tests/native-immersive-archive.spec.mjs"
   workflow_dispatch:
 
 permissions:
@@ -78,7 +79,7 @@ jobs:
             'Immersive Archive — Edmundo Kutuzov');
           const styles = [
             '<style>',
-            '#ek-archive-back{position:fixed;z-index:500;left:max(14px,env(safe-area-inset-left));top:calc(16px + env(safe-area-inset-top));',
+            '#ek-archive-back{position:fixed;z-index:500;left:max(14px,env(safe-area-inset-left));top:calc(80px + env(safe-area-inset-top));',
             'display:inline-flex;align-items:center;gap:8px;padding:11px 14px;min-height:42px;max-width:calc(100vw - 30px);',
             'border:1px solid rgba(153,203,255,.28);border-radius:24px;background:rgba(5,13,28,.78);',
             'color:#e5f1ff;text-decoration:none;font:600 10px/1.1 "JetBrains Mono",monospace;letter-spacing:.11em;',
