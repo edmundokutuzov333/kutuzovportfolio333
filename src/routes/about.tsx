@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDownToLine, ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight, MapPin } from "lucide-react";
 
 import { PageHero, Reveal } from "@/components/Reveal";
 import { SafeAssetImage } from "@/components/SafeAssetImage";
@@ -84,15 +84,14 @@ function About() {
             ))}
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-3">
-            <a
-              href="/edmundo-kutuzov-cv-2026.pdf"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              to="/cv"
               className="inline-flex items-center gap-3 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+              data-testid="about-view-cv"
             >
-              <ArrowDownToLine size={16} aria-hidden="true" />
-              View CV (PDF)
-            </a>
+              <ArrowUpRight size={16} aria-hidden="true" />
+              {tx("View CV (PDF)").replace(" (PDF)", "")}
+            </Link>
             <a href="/contact" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm transition hover:border-primary">
               {tx("Start a conversation")} <ArrowUpRight size={15} aria-hidden="true" />
             </a>
