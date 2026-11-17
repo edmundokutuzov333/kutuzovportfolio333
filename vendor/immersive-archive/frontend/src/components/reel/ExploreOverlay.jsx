@@ -8,6 +8,7 @@ import {discoverThumbnail} from "@/reel/archiveExperience";
 const stop=e=>e.stopPropagation();
 const pad=n=>String(n).padStart(3,"0");
 const icons=[Orbit,Layers3,Image,Shapes,Sparkles,Clapperboard];
+const hasEditorialTitle = item => item?.cat === "CAMPAIGN";
 
 function Selected({it,onClose,onSelect,onNavigate,suggestions,transition}){
   const [expanded,setExpanded]=useState(false);
@@ -15,6 +16,7 @@ function Selected({it,onClose,onSelect,onNavigate,suggestions,transition}){
     <aside data-testid="explore-selected-panel"
       onPointerDown={stop} onPointerUp={stop} onPointerMove={stop}
       className={"archive-selected"+(expanded?" archive-selected--expanded":"")}>
+      <div className="archive-selected__controls">
       <button type="button" className="archive-expand"
         aria-label={expanded?"Reduzir visualização":"Ampliar obra"}
         title={expanded?"Reduzir visualização":"Ampliar obra"}
@@ -25,6 +27,7 @@ function Selected({it,onClose,onSelect,onNavigate,suggestions,transition}){
         title="Voltar à exploração" aria-label="Voltar à exploração" className="archive-close">
         <X size={19}/>
       </button>
+      </div>
       <div key={it.id} className={"archive-preview archive-preview--"+transition}>
         {it.video
           ?<video src={BASE+"/vid/"+it.id+".mp4"} autoPlay muted loop playsInline
@@ -50,7 +53,7 @@ function Selected({it,onClose,onSelect,onNavigate,suggestions,transition}){
           {suggestions.map(work=>(
             <button key={work.id} type="button"
               data-testid={"related-work-"+work.id}
-              title={work.title} aria-label={"Abrir "+work.title}
+              title={hasEditorialTitle(work)?work.title:work.cat} aria-label={hasEditorialTitle(work)?"Abrir "+work.title:"Abrir obra de "+work.cat}
               onClick={()=>onSelect(work)}
               className="archive-related__tile">
               <img
@@ -67,7 +70,7 @@ function Selected({it,onClose,onSelect,onNavigate,suggestions,transition}){
       </div>
       <div className="archive-metadata">
         <p>{pad(it.id)} / {it.brand||it.cat}</p>
-        <h2>{it.title}</h2>
+        {hasEditorialTitle(it) && <h2>{it.title}</h2>}
         <a data-testid="explore-open-site"
           href={"https://edmundokutuzov.art/work/"+encodeURIComponent(it.slug)}
           target="_blank" rel="noopener noreferrer">
@@ -98,7 +101,7 @@ export default function ExploreOverlay({r}){
       {r.hover&&!r.selected&&(
         <div className="archive-hover" data-testid="explore-hover-label">
           <span>{r.hover.brand||r.hover.cat}</span>
-          <strong>{r.hover.title}</strong>
+          {hasEditorialTitle(r.hover) && <strong>{r.hover.title}</strong>}
         </div>
       )}
       {r.selected&&<Selected it={r.selected}
