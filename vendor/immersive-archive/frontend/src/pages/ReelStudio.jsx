@@ -14,7 +14,8 @@ function Tool({label,onClick,children,active=false}){
 
 export default function ReelStudio(){
   const [fullscreen,setFullscreen]=useState(false);
-  const [showHelp,setShowHelp]=useState(true);
+  // On touch devices the gesture legend appears only when explicitly requested.
+  const [showHelp,setShowHelp]=useState(()=>!window.matchMedia("(pointer:coarse)").matches);
   const shellRef=useRef(null);
   const r=useReel();
   const {ready,introComplete,selected,setSelected,resetView,pointer}=r;
