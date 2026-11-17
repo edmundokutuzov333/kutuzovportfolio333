@@ -1,0 +1,189 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Download, Printer } from "lucide-react";
+
+import { cvSections, normaliseCvPhone, originalCv } from "@/lib/cv-original";
+import "./cv.css";
+
+export const Route = createFileRoute("/cv")({
+  head: () => ({
+    meta: [
+      { title: "Edmundo Kutuzov — CV" },
+      { name: "description", content: "Edmundo Kutuzov — Visual Communication Designer & Art Director." },
+    ],
+  }),
+  component: CurriculumPage,
+});
+
+function CvHeading({ id, children }: { id: string; children: string }) {
+  return (
+    <div className="cv-section-heading">
+      <h2 id={id} className="cv-section-heading__title">{children}</h2>
+      <span className="cv-section-heading__rule" aria-hidden="true" />
+    </div>
+  );
+}
+
+function CvUtilityBar({ className = "" }: { className?: string }) {
+  return (
+    <div className={`cv-actions ${className}`}>
+      <Link to="/about" className="cv-actions__button" aria-label="Voltar à página About" title="Voltar à About">
+        <ArrowLeft size={18} strokeWidth={1.6} aria-hidden="true" />
+      </Link>
+      <a
+        href={originalCv.pdf}
+        download="Edmundo-Kutuzov-CV-2026.pdf"
+        className="cv-actions__button"
+        aria-label="Descarregar CV original em PDF"
+        title="Descarregar PDF"
+        data-testid="cv-download"
+      >
+        <Download size={18} strokeWidth={1.6} aria-hidden="true" />
+      </a>
+      <button
+        type="button"
+        className="cv-actions__button"
+        aria-label="Imprimir o CV"
+        title="Imprimir"
+        onClick={() => window.print()}
+        data-testid="cv-print"
+      >
+        <Printer size={18} strokeWidth={1.6} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+export function CurriculumPage() {
+  return (
+    <main className="cv-experience" data-testid="cv-page">
+      <div className="cv-container">
+        <section className="cv-cover" aria-labelledby="cv-name">
+          <div className="cv-cover__content">
+            <div className="cv-cover__upper">
+              <span className="cv-cover__mark" aria-hidden="true" />
+              <CvUtilityBar />
+            </div>
+            <h1 id="cv-name" className="cv-cover__name">
+              {originalCv.name.map((line, index) => (
+                <span className="cv-cover__name-line" key={line} style={{ animationDelay: `${index * 0.09}s` }}>{line}</span>
+              ))}
+            </h1>
+            <div className="cv-cover__role">
+              {originalCv.role.map(line => <span key={line}>{line}</span>)}
+            </div>
+            <div className="cv-cover__baseline" aria-hidden="true"><span /></div>
+          </div>
+          <div className="cv-cover__portrait-frame">
+            <img
+              src={originalCv.photo}
+              alt="Edmundo Kutuzov"
+              className="cv-cover__portrait"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              width={780}
+              height={1040}
+              data-testid="cv-portrait"
+            />
+            <span className="cv-cover__portrait-stroke" aria-hidden="true"/>
+          </div>
+        </section>
+
+        <div className="cv-document">
+          <aside className="cv-document__rail" aria-label="Navegação do currículo">
+            <nav className="cv-navigation" aria-label="Secções do CV">
+              {cvSections.map(item => (
+                <a className="cv-navigation__item" key={item.id} href={`#${item.id}`}>{item.heading}</a>
+              ))}
+            </nav>
+            <CvUtilityBar className="cv-actions--rail" />
+          </aside>
+
+          <article className="cv-document__body">
+            <section className="cv-section cv-section--about" aria-labelledby="sobre">
+              <CvHeading id="sobre">{originalCv.about.heading}</CvHeading>
+              <p className="cv-about__copy">{originalCv.about.text}</p>
+            </section>
+
+            <section className="cv-section cv-section--experience" aria-labelledby="experiencia">
+              <CvHeading id="experiencia">{originalCv.experience.heading}</CvHeading>
+              <ol className="cv-experience-list">
+                {originalCv.experience.items.map(item => (
+                  <li key={item.company} className="cv-experience-list__item">
+                    <p className="cv-experience-list__period">{item.period}</p>
+                    <div>
+                      <h3 className="cv-experience-list__company">{item.company}</h3>
+                      <p className="cv-experience-list__role">{item.role}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <div className="cv-document__duo">
+              <section className="cv-section cv-section--education" aria-labelledby="educacao">
+                <CvHeading id="educacao">{originalCv.education.heading}</CvHeading>
+                <h3 className="cv-education__name">{originalCv.education.school}</h3>
+                <p className="cv-education__level">{originalCv.education.level}</p>
+                <p className="cv-education__year">{originalCv.education.year}</p>
+              </section>
+
+              <section className="cv-section cv-section--skills" aria-labelledby="skills">
+                <CvHeading id="skills">{originalCv.skills.heading}</CvHeading>
+                <ul className="cv-skills">
+                  {originalCv.skills.items.map(skill => (
+                    <li key={skill.name} className="cv-skills__item">
+                      <div className="cv-skills__header">
+                        <span className="cv-skills__name">{skill.name}</span>
+                        <span className="cv-skills__percentage">{skill.value}%</span>
+                      </div>
+                      <div
+                        className="cv-skills__track"
+                        role="meter"
+                        aria-label={skill.name}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={skill.value}
+                      >
+                        <span className="cv-skills__fill" style={{ width: `${skill.value}%` }} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+
+            <div className="cv-document__duo cv-document__duo--end">
+              <section className="cv-section cv-section--contact" aria-labelledby="contacto">
+                <CvHeading id="contacto">{originalCv.contact.heading}</CvHeading>
+                <dl className="cv-contact">
+                  <div>
+                    <dt>{originalCv.contact.phoneLabel}</dt>
+                    <dd><a href={normaliseCvPhone(originalCv.contact.phone)}>{originalCv.contact.phone}</a></dd>
+                  </div>
+                  <div>
+                    <dt>{originalCv.contact.emailLabel}</dt>
+                    <dd><a href={`mailto:${originalCv.contact.email}`}>{originalCv.contact.email}</a></dd>
+                  </div>
+                  <div>
+                    <dt>{originalCv.contact.addressLabel}</dt>
+                    <dd>{originalCv.contact.address.map(line => <span key={line}>{line}</span>)}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="cv-section cv-section--reference" aria-labelledby="referencia">
+                <CvHeading id="referencia">{originalCv.reference.heading}</CvHeading>
+                <h3 className="cv-reference__name">{originalCv.reference.name}</h3>
+                <p className="cv-reference__role">{originalCv.reference.role}</p>
+                <p className="cv-reference__phone">
+                  <a href={normaliseCvPhone(originalCv.reference.phone)}>{originalCv.reference.phoneLine}</a>
+                </p>
+              </section>
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+  );
+}
