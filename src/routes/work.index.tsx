@@ -34,8 +34,8 @@ function Work() {
         eyebrow={language === "pt-PT" ? "ENTRE NO UNIVERSO" : "ENTER THE SPACE"}
         label={language === "pt-PT" ? "ARQUIVO IMERSIVO" : "IMMERSIVE ARCHIVE"}
         ariaLabel={language === "pt-PT"
-          ? "Explorar o arquivo imersivo numa nova aba"
-          : "Explore the immersive archive in a new tab"}
+          ? "Explorar o arquivo imersivo neste site"
+          : "Explore the immersive archive on this website"}
       />
       <div className="flex flex-wrap gap-2 px-6 pb-12 md:px-12">
         {filters.map((value) => (
