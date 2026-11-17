@@ -71,3 +71,67 @@ test("Work CTA is real same-origin navigation, not an intercepted SPA route",asy
   await expect(page.locator('[data-testid="reel-canvas"]')).toBeVisible({timeout:30_000});
   expect(new URL(page.url()).origin).toBe("http://127.0.0.1:5173");
 });
+
+test("DISCOVER uses sharp native-ratio previews, not stretched atlas backgrounds",async ({page})=>{
+  test.setTimeout(85_000);
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto("/work/immersive/index.html",{waitUntil:"domcontentloaded"});
+  await expect(page.locator('[data-testid="explore-overlay"]')).toBeVisible({timeout:45_000});
+  let opened=false;
+  // Locate a real, visible 3D item, exactly as a visitor would.
+  for(let y=190;y<=740&&!opened;y+=82){
+    for(let x=235;x<=1170&&!opened;x+=90){
+      await page.mouse.move(x,y);
+      await page.waitForTimeout(65);
+      if(await page.locator('[data-testid="explore-hover-label"]').isVisible()){
+        await page.mouse.click(x,y);
+        opened=await page.locator('[data-testid="explore-selected-panel"]').isVisible();
+      }
+    }
+  }
+  expect(opened,"A visible artwork must be selectable to inspect DISCOVER").toBe(true);
+  const tiles=page.locator('[data-testid^="related-work-"]');
+  await expect(tiles).toHaveCount(4);
+  const images=tiles.locator("img.archive-related__image");
+  await expect(images).toHaveCount(4);
+  for(const image of await images.all()){
+    await expect.poll(()=>image.evaluate(el=>el.complete&&el.naturalWidth>0&&el.naturalHeight>0)).toBe(true);
+    const meta=await image.evaluate(el=>{
+      const css=getComputedStyle(el),rect=el.getBoundingClientRect();
+      return {src:new URL(el.currentSrc).pathname,fit:css.objectFit,
+        naturalRatio:el.naturalWidth/el.naturalHeight,
+        boxRatio:rect.width/rect.height,width:rect.width,height:rect.height,
+        alt:el.alt};
+    });
+    expect(meta.src).toMatch(/\/work\/immersive\/reel\/thumbs\/\d{3}\.webp$/);
+    expect(meta.fit).toBe("contain");
+    expect(meta.alt).toBe("");
+    expect(meta.width).toBeGreaterThan(0);
+    expect(meta.height).toBeGreaterThan(0);
+    // This tests the image element itself, not only its container's size.
+    expect(Math.abs(meta.boxRatio/meta.naturalRatio-1)).toBeLessThan(0.03);
+  }
+  await tiles.first().click();
+  await expect(page.locator('[data-testid="explore-selected-panel"]')).toBeVisible();
+  await expect(page.locator('[data-testid="related-work-"+(await tiles.first().getAttribute("data-testid")).replace("related-work-","") +""]')).toHaveCount(1);
+});
+
+test("the seven video items also have true-proportion local posters",async ({page})=>{
+  const response=await page.goto("/work/immersive/reel/thumbs/manifest.json");
+  expect(response?.status()).toBe(200);
+  const manifest=await response.json();
+  expect(manifest.count).toBe(155);
+  expect(manifest.totalBytes).toBeLessThan(5_000_000);
+  for(const entry of manifest.items){
+    const [sw,sh]=entry.original,[tw,th]=entry.thumbnail;
+    expect(tw).toBeGreaterThan(0);
+    expect(th).toBeGreaterThan(0);
+    expect(Math.abs((tw/th)/(sw/sh)-1)).toBeLessThanOrEqual(0.025);
+  }
+  expect(manifest.items.filter(item=>item.type==="video")).toHaveLength(7);
+  for(const id of [148,150,154]){
+    const preview=await page.request.get(`/work/immersive/reel/thumbs/${String(id).padStart(3,"0")}.webp`);
+    expect(preview.status()).toBe(200);
+    expect(preview.headers()["content-type"]).toContain("image/webp");
+  }
+});
