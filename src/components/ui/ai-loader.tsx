@@ -17,7 +17,7 @@ export interface LoaderProps {
   ariaLabel?: string;
 }
 
-export const ARCHIVE_EXPERIENCE_URL = "https://showreel-kutuzov-v2.vercel.app/";
+export const ARCHIVE_EXPERIENCE_URL = "/work/immersive/index.html";
 
 export const Component: React.FC<LoaderProps> = ({
   size = 98,
@@ -25,18 +25,20 @@ export const Component: React.FC<LoaderProps> = ({
   label = "IMMERSIVE ARCHIVE",
   eyebrow = "ENTER THE SPACE",
   href = ARCHIVE_EXPERIENCE_URL,
-  ariaLabel = "Explore the immersive archive (opens in a new tab)",
+  ariaLabel = "Explore the immersive archive on this website",
 }) => {
   const letters = Array.from(text);
   const orbSize = Number.isFinite(size) ? Math.max(80, Math.min(124, size)) : 98;
+  const external = /^https?:\/\//i.test(href);
 
   return (
     <a
       data-testid="work-immersive-archive-link"
       className="ek-archive-cta"
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      data-native-document={external ? undefined : "true"}
       aria-label={ariaLabel}
       data-cursor="Enter"
     >
