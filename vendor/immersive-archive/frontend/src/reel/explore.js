@@ -40,7 +40,7 @@ export class Explore {
     const dx=x-this.drag.x,dy=y-this.drag.y;
     const bounds=this.e.canvas.getBoundingClientRect();
     const distance=Math.hypot(dx*bounds.width,dy*bounds.height);
-    const threshold=this.drag.pointerType==="touch"?12:6;
+    const threshold=this.drag.pointerType==="touch"?7:6;
     if(distance>threshold)this.drag.moved=true;
     if(!this.drag.moved)return;
     this.tYaw=this.drag.yaw-dx*5.5;
@@ -69,9 +69,9 @@ export class Explore {
     };
     const direct=from(x,y);
     if(direct||!touch)return direct;
-    // 10px directional tolerance for small touch targets, without guesswork.
+    // 18px directional tolerance for fingertips, never snapping to arbitrary art.
     const rect=this.e.canvas.getBoundingClientRect();
-    const dx=10/Math.max(1,rect.width),dy=10/Math.max(1,rect.height);
+    const dx=18/Math.max(1,rect.width),dy=18/Math.max(1,rect.height);
     for(const [ox,oy] of [[dx,0],[-dx,0],[0,dy],[0,-dy]]){
       const hit=from(x+ox,y+oy);
       if(hit)return hit;
