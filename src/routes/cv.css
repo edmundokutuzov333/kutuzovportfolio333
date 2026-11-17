@@ -754,6 +754,7 @@ body:has(.cv-experience) header.fixed {
   body:has(.cv-experience) footer,
   body:has(.cv-experience) [data-cv-controls],
   body:has(.cv-experience) .cv-document__rail,
+  body:has(.cv-experience) [aria-label="Intro — click to enter"],
   body:has(.cv-experience) .cv-cover__upper,
   body:has(.cv-experience) .cv-cover__baseline{
     display:none!important;
