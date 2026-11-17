@@ -67,9 +67,16 @@ describe("native CV — exact information contract", () => {
     const about=readFileSync("src/routes/about.tsx","utf8");
     const css=readFileSync("src/routes/cv.css","utf8");
     expect(route).not.toMatch(/<iframe|<embed|<object|pdfjs-dist|react-pdf/i);
-    expect(route).toContain('download="Edmundo-Kutuzov-CV-2026.pdf"');
+    expect(route).toContain('cvPdfForLanguage(lang)');
     expect(route).toContain('to="/about"');
     expect(route).toContain("originalCv.photo");
+    expect(route).toContain('data-cv-language={lang}');
+    expect(route).toContain('CvLanguageControl');
+    expect(route).toContain('/edmundo-kutuzov-cv-mineral.png');
+    const content=readFileSync("src/lib/cv-content.ts","utf8");
+    expect(content).toContain('Hyundai Moçambique');
+    expect(content).toContain('Flying Fish');
+    expect(content).toContain('Moçambique Companhia de Seguros');
     expect(route).toContain('role="meter"');
     expect(about).toContain('to="/cv"');
     expect(about).not.toContain('target="_blank"');
