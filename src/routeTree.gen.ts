@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CvRouteImport } from './routes/cv'
 import { Route as ProcessRouteImport } from './routes/process'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as AdminKnowledgeRouteImport } from './routes/admin.knowledge'
@@ -54,6 +55,11 @@ const ClientsRoute = ClientsRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CvRoute = CvRouteImport.update({
+  id: '/cv',
+  path: '/cv',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProcessRoute = ProcessRouteImport.update({
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/clients': typeof ClientsRoute
   '/contact': typeof ContactRoute
+  '/cv': typeof CvRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
   '/admin/knowledge': typeof AdminKnowledgeRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/clients': typeof ClientsRoute
   '/contact': typeof ContactRoute
+  '/cv': typeof CvRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
   '/admin/knowledge': typeof AdminKnowledgeRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/clients': typeof ClientsRoute
   '/contact': typeof ContactRoute
+  '/cv': typeof CvRoute
   '/process': typeof ProcessRoute
   '/services': typeof ServicesRoute
   '/admin/knowledge': typeof AdminKnowledgeRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/clients'
     | '/contact'
+    | '/cv'
     | '/process'
     | '/services'
     | '/admin/knowledge'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/clients'
     | '/contact'
+    | '/cv'
     | '/process'
     | '/services'
     | '/admin/knowledge'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/clients'
     | '/contact'
+    | '/cv'
     | '/process'
     | '/services'
     | '/admin/knowledge'
@@ -285,6 +297,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   ClientsRoute: typeof ClientsRoute
   ContactRoute: typeof ContactRoute
+  CvRoute: typeof CvRoute
   ProcessRoute: typeof ProcessRoute
   ServicesRoute: typeof ServicesRoute
   NewsletterConfirmRoute: typeof NewsletterConfirmRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cv': {
+      id: '/cv'
+      path: '/cv'
+      fullPath: '/cv'
+      preLoaderRoute: typeof CvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/process': {
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   ClientsRoute: ClientsRoute,
   ContactRoute: ContactRoute,
+  CvRoute: CvRoute,
   ProcessRoute: ProcessRoute,
   ServicesRoute: ServicesRoute,
   NewsletterConfirmRoute: NewsletterConfirmRoute,
