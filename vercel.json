@@ -10,5 +10,33 @@
       "path": "/api/jarvis/sync",
       "schedule": "0 2 * * *"
     }
+  ],
+  "headers": [
+    {
+      "source": "/cv/Edmundo-Kutuzov-CV-EN.pdf",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Edmundo-Kutuzov-CV-EN.pdf\""
+        }
+      ]
+    },
+    {
+      "source": "/cv/Edmundo-Kutuzov-CV-PT.pdf",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Edmundo-Kutuzov-CV-PT.pdf\""
+        }
+      ]
+    }
   ]
 }
