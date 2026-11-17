@@ -39,6 +39,9 @@ try{
     const response=await page.goto(URL+"/cv?cvLang="+encodeURIComponent(locale),{waitUntil:"domcontentloaded"});
     if(response?.status()!==200)throw Error("CV URL failed in "+locale);
     await page.locator('[data-testid="cv-page"][data-cv-language="'+locale+'"]').waitFor();
+    if(await page.locator('[aria-label="Intro — click to enter"]').count()){
+      throw new Error("The Home intro is covering the CV: refusing to export an obscured PDF");
+    }
     await page.evaluate(async()=>{
       await document.fonts.ready;
       const portrait=document.querySelector('[data-testid="cv-portrait"]');
