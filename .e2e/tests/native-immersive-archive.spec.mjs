@@ -111,13 +111,14 @@ test("DISCOVER uses sharp native-ratio previews, not stretched atlas backgrounds
     // This tests the image element itself, not only its container's size.
     expect(Math.abs(meta.boxRatio/meta.naturalRatio-1)).toBeLessThan(0.03);
   }
+  const nextTitle=await tiles.first().getAttribute("title");
   await tiles.first().click();
   await expect(page.locator('[data-testid="explore-selected-panel"]')).toBeVisible();
-  await expect(page.locator('[data-testid="related-work-"+(await tiles.first().getAttribute("data-testid")).replace("related-work-","") +""]')).toHaveCount(1);
+  await expect(page.locator(".archive-metadata h2")).toHaveText(nextTitle);
 });
 
 test("the seven video items also have true-proportion local posters",async ({page})=>{
-  const response=await page.goto("/work/immersive/reel/thumbs/manifest.json");
+  const response=await page.request.get("/work/immersive/reel/thumbs/manifest.json");
   expect(response?.status()).toBe(200);
   const manifest=await response.json();
   expect(manifest.count).toBe(155);
