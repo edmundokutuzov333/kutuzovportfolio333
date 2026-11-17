@@ -723,7 +723,7 @@ body:has(.cv-experience) header.fixed {
 }
 @media(max-width:630px){
   .cv-cover{display:flex;flex-direction:column;gap:29px}
-  .cv-cover__name{font-size:clamp(43px,11.7vw,69px);letter-spacing:-.078em;padding-right:0}
+  .cv-cover__name{font-size:clamp(35px,10.4vw,60px);letter-spacing:-.078em;padding-right:0}
   .cv-cover__content{min-height:285px}
   .cv-cover__tools{gap:7px}
   .cv-actions__button{width:39px;height:39px}
@@ -735,7 +735,7 @@ body:has(.cv-experience) header.fixed {
   .cv-brands__list{font-size:13px;line-height:1.75}
 }
 @media(max-width:360px){
-  .cv-cover__name{font-size:clamp(41px,11.7vw,46px)}
+  .cv-cover__name{font-size:clamp(35px,10.4vw,42px)}
   .cv-cover__upper{gap:7px}
   .cv-cover__mark{width:26px;min-width:26px}
   .cv-cover__tools{gap:5px}
