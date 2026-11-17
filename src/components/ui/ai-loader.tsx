@@ -56,7 +56,7 @@ export const Component: React.FC<LoaderProps> = ({
             <span
               key={index}
               className="ek-archive-cta__letter"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              style={{ animationDelay: `${(index * 0.1).toFixed(1)}s` }}
             >
               {letter === " " ? "\u00a0" : letter}
             </span>
