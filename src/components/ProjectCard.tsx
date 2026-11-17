@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { Project } from "@/lib/cms/types";
+import { isCampaignDiscipline } from "@/lib/work-title-visibility";
 import { ProjectMedia } from "./ProjectMedia";
 
 export function ArtSlot({ project, className, loading = "eager" }: {
@@ -32,7 +33,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         </div>
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-4">
-        <h3 className="font-display text-2xl font-semibold">{project.title}</h3>
+        {isCampaignDiscipline(project.discipline) && <h3 className="font-display text-2xl font-semibold">{project.title}</h3>}
         <span className="eyebrow">{String(index + 1).padStart(2, "0")}</span>
       </div>
       <p className="eyebrow mt-1">
