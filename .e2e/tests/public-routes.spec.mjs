@@ -151,7 +151,7 @@ test("homepage renders a five-card desktop fan and a three-position mobile fan w
     const response = await page.goto("/", { waitUntil: "domcontentloaded" });
     expect(response?.status(), `homepage response at ${viewport.width}px`).toBe(200);
 
-    const menuButton = page.locator("header button[aria-expanded]");
+    const menuButton = page.getByTestId("site-menu-toggle");
     await expect(menuButton).toHaveClass(/liquid-glass-button/);
     const glassMaterial = await menuButton.evaluate((button) => ({
       backdropFilter: getComputedStyle(button).backdropFilter,
