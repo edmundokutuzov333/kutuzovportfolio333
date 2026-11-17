@@ -6,6 +6,7 @@ import { loadProjectDetailContent } from "@/lib/cms/loaders";
 import { PUBLIC_SITE_URL } from "@/lib/cms/public-client";
 import { seoFromPage, noIndexSeo } from "@/lib/seo";
 import { useI18n } from "@/lib/i18n";
+import { isCampaignDiscipline } from "@/lib/work-title-visibility";
 
 function headlineLines(title: string) {
   const words = title.trim().split(/\s+/).filter(Boolean);
@@ -69,7 +70,12 @@ function CaseStudy() {
 
   return (
     <>
-      <PageHero eyebrow={project.discipline} lines={headlineLines(project.title)} />
+      {isCampaignDiscipline(project.discipline)
+        ? <PageHero eyebrow={project.discipline} lines={headlineLines(project.title)} />
+        : <header className="px-6 pb-12 pt-40 md:px-12 md:pt-48">
+            <p className="eyebrow mb-8">{project.discipline}</p>
+            <h1 className="sr-only">{project.title}</h1>
+          </header>}
       <div className="px-6 md:px-12">
         <div className="mx-auto max-w-5xl overflow-hidden rounded-sm"><ArtSlot project={project} /></div>
       </div>
@@ -102,7 +108,7 @@ function CaseStudy() {
       {projects.length > 1 && (
         <Link to="/work/$slug" params={{ slug: next.slug }} data-cursor="Next" className="group mt-32 block border-t border-border px-6 py-24 md:px-12">
           <p className="eyebrow">{t("nextProject")}</p>
-          <p className="mt-4 max-w-4xl font-display text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.9] tracking-tight transition-colors group-hover:text-primary">{next.title}</p>
+          {isCampaignDiscipline(next.discipline) && <p className="mt-4 max-w-4xl font-display text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.9] tracking-tight transition-colors group-hover:text-primary">{next.title}</p>}
         </Link>
       )}
     </>
