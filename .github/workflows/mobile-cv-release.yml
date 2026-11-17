@@ -1,0 +1,145 @@
+name: Mobile archive + bilingual CV release validation
+
+on:
+  push:
+    branches: ["fix/mobile-archive-navigation-bilingual-cv"]
+    paths:
+      - ".github/workflows/mobile-cv-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-cv-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-and-package:
+    name: Compile both apps, generate two PDFs, then test touch and navigation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout the unmodified branch history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Install Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22.16.0"
+      - name: Install Bun 1.4.4
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Prepare PDF and portrait tools
+        run: |
+          python -m pip install --disable-pip-version-check --break-system-packages Pillow numpy
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+      - name: Produce lossless original-face mineral portrait
+        run: |
+          python scripts/retint-cv-portrait.py
+          file public/edmundo-kutuzov-cv-mineral.png
+
+      - name: Install original standalone Three.js explorer dependencies
+        run: |
+          npm install -g yarn@1.22.22
+          cd vendor/immersive-archive/frontend
+          yarn install --frozen-lockfile --non-interactive --network-timeout 120000
+
+      - name: Run original explorer unit tests and new gesture tests
+        working-directory: vendor/immersive-archive/frontend
+        run: yarn test:ci
+
+      - name: Compile complete standalone explorer to local portfolio path
+        working-directory: vendor/immersive-archive/frontend
+        env:
+          PUBLIC_URL: /work/immersive
+          GENERATE_SOURCEMAP: "false"
+          CI: "true"
+        run: yarn build
+
+      - name: Package changed explorer JS CSS and responsive HTML, keeping 155 works untouched
+        run: |
+          set -euo pipefail
+          find public/work/immersive/static/js -maxdepth 1 -type f -name 'main.*.js' -delete
+          find public/work/immersive/static/css -maxdepth 1 -type f -name 'main.*.css' -delete
+          rsync -a --exclude='/reel/' --exclude='*.map' \
+            vendor/immersive-archive/frontend/build/ public/work/immersive/
+          node scripts/verify-native-immersive-archive.mjs
+
+      - name: Install locked portfolio dependencies
+        run: bun install --frozen-lockfile
+      - name: Typecheck, lint and test CV data plus all unchanged portfolio modules
+        run: |
+          bun run typecheck
+          bun run lint
+          bun run test
+          bun run build
+
+      - name: Install isolated Playwright and Chromium
+        run: |
+          npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Render both vector PDFs directly from the actual CV page
+        run: node scripts/build-cv-pdfs.mjs
+
+      - name: Validate the generated PDF text, images and localized content
+        run: |
+          set -euo pipefail
+          for code in EN PT; do
+            pdf="public/cv/Edmundo-Kutuzov-CV-$code.pdf"
+            test -s "$pdf"
+            pdfinfo "$pdf" | grep '^Pages:'
+            test "$(pdfinfo "$pdf" | awk '/^Pages:/ {print $2}')" -le 5
+            pdftotext -layout "$pdf" "/tmp/cv-$code.txt"
+            grep -Fq 'EDMUNDO' "/tmp/cv-$code.txt"
+            grep -Fq 'KUTUZOV.' "/tmp/cv-$code.txt"
+            grep -Fq 'Flying Fish' "/tmp/cv-$code.txt"
+            grep -Fq 'Hyundai' "/tmp/cv-$code.txt"
+            grep -Fq 'Ferrão Chico' "/tmp/cv-$code.txt"
+            if grep -Ei 'Download designed CV|Descarregar CV actual|Print CV|Imprimir CV|Voltar à About|Back to About' "/tmp/cv-$code.txt";then
+              echo "::error::PDF contains page UI controls";exit 1
+            fi
+          done
+          grep -Fq 'About Me' /tmp/cv-EN.txt
+          grep -Fq 'Sobre Mim' /tmp/cv-PT.txt
+          grep -Fq 'Art Director' /tmp/cv-EN.txt
+          grep -Fq 'Director de Arte' /tmp/cv-PT.txt
+          sha256sum public/edmundo-kutuzov-cv-2026.pdf | grep -Fq '4ebf841282ac47b386c8dab6e4f37dfc09950704aa925bd563ac08efb7ce9e37'
+
+      - name: Browser verify full CV, touch gestures and every nav route
+        run: |
+          .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
+            editorial-cv.spec.mjs archive-mobile-navigation.spec.mjs \
+            native-immersive-archive.spec.mjs public-routes.spec.mjs
+
+      - name: Commit verified PDF/portrait/gallery build assets to feature branch
+        if: success()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public/cv public/edmundo-kutuzov-cv-mineral.png \
+            public/work/immersive/index.html public/work/immersive/static
+          if git diff --cached --quiet; then
+            echo "Artifacts already match the source."
+          else
+            git commit -m "build: package mobile explorer and both faithful native CV PDFs"
+            git push origin HEAD:fix/mobile-archive-navigation-bilingual-cv
+          fi
+
+      - name: Save screenshots and trace evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-cv-release-evidence-${{ github.sha }}
+          path: |
+            .e2e/test-results
+            .e2e/playwright-report
+            public/cv/*.pdf
+          if-no-files-found: warn
+          retention-days: 21
