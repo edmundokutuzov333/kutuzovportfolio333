@@ -12,6 +12,7 @@ on:
       - "src/components/Shell.tsx"
       - "src/styles.css"
       - ".e2e/tests/archive-mobile-navigation.spec.mjs"
+      - ".e2e/tests/public-routes.spec.mjs"
       - "scripts/build-cv-pdfs.mjs"
       - "scripts/verify-cv-pdf-visual.py"
       - ".e2e/tests/editorial-cv.spec.mjs"
