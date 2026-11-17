@@ -3,8 +3,6 @@ name: Editorial CV release validation
 on:
   push:
     branches: ["feat/editorial-cv-native"]
-    paths:
-      - ".github/workflows/editorial-cv-validation.yml"
   workflow_dispatch:
 
 permissions:
