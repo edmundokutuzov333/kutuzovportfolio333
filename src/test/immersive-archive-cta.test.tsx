@@ -20,7 +20,7 @@ describe("Work immersive archive floating launcher", () => {
     const html = renderToStaticMarkup(<ArchiveLauncher text="ENTER" size={100} />);
     expect(html.match(/ek-archive-cta__letter"/g)).toHaveLength(5);
     for (let index = 0; index < 5; index++) {
-      expect(html).toContain(`animation-delay:${index / 10}s`);
+      expect(html).toContain(`animation-delay:${(index * 0.1).toFixed(1)}s`);
     }
     expect(html).toContain("--ek-archive-orb-size:100px");
   });
