@@ -1,0 +1,56 @@
+name: Work Immersive Archive CTA validation
+
+on:
+  push:
+    branches: ["feat/work-immersive-archive-cta"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: work-archive-cta-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint, unit and real Chromium work-route tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Install pinned Node for Playwright
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22.16.0"
+      - name: Install existing locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Full typecheck
+        run: bun run typecheck
+      - name: ESLint
+        run: bun run lint
+      - name: All unit tests
+        run: bun run test
+      - name: Production build
+        run: bun run build
+      - name: Install isolated Playwright runner
+        run: npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+      - name: Install Chromium and dependencies
+        run: .e2e/node_modules/.bin/playwright install --with-deps chromium
+      - name: Work CTA browser and public route regressions
+        run: .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs work-immersive-archive.spec.mjs public-routes.spec.mjs
+      - name: Upload any browser failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: work-archive-cta-test-evidence-${{ github.sha }}
+          path: |
+            .e2e/playwright-report
+            .e2e/test-results
+          if-no-files-found: warn
+          retention-days: 14
