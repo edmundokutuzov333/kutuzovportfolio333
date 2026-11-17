@@ -86,6 +86,9 @@ jobs:
       - name: Verify original project artwork is publicly reachable
         run: bun run assets:verify
 
+      - name: Verify all 155 native DISCOVER previews and their image aspect ratios
+        run: node scripts/verify-native-immersive-archive.mjs
+
       - name: Upload asset inventory report
         if: always()
         uses: actions/upload-artifact@v4
