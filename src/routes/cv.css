@@ -670,3 +670,144 @@ body:has(.cv-experience) header.fixed {
   .cv-contact dt { font-size: 8pt !important; }
   .cv-education__year { font-size: 7pt !important; margin: 2mm 0 0 !important; }
 }
+
+/* CV 2026 refresh: intact name, independent language controls, readable layout. */
+.cv-cover{grid-template-columns:minmax(0,1.42fr) minmax(250px,.73fr);gap:clamp(24px,3.4vw,64px)}
+.cv-cover__name{
+  font-size:clamp(54px,6.4vw,104px);
+  letter-spacing:-.072em;
+  max-width:100%;
+  overflow:visible;
+}
+.cv-cover__name-line{display:block;max-width:100%}
+.cv-cover__tools{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.cv-language-control{
+  display:inline-flex;align-items:center;gap:3px;flex:none;
+  padding:4px;border:1px solid rgba(235,240,247,.28);
+  border-radius:100px;background:rgba(5,12,27,.24);
+}
+.cv-language-control button{
+  appearance:none;border:none;border-radius:50px;min-width:35px;min-height:34px;
+  padding:7px 9px;background:transparent;color:#d4dbed;
+  font:700 10px/1 var(--font-mono),monospace;letter-spacing:.065em;
+  cursor:pointer;transition:background .18s ease,color .18s ease;
+}
+.cv-language-control button[aria-pressed="true"]{background:#5367eb;color:white}
+.cv-language-control button:focus-visible{outline:2px solid #9cc6f5;outline-offset:2px}
+.cv-cover__portrait-frame{background:#11151d}
+.cv-about__body{display:flex;flex-direction:column;gap:18px}
+.cv-about__copy{max-width:70ch;font-size:clamp(16px,1.2vw,19px);line-height:1.72}
+.cv-brands{
+  max-width:70ch;border-top:1px solid var(--cv-hairline);
+  padding-top:25px;margin-top:13px;
+}
+.cv-brands__label{
+  margin:0 0 12px;color:var(--cv-electric);
+  font:600 11px/1.5 var(--font-mono),monospace;
+  letter-spacing:.11em;text-transform:uppercase;
+}
+.cv-brands__list{
+  margin:0;color:#4f5969;font:400 clamp(13px,1vw,15px)/1.85 var(--font-sans),Manrope,sans-serif;
+  overflow-wrap:anywhere;
+}
+@media(max-width:1150px){
+  .cv-cover{grid-template-columns:minmax(0,1.23fr) minmax(240px,.68fr);gap:26px}
+  .cv-cover__name{font-size:clamp(49px,6.1vw,79px);letter-spacing:-.073em}
+}
+@media(max-width:880px){
+  .cv-cover__upper{gap:12px;flex-wrap:wrap}
+  .cv-cover__tools{gap:9px}
+  .cv-cover__name{font-size:clamp(47px,6.2vw,62px)}
+  .cv-actions__button{width:40px;height:40px}
+  .cv-language-control button{min-width:31px;min-height:31px;padding:7px}
+}
+@media(max-width:630px){
+  .cv-cover{display:flex;flex-direction:column;gap:29px}
+  .cv-cover__name{font-size:clamp(43px,11.7vw,69px);letter-spacing:-.078em;padding-right:0}
+  .cv-cover__content{min-height:285px}
+  .cv-cover__tools{gap:7px}
+  .cv-actions__button{width:39px;height:39px}
+  .cv-language-control button{min-width:30px;min-height:30px}
+  .cv-cover__portrait-frame{background:#11151d;aspect-ratio:7 / 5}
+  .cv-about__body{gap:16px}
+  .cv-about__copy{font-size:15.5px;line-height:1.7}
+  .cv-brands{margin-top:6px;padding-top:18px}
+  .cv-brands__list{font-size:13px;line-height:1.75}
+}
+@media(max-width:360px){
+  .cv-cover__name{font-size:clamp(41px,11.7vw,46px)}
+  .cv-cover__upper{gap:7px}
+  .cv-cover__mark{width:26px;min-width:26px}
+  .cv-cover__tools{gap:5px}
+  .cv-language-control{padding:2px}
+  .cv-language-control button{font-size:9px;padding:7px 5px;min-width:27px}
+  .cv-actions{gap:4px}
+  .cv-actions__button{width:35px;height:35px}
+}
+
+/* Export shares the visual language of the web, not the legacy raster PDF.
+   Paper sizes require responsive typographic adjustment, not a redesigned CV. */
+@media print{
+  @page{size:A4;margin:0}
+  body:has(.cv-experience) *{box-shadow:none!important}
+  body:has(.cv-experience) header,
+  body:has(.cv-experience) footer,
+  body:has(.cv-experience) [data-cv-controls],
+  body:has(.cv-experience) .cv-document__rail,
+  body:has(.cv-experience) .cv-cover__upper,
+  body:has(.cv-experience) .cv-cover__baseline{
+    display:none!important;
+  }
+  .cv-experience{
+    display:block!important;background:#11151d!important;color:#f1efe8!important;
+    overflow:visible!important;padding:0!important;margin:0!important;
+    print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;
+  }
+  .cv-container{padding:0!important;margin:0!important;width:210mm!important;max-width:210mm!important}
+  .cv-cover{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 49mm!important;gap:10mm!important;
+    align-items:center!important;
+    min-height:83mm!important;max-height:83mm!important;
+    height:83mm!important;padding:10mm 12mm!important;margin:0!important;
+    background:#11151d!important;color:#f1efe8!important;
+    break-inside:avoid!important;
+  }
+  .cv-cover__content{min-height:0!important;justify-content:center!important}
+  .cv-cover__name{
+    font-size:34pt!important;letter-spacing:-.065em!important;
+    margin:0 0 6mm!important;padding:0!important;color:#f1efe8!important;
+  }
+  .cv-cover__name-line,.cv-cover__name-line:last-child{
+    opacity:1!important;color:#f1efe8!important;animation:none!important;transform:none!important;
+  }
+  .cv-cover__role{font-size:7pt!important;color:#b5bfd1!important;letter-spacing:.1em!important}
+  .cv-cover__portrait-frame{
+    width:49mm!important;height:63mm!important;min-height:0!important;max-height:63mm!important;
+    border-color:#344057!important;background:#11151d!important;
+  }
+  .cv-cover__portrait{width:100%!important;height:100%!important;object-fit:cover!important;transform:none!important}
+  .cv-cover__portrait-stroke{display:none!important}
+  .cv-document{
+    display:block!important;min-height:0!important;
+    background:#f1efe8!important;border:0!important;
+    print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;
+  }
+  .cv-document__body{padding:4mm 13mm 10mm!important}
+  .cv-section{
+    padding:5mm 0!important;
+    border-bottom:1px solid #d4d7d8!important;break-inside:avoid!important;
+  }
+  .cv-section-heading{margin-bottom:3.3mm!important}
+  .cv-section-heading__title{font-size:13pt!important}
+  .cv-about__body{gap:2.5mm!important}
+  .cv-about__copy{font-size:8.5pt!important;line-height:1.45!important;max-width:none!important}
+  .cv-brands{padding-top:3mm!important;margin-top:1mm!important}
+  .cv-brands__label{font-size:7.5pt!important;margin-bottom:1.5mm!important}
+  .cv-brands__list{font-size:7.6pt!important;line-height:1.4!important}
+  .cv-experience-list__item{padding:2.7mm 0!important;break-inside:avoid!important}
+  .cv-document__duo{gap:7mm!important;break-inside:avoid!important}
+  .cv-skills{gap:3.2mm!important}
+  .cv-skills__track{height:2px!important;background:#c5c9d1!important}
+  .cv-skills__fill{background:#5367eb!important}
+}
