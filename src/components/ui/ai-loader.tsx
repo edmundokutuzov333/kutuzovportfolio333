@@ -12,6 +12,7 @@ export interface LoaderProps {
   size?: number;
   text?: string;
   label?: string;
+  eyebrow?: string;
   href?: string;
   ariaLabel?: string;
 }
@@ -22,6 +23,7 @@ export const Component: React.FC<LoaderProps> = ({
   size = 98,
   text = "ENTER",
   label = "IMMERSIVE ARCHIVE",
+  eyebrow = "ENTER THE SPACE",
   href = ARCHIVE_EXPERIENCE_URL,
   ariaLabel = "Explore the immersive archive (opens in a new tab)",
 }) => {
@@ -39,7 +41,7 @@ export const Component: React.FC<LoaderProps> = ({
       data-cursor="Enter"
     >
       <span className="ek-archive-cta__copy" aria-hidden="true">
-        <span className="ek-archive-cta__eyebrow">ENTER THE SPACE</span>
+        <span className="ek-archive-cta__eyebrow">{eyebrow}</span>
         <span className="ek-archive-cta__label">{label}</span>
         <span className="ek-archive-cta__rule" />
       </span>
