@@ -108,11 +108,12 @@ describe("nine approved archive improvements",()=>{
     expect(relatedWorks(items,items[4],4)).toHaveLength(4);
   });
 });
-\ndescribe("DISCOVER thumbnail integrity",()=>{
+
+describe("DISCOVER thumbnail integrity",()=>{
   test("each category (including videos) uses a unique local sized preview",()=>{
-    expect(discoverThumbnail(items[0])).toMatch(/\\/reel\\/thumbs\\/001\\.webp$/);
-    expect(discoverThumbnail(items[4])).toMatch(/\\/reel\\/thumbs\\/005\\.webp$/);
-    expect(discoverThumbnail({id:154,video:true})).toMatch(/\\/reel\\/thumbs\\/154\\.webp$/);
+    expect(discoverThumbnail(items[0])).toContain("/reel/thumbs/001.webp");
+    expect(discoverThumbnail(items[4])).toContain("/reel/thumbs/005.webp");
+    expect(discoverThumbnail({id:154,video:true})).toContain("/reel/thumbs/154.webp");
     expect(discoverThumbnail(null)).toBe("");
     expect(discoverThumbnail({id:-2})).toBe("");
   });
