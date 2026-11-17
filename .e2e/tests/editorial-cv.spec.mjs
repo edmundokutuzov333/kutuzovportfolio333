@@ -85,8 +85,13 @@ test("Full name is readable, never collides with portrait, and no horizontal ove
   test.setTimeout(125_000);
   await page.goto("/cv",{waitUntil:"domcontentloaded"});
   await page.evaluate(()=>document.fonts.ready);
+  await expect(page.locator('[aria-label="Intro — click to enter"]')).toHaveCount(0);
   for(const width of [320,360,390,768,1024,1440,1920]){
     await page.setViewportSize({width,height:width<500?844:970});
+    // Observe the real fitted glyphs after ResizeObserver and font loading.
+    await expect.poll(()=>page.locator(".cv-cover__name-line").evaluateAll(
+      lines=>lines.every(el=>el.scrollWidth<=el.clientWidth+2)
+    ),{timeout:6000}).toBe(true);
     const result=await page.evaluate(()=>{
       const root=document.querySelector("[data-testid=cv-page]");
       const portrait=root.querySelector(".cv-cover__portrait-frame").getBoundingClientRect();
