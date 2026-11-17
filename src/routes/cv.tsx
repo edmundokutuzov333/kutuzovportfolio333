@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Download, Printer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cvPdfForLanguage, getCvContent } from "@/lib/cv-content";
 import { useI18n, type SiteLanguage } from "@/lib/i18n";
@@ -105,6 +105,7 @@ function CvLanguageControl({
  * ?cvLang=en / ?cvLang=pt-PT provide deterministic print/PDF snapshots.
  */
 export function CurriculumPage() {
+  const nameRef=useRef<HTMLHeadingElement>(null);
   const { language: siteLanguage } = useI18n();
   const [override,setOverride] = useState<SiteLanguage | null>(null);
   useEffect(() => {
@@ -119,6 +120,31 @@ export function CurriculumPage() {
   const lang = override ?? siteLanguage;
   const content = getCvContent(lang);
 
+  useEffect(()=>{
+    const name=nameRef.current;
+    if(!name)return;
+    let frame=0;
+    let disposed=false;
+    const fit=()=>{
+      if(disposed || !name.isConnected)return;
+      // Start with the CSS-responsive scale, then enforce true text width.
+      name.style.fontSize="";
+      const size=parseFloat(getComputedStyle(name).fontSize);
+      const available=name.clientWidth;
+      const lines=[...name.querySelectorAll<HTMLElement>(".cv-cover__name-line")];
+      const needed=Math.max(...lines.map(el=>el.scrollWidth));
+      if(available>0 && needed>available+1){
+        name.style.fontSize=`${Math.max(24,Math.floor(size*available/(needed+3)*.965))}px`;
+      }
+    };
+    const queue=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(fit);};
+    const observer=new ResizeObserver(queue);
+    observer.observe(name.parentElement || name);
+    document.fonts.ready.then(queue).catch(()=>{});
+    queue();
+    return ()=>{disposed=true;observer.disconnect();cancelAnimationFrame(frame);};
+  },[]);
+
   return (
     <main className="cv-experience" data-testid="cv-page" data-cv-language={lang}>
       <div className="cv-container">
@@ -131,7 +157,7 @@ export function CurriculumPage() {
                 <CvUtilityBar lang={lang} strings={content}/>
               </div>
             </div>
-            <h1 id="cv-name" className="cv-cover__name">
+            <h1 ref={nameRef} id="cv-name" className="cv-cover__name">
               {originalCv.name.map((line,index) => (
                 <span className="cv-cover__name-line" key={line} style={{animationDelay:`${index*.09}s`}}>
                   {line}
