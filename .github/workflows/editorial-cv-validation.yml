@@ -1,0 +1,65 @@
+name: Editorial CV release validation
+
+on:
+  push:
+    branches: ["feat/editorial-cv-native"]
+    paths:
+      - ".github/workflows/editorial-cv-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: editorial-cv-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Types, lint, content, build and full Chromium CV QA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout the exact feature-branch commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install existing Bun version
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+      - name: Install Node 22 for browser checks
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22.16.0"
+      - name: Install locked dependencies — no additional application packages
+        run: bun install --frozen-lockfile
+      - name: Validate original PDF has not changed
+        run: |
+          echo "4ebf841282ac47b386c8dab6e4f37dfc09950704aa925bd563ac08efb7ce9e37  public/edmundo-kutuzov-cv-2026.pdf" | sha256sum -c -
+      - name: Compile and typecheck TanStack route
+        run: bun run typecheck
+      - name: ESLint
+        run: bun run lint
+      - name: Test all portfolio components and exact CV source data
+        run: bun run test
+      - name: Build the site for production
+        run: bun run build
+      - name: Install isolated pinned Playwright
+        run: npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+      - name: Install Chromium browser
+        run: .e2e/node_modules/.bin/playwright install --with-deps chromium
+      - name: CV browser and original public routes
+        run: |
+          .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
+            editorial-cv.spec.mjs public-routes.spec.mjs
+      - name: Upload CV screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-cv-chromium-${{ github.sha }}
+          path: |
+            .e2e/test-results/editorial-cv-390.png
+            .e2e/test-results/editorial-cv-1440.png
+            .e2e/test-results
+            .e2e/playwright-report
+          if-no-files-found: warn
+          retention-days: 14
