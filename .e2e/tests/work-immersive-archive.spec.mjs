@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const ARCHIVE = "https://showreel-kutuzov-v2.vercel.app/";
+const ARCHIVE = "/work/immersive/index.html";
 const SELECTOR = '[data-testid="work-immersive-archive-link"]';
 
 test.beforeEach(async ({ page }) => {
@@ -18,8 +18,8 @@ test("Work has one animated, floating archive link without disturbing the projec
   await expect(launcher).toBeVisible();
   await expect(launcher).toHaveCount(1);
   await expect(launcher).toHaveAttribute("href", ARCHIVE);
-  await expect(launcher).toHaveAttribute("target", "_blank");
-  await expect(launcher).toHaveAttribute("rel", /noopener noreferrer/);
+  await expect(launcher).not.toHaveAttribute("target", "_blank");
+  await expect(launcher).toHaveAttribute("data-native-document", "true");
   await expect(launcher).toHaveAttribute("aria-label", /immersive archive/i);
   await expect(page.locator('a[href^="/work/"]').first()).toBeVisible();
 
@@ -49,14 +49,11 @@ test("Work has one animated, floating archive link without disturbing the projec
   await expect(page.getByRole("button", { name: "Video", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(launcher).toBeVisible();
 
-  // Never leave the portfolio, and never add a full-screen loading barrier.
-  await page.context().route("https://showreel-kutuzov-v2.vercel.app/**", (route) =>
-    route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>Immersive Archive</title>" }),
-  );
-  const [popup] = await Promise.all([page.waitForEvent("popup"), launcher.click()]);
-  await expect.poll(() => popup.url()).toBe(ARCHIVE);
-  expect(new URL(page.url()).pathname).toBe("/work");
-  await popup.close();
+  // The archive is a self-hosted document, not an external showreel popup.
+  await launcher.click();
+  await expect(page).toHaveURL(/\/work\/immersive\/index\.html$/);
+  await expect(page.locator('[data-testid="reel-canvas"]')).toBeVisible({timeout:30000});
+  expect(new URL(page.url()).origin).toBe(new URL(ARCHIVE, "http://127.0.0.1:5173").origin);
   expect(errors).toEqual([]);
 });
 
