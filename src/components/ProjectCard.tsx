@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import type { Project } from "@/lib/cms/types";
 import { isCampaignDiscipline } from "@/lib/work-title-visibility";
 import { ProjectMedia } from "./ProjectMedia";
@@ -26,7 +25,7 @@ export function ArtSlot({ project, className, loading = "eager" }: {
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
-    <Link to="/work/$slug" params={{ slug: project.slug }} reloadDocument data-cursor="View"
+    <a href={`/work/${encodeURIComponent(project.slug)}`} data-cursor="View"
       data-work-campaign={isCampaignDiscipline(project.discipline) ? "true" : "false"}
       className="group block">
       <div className="overflow-hidden rounded-sm">
@@ -41,6 +40,6 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
       <p className="eyebrow mt-1">
         {project.client} · {project.discipline} · {project.year}
       </p>
-    </Link>
+    </a>
   );
 }
