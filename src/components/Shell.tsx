@@ -1,5 +1,5 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Lenis from "lenis";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -67,22 +67,38 @@ function Cursor() {
   );
 }
 
-function Header({ open, setOpen, presentation }: { open: boolean; setOpen: (value: boolean) => void; presentation: PublicPresentation["presentation"] }) {
+function Header({ profile, presentation }: { profile: Profile | null; presentation: PublicPresentation }) {
   const { t, language } = useI18n();
+  // Native <details>/<summary> opens on the FIRST tap even before React hydration.
+  // Client-side state only enhances the label; it never owns the open/closed DOM state.
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const [open, setOpen] = useState(false);
+  const close = () => {
+    if (detailsRef.current) detailsRef.current.open = false;
+    setOpen(false);
+  };
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 text-bone md:px-12">
       <Link to="/" aria-label="Home" className="text-bone"><LogoMark className="h-6 w-auto" /></Link>
-      <div className="hidden items-center gap-4 md:flex"><div className="eyebrow text-bone">{presentation.availability_label || t("available")}</div><LanguageSwitcher /></div>
+      <div className="hidden items-center gap-4 md:flex"><div className="eyebrow text-bone">{presentation.presentation.availability_label || t("available")}</div><LanguageSwitcher /></div>
       <div className="flex items-center gap-2">
         <JarvisTrigger className="liquid-glass-button hidden rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone sm:inline-flex" label={language === "en" ? "JARVIS · AI" : "JARVIS · IA"} />
         <div className="md:hidden"><LanguageSwitcher /></div>
-        <button onClick={() => setOpen(!open)} className="liquid-glass-button flex items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone" aria-expanded={open}>
-          {open ? t("close") : t("menu")}
-          <span className="relative block h-3 w-6">
-            <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
-            <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
-          </span>
-        </button>
+        <details ref={detailsRef} onToggle={event => setOpen(event.currentTarget.open)} className="site-menu-native">
+          <summary
+            className="liquid-glass-button relative z-50 flex cursor-pointer list-none items-center gap-3 rounded-full px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone [&::-webkit-details-marker]:hidden"
+            aria-label={open ? t("close") : t("menu")}
+            data-testid="site-menu-toggle"
+          >
+            {open ? t("close") : t("menu")}
+            <span className="relative block h-3 w-6" aria-hidden="true">
+              <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
+              <span className={`absolute left-0 h-px w-6 bg-bone transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
+            </span>
+          </summary>
+          <Menu close={close} profile={profile} presentation={presentation} />
+        </details>
       </div>
     </header>
   );
@@ -93,8 +109,8 @@ function Menu({ close, profile, presentation }: { close: () => void; profile: Pr
   const navLabel = (to: string, fallback: string) => ({ "/": t("home"), "/work": t("work"), "/about": t("about"), "/services": t("services"), "/process": t("process"), "/clients": t("clients"), "/contact": t("contact") }[to] ?? fallback);
   return (
     <motion.div
-      className="fixed inset-0 z-40 flex flex-col justify-between bg-primary px-6 pb-10 pt-28 text-primary-foreground md:px-12"
-      initial={{ clipPath: "inset(0 0 100% 0)" }}
+      className="fixed inset-0 z-40 flex flex-col justify-between overflow-y-auto overscroll-contain bg-primary px-6 pb-10 pt-28 text-primary-foreground md:px-12"
+      initial={false}
       animate={{ clipPath: "inset(0 0 0% 0)" }}
       exit={{ clipPath: "inset(100% 0 0 0)" }}
       transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
@@ -167,7 +183,6 @@ export function Footer({ profile, presentation }: { profile: Profile | null; pre
 }
 
 export function Shell({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
   const [presentation, setPresentation] = useState<PublicPresentation>(DEFAULT_PUBLIC_PRESENTATION);
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -260,8 +275,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="grain min-h-screen">
       <Intro />
       <Cursor />
-      <Header open={open} setOpen={setOpen} presentation={presentation.presentation} />
-      <AnimatePresence>{open && <Menu close={() => setOpen(false)} profile={profile} presentation={presentation} />}</AnimatePresence>
+      <Header profile={profile} presentation={presentation} />
       <LiquidTransition />
       <main>{children}</main>
       <Footer profile={profile} presentation={presentation} />
