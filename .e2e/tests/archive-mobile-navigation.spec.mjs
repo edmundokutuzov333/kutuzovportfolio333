@@ -134,13 +134,29 @@ test("Menu navigates at the very first click on all public routes",async({page})
   test.setTimeout(140_000);
   for(const route of ["/","/work","/about","/services","/process","/clients","/contact"]){
     await page.goto("/about",{waitUntil:"domcontentloaded"});
-    const toggle=page.locator("header button[aria-expanded]");
+    const toggle=page.getByTestId("site-menu-toggle");
+    const nativeMenu=page.locator("header details.site-menu-native");
     await toggle.click();
-    await expect(toggle).toHaveAttribute("aria-expanded","true");
+    await expect(nativeMenu).toHaveAttribute("open","");
     const link=page.locator('.fixed.inset-0.z-40 nav a[href="'+route+'"]').first();
     await expect(link).toBeVisible();
     await link.click(); // Exactly one click: no retry or second interaction
     await expect(page).toHaveURL(new RegExp((route==="/"?"/":route)+"/?$"));
-    await expect(page.locator("header button[aria-expanded]")).toHaveAttribute("aria-expanded","false");
+    await expect(page.locator("header details.site-menu-native")).not.toHaveAttribute("open","");
   }
+});
+
+test("Native menu navigates from server HTML without waiting for React hydration",async({page})=>{
+  await page.route("**/*", route=>{
+    if(route.request().resourceType()==="script") return route.abort();
+    return route.continue();
+  });
+  await page.goto("/about",{waitUntil:"domcontentloaded"});
+  const details=page.locator("header details.site-menu-native");
+  await expect(details).toBeVisible();
+  await page.getByTestId("site-menu-toggle").click();
+  await expect(details).toHaveAttribute("open","");
+  await expect(details.locator('nav a[href="/services"]')).toBeVisible();
+  await details.locator('nav a[href="/services"]').click();
+  await expect(page).toHaveURL(/\\/services\\/?$/);
 });
