@@ -10,6 +10,8 @@ import ExploreOverlay from "@/components/reel/ExploreOverlay";
 const Stage = forwardRef(function Stage({r},ref){
   const contacts = useRef(new Map());
   const previousPinch = useRef(null);
+  // Prevent the final finger lift of a pinch from becoming a phantom artwork tap.
+  const suppressTap = useRef(new Set());
   const relative = event => {
     const box=event.currentTarget.getBoundingClientRect();
     return [(event.clientX-box.left)/Math.max(1,box.width),
@@ -27,9 +29,11 @@ const Stage = forwardRef(function Stage({r},ref){
     contacts.current.set(event.pointerId,{x:event.clientX,y:event.clientY,p:point});
     try{event.currentTarget.setPointerCapture(event.pointerId);}catch{/* browser may revoke capture */}
     if(contacts.current.size===1){
+      suppressTap.current.delete(event.pointerId);
       previousPinch.current=null;
       r.pointer("down",...point,event.pointerType);
     }else{
+      for(const id of contacts.current.keys())suppressTap.current.add(id);
       previousPinch.current=distance();
       r.pointer("leave",0,0); // never select during a two-finger gesture
     }
@@ -60,6 +64,7 @@ const Stage = forwardRef(function Stage({r},ref){
       try{event.currentTarget.releasePointerCapture(event.pointerId);}catch{/* capture already gone */}
     }
     if(hadPinch){
+      suppressTap.current.delete(event.pointerId);
       r.pointer("leave",0,0);
       if(contacts.current.size===1){
         previousPinch.current=null;
@@ -70,8 +75,12 @@ const Stage = forwardRef(function Stage({r},ref){
       }else previousPinch.current=null;
       return;
     }
-    if(cancelled)r.pointer("leave",0,0);
-    else r.pointer("up",...point,event.pointerType);
+    if(cancelled || suppressTap.current.has(event.pointerId)){
+      suppressTap.current.delete(event.pointerId);
+      r.pointer("leave",0,0);
+    }else{
+      r.pointer("up",...point,event.pointerType);
+    }
     if(contacts.current.size===0)previousPinch.current=null;
   };
   return <section ref={ref} data-testid="reel-stage"
