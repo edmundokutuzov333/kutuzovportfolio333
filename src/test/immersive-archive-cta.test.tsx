@@ -62,6 +62,8 @@ describe("Work immersive archive floating launcher", () => {
     const shell = readFileSync("src/components/Shell.tsx", "utf8");
     expect(shell).not.toContain("ImmersiveArchiveCTA");
     const transition = readFileSync("src/components/LiquidTransition.tsx", "utf8");
-    expect(transition).toContain('a.hasAttribute("data-native-document")');
+    expect(transition).toContain('anchor.hasAttribute("data-native-document")');
+    expect(transition).not.toContain("event.preventDefault()");
+    expect(transition).not.toContain("router.history.push(");
   });
 });
