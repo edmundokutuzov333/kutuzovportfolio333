@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Download, Printer } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { cvSections, normaliseCvPhone, originalCv } from "@/lib/cv-original";
+import { cvPdfForLanguage, getCvContent } from "@/lib/cv-content";
+import { useI18n, type SiteLanguage } from "@/lib/i18n";
+import { normaliseCvPhone, originalCv } from "@/lib/cv-original";
 import "./cv.css";
 
 export const Route = createFileRoute("/cv")({
@@ -23,27 +26,41 @@ function CvHeading({ id, children }: { id: string; children: string }) {
   );
 }
 
-function CvUtilityBar({ className = "" }: { className?: string }) {
+function CvUtilityBar({
+  className = "",
+  lang,
+  strings,
+}: {
+  className?: string;
+  lang: SiteLanguage;
+  strings: ReturnType<typeof getCvContent>;
+}) {
   return (
-    <div className={`cv-actions ${className}`}>
-      <Link to="/about" className="cv-actions__button" aria-label="Voltar à página About" title="Voltar à About">
+    <div className={`cv-actions ${className}`} data-cv-controls>
+      <Link
+        to="/about"
+        className="cv-actions__button"
+        aria-label={strings.back}
+        title={strings.back}
+      >
         <ArrowLeft size={18} strokeWidth={1.6} aria-hidden="true" />
       </Link>
       <a
-        href={originalCv.pdf}
-        download="Edmundo-Kutuzov-CV-2026.pdf"
+        href={cvPdfForLanguage(lang)}
+        download={`Edmundo-Kutuzov-CV-${lang === "en" ? "EN" : "PT"}.pdf`}
         className="cv-actions__button"
-        aria-label="Descarregar CV original em PDF"
-        title="Descarregar PDF"
+        aria-label={strings.download}
+        title={strings.download}
         data-testid="cv-download"
+        data-cv-controls
       >
         <Download size={18} strokeWidth={1.6} aria-hidden="true" />
       </a>
       <button
         type="button"
         className="cv-actions__button"
-        aria-label="Imprimir o CV"
-        title="Imprimir"
+        aria-label={strings.print}
+        title={strings.print}
         onClick={() => window.print()}
         data-testid="cv-print"
       >
@@ -53,29 +70,82 @@ function CvUtilityBar({ className = "" }: { className?: string }) {
   );
 }
 
-export function CurriculumPage() {
+function CvLanguageControl({
+  lang,
+  onChange,
+  label,
+}: {
+  lang: SiteLanguage;
+  onChange: (lang: SiteLanguage) => void;
+  label: string;
+}) {
   return (
-    <main className="cv-experience" data-testid="cv-page">
+    <div className="cv-language-control" role="group" aria-label={label} data-cv-controls>
+      <button
+        type="button"
+        aria-label="CV in English"
+        aria-pressed={lang === "en"}
+        data-testid="cv-language-en"
+        onClick={() => onChange("en")}
+      >EN</button>
+      <button
+        type="button"
+        aria-label="CV em português"
+        aria-pressed={lang === "pt-PT"}
+        data-testid="cv-language-pt"
+        onClick={() => onChange("pt-PT")}
+      >PT</button>
+    </div>
+  );
+}
+
+/**
+ * CV has a standalone language control. By default it follows the site;
+ * a visitor's explicit CV override is stored only for CV (never changes the site).
+ * ?cvLang=en / ?cvLang=pt-PT provide deterministic print/PDF snapshots.
+ */
+export function CurriculumPage() {
+  const { language: siteLanguage } = useI18n();
+  const [override,setOverride] = useState<SiteLanguage | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("cvLang");
+    const saved = q || window.sessionStorage.getItem("ek-cv-language");
+    if(saved === "en" || saved === "pt-PT")setOverride(saved);
+  }, []);
+  const changeLanguage = (next:SiteLanguage) => {
+    setOverride(next);
+    window.sessionStorage.setItem("ek-cv-language",next);
+  };
+  const lang = override ?? siteLanguage;
+  const content = getCvContent(lang);
+
+  return (
+    <main className="cv-experience" data-testid="cv-page" data-cv-language={lang}>
       <div className="cv-container">
         <section className="cv-cover" aria-labelledby="cv-name">
           <div className="cv-cover__content">
             <div className="cv-cover__upper">
               <span className="cv-cover__mark" aria-hidden="true" />
-              <CvUtilityBar />
+              <div className="cv-cover__tools">
+                <CvLanguageControl lang={lang} onChange={changeLanguage} label={content.switcher}/>
+                <CvUtilityBar lang={lang} strings={content}/>
+              </div>
             </div>
             <h1 id="cv-name" className="cv-cover__name">
-              {originalCv.name.map((line, index) => (
-                <span className="cv-cover__name-line" key={line} style={{ animationDelay: `${index * 0.09}s` }}>{line}</span>
+              {originalCv.name.map((line,index) => (
+                <span className="cv-cover__name-line" key={line} style={{animationDelay:`${index*.09}s`}}>
+                  {line}
+                </span>
               ))}
             </h1>
             <div className="cv-cover__role">
-              {originalCv.role.map(line => <span key={line}>{line}</span>)}
+              {content.role.map(line => <span key={line}>{line}</span>)}
             </div>
             <div className="cv-cover__baseline" aria-hidden="true"><span /></div>
           </div>
           <div className="cv-cover__portrait-frame">
             <img
-              src={originalCv.photo}
+              src="/edmundo-kutuzov-cv-mineral.png"
               alt="Edmundo Kutuzov"
               className="cv-cover__portrait"
               loading="eager"
@@ -84,31 +154,42 @@ export function CurriculumPage() {
               width={780}
               height={1040}
               data-testid="cv-portrait"
+              onError={event => {
+                if(!event.currentTarget.src.endsWith(originalCv.photo)){
+                  event.currentTarget.src=originalCv.photo;
+                }
+              }}
             />
             <span className="cv-cover__portrait-stroke" aria-hidden="true"/>
           </div>
         </section>
 
         <div className="cv-document">
-          <aside className="cv-document__rail" aria-label="Navegação do currículo">
-            <nav className="cv-navigation" aria-label="Secções do CV">
-              {cvSections.map(item => (
+          <aside className="cv-document__rail" aria-label={content.nav}>
+            <nav className="cv-navigation" aria-label={content.nav}>
+              {content.sections.map(item => (
                 <a className="cv-navigation__item" key={item.id} href={`#${item.id}`}>{item.heading}</a>
               ))}
             </nav>
-            <CvUtilityBar className="cv-actions--rail" />
+            <CvUtilityBar className="cv-actions--rail" lang={lang} strings={content}/>
           </aside>
 
           <article className="cv-document__body">
             <section className="cv-section cv-section--about" aria-labelledby="sobre">
-              <CvHeading id="sobre">{originalCv.about.heading}</CvHeading>
-              <p className="cv-about__copy">{originalCv.about.text}</p>
+              <CvHeading id="sobre">{content.about}</CvHeading>
+              <div className="cv-about__body">
+                {content.summary.map(paragraph=><p className="cv-about__copy" key={paragraph}>{paragraph}</p>)}
+                <div className="cv-brands">
+                  <p className="cv-brands__label">{content.collaborations}</p>
+                  <p className="cv-brands__list">{content.brands.join(" · ")}</p>
+                </div>
+              </div>
             </section>
 
             <section className="cv-section cv-section--experience" aria-labelledby="experiencia">
-              <CvHeading id="experiencia">{originalCv.experience.heading}</CvHeading>
+              <CvHeading id="experiencia">{content.experience}</CvHeading>
               <ol className="cv-experience-list">
-                {originalCv.experience.items.map(item => (
+                {content.experiences.map(item => (
                   <li key={item.company} className="cv-experience-list__item">
                     <p className="cv-experience-list__period">{item.period}</p>
                     <div>
@@ -122,14 +203,14 @@ export function CurriculumPage() {
 
             <div className="cv-document__duo">
               <section className="cv-section cv-section--education" aria-labelledby="educacao">
-                <CvHeading id="educacao">{originalCv.education.heading}</CvHeading>
+                <CvHeading id="educacao">{content.education}</CvHeading>
                 <h3 className="cv-education__name">{originalCv.education.school}</h3>
-                <p className="cv-education__level">{originalCv.education.level}</p>
+                <p className="cv-education__level">{content.grade}</p>
                 <p className="cv-education__year">{originalCv.education.year}</p>
               </section>
 
               <section className="cv-section cv-section--skills" aria-labelledby="skills">
-                <CvHeading id="skills">{originalCv.skills.heading}</CvHeading>
+                <CvHeading id="skills">{content.skills}</CvHeading>
                 <ul className="cv-skills">
                   {originalCv.skills.items.map(skill => (
                     <li key={skill.name} className="cv-skills__item">
@@ -145,7 +226,7 @@ export function CurriculumPage() {
                         aria-valuemax={100}
                         aria-valuenow={skill.value}
                       >
-                        <span className="cv-skills__fill" style={{ width: `${skill.value}%` }} />
+                        <span className="cv-skills__fill" style={{width:`${skill.value}%`}}/>
                       </div>
                     </li>
                   ))}
@@ -155,29 +236,29 @@ export function CurriculumPage() {
 
             <div className="cv-document__duo cv-document__duo--end">
               <section className="cv-section cv-section--contact" aria-labelledby="contacto">
-                <CvHeading id="contacto">{originalCv.contact.heading}</CvHeading>
+                <CvHeading id="contacto">{content.contact}</CvHeading>
                 <dl className="cv-contact">
                   <div>
-                    <dt>{originalCv.contact.phoneLabel}</dt>
+                    <dt>{content.phone}</dt>
                     <dd><a href={normaliseCvPhone(originalCv.contact.phone)}>{originalCv.contact.phone}</a></dd>
                   </div>
                   <div>
-                    <dt>{originalCv.contact.emailLabel}</dt>
+                    <dt>{content.email}</dt>
                     <dd><a href={`mailto:${originalCv.contact.email}`}>{originalCv.contact.email}</a></dd>
                   </div>
                   <div>
-                    <dt>{originalCv.contact.addressLabel}</dt>
-                    <dd>{originalCv.contact.address.map(line => <span key={line}>{line}</span>)}</dd>
+                    <dt>{content.address}</dt>
+                    <dd>{content.localeAddress.map(line=><span key={line}>{line}</span>)}</dd>
                   </div>
                 </dl>
               </section>
 
               <section className="cv-section cv-section--reference" aria-labelledby="referencia">
-                <CvHeading id="referencia">{originalCv.reference.heading}</CvHeading>
+                <CvHeading id="referencia">{content.reference}</CvHeading>
                 <h3 className="cv-reference__name">{originalCv.reference.name}</h3>
-                <p className="cv-reference__role">{originalCv.reference.role}</p>
+                <p className="cv-reference__role">{content.referenceRole}</p>
                 <p className="cv-reference__phone">
-                  <a href={normaliseCvPhone(originalCv.reference.phone)}>{originalCv.reference.phoneLine}</a>
+                  <a href={normaliseCvPhone(originalCv.reference.phone)}>{content.referencePhone}</a>
                 </p>
               </section>
             </div>
