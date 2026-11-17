@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: discover-native-thumbnails-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Render faithful thumbnails, build local explorer, run visual/browser gates
@@ -21,6 +25,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
+      - name: Start from the latest approved feature branch tip
+        run: |
+          git fetch origin feat/discover-native-proportions
+          git checkout -B feat/discover-native-proportions origin/feat/discover-native-proportions
+
       - name: Set up Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
