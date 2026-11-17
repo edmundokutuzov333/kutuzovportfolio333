@@ -3,13 +3,13 @@ import {X,ArrowUpRight,Maximize2,Minimize2,Layers3,Image,Shapes,
   Clapperboard,Sparkles,Orbit,ChevronLeft,ChevronRight} from "lucide-react";
 import {FILTERS} from "@/reel/storyboard";
 import {BASE_URL as BASE} from "@/reel/paths";
-import {atlasTile} from "@/reel/archiveExperience";
+import {discoverThumbnail} from "@/reel/archiveExperience";
 
 const stop=e=>e.stopPropagation();
 const pad=n=>String(n).padStart(3,"0");
 const icons=[Orbit,Layers3,Image,Shapes,Sparkles,Clapperboard];
 
-function Selected({it,onClose,onSelect,onNavigate,suggestions,transition,cols,rows}){
+function Selected({it,onClose,onSelect,onNavigate,suggestions,transition}){
   const [expanded,setExpanded]=useState(false);
   return (
     <aside data-testid="explore-selected-panel"
@@ -53,7 +53,14 @@ function Selected({it,onClose,onSelect,onNavigate,suggestions,transition,cols,ro
               title={work.title} aria-label={"Abrir "+work.title}
               onClick={()=>onSelect(work)}
               className="archive-related__tile">
-              <span aria-hidden="true" style={atlasTile(work,cols,rows)}/>
+              <img
+                className="archive-related__image"
+                src={discoverThumbnail(work)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
             </button>
           ))}
         </div>
@@ -97,8 +104,7 @@ export default function ExploreOverlay({r}){
       {r.selected&&<Selected it={r.selected}
         onClose={()=>r.setSelected(null)}
         onSelect={r.setSelected} onNavigate={r.navigateSelected}
-        suggestions={r.suggestions} transition={r.transition}
-        cols={r.atlasColumns} rows={r.atlasRows}/>}
+        suggestions={r.suggestions} transition={r.transition}/>}
     </div>
   );
 }
