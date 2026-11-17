@@ -10,6 +10,7 @@ on:
       - "src/routes/cv.tsx"
       - "src/components/Intro.tsx"
       - "src/components/Shell.tsx"
+      - "src/styles.css"
       - ".e2e/tests/archive-mobile-navigation.spec.mjs"
       - "scripts/build-cv-pdfs.mjs"
       - "scripts/verify-cv-pdf-visual.py"
