@@ -26,7 +26,9 @@ export function ArtSlot({ project, className, loading = "eager" }: {
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
-    <Link to="/work/$slug" params={{ slug: project.slug }} data-cursor="View" className="group block">
+    <Link to="/work/$slug" params={{ slug: project.slug }} data-cursor="View"
+      data-work-campaign={isCampaignDiscipline(project.discipline) ? "true" : "false"}
+      className="group block">
       <div className="overflow-hidden rounded-sm">
         <div className="w-full transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.02]">
           <ArtSlot project={project} loading={index < 3 ? "eager" : "lazy"} />
