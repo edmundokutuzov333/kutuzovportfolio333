@@ -9,6 +9,8 @@ on:
       - "src/routes/cv.css"
       - "src/routes/cv.tsx"
       - "src/components/Intro.tsx"
+      - "src/components/Shell.tsx"
+      - ".e2e/tests/archive-mobile-navigation.spec.mjs"
       - "scripts/build-cv-pdfs.mjs"
       - "scripts/verify-cv-pdf-visual.py"
       - ".e2e/tests/editorial-cv.spec.mjs"
