@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import {sameProject,projectTransition,relatedWorks,orbitalDrift,
-  depthVisibility,spatialPartners,canPreviewVideo,atlasTile} from "./archiveExperience";
+  depthVisibility,spatialPartners,canPreviewVideo,atlasTile,discoverThumbnail} from "./archiveExperience";
 import {Explore} from "./explore";
 import {SpatialAccents} from "./spatialAccents";
 import {LivingFrames} from "./livingFrames";
@@ -106,5 +106,14 @@ describe("nine approved archive improvements",()=>{
     expect(thumb.backgroundSize).toBe("1000% 800%");
     expect(thumb.backgroundPosition).toContain("100%");
     expect(relatedWorks(items,items[4],4)).toHaveLength(4);
+  });
+});
+\ndescribe("DISCOVER thumbnail integrity",()=>{
+  test("each category (including videos) uses a unique local sized preview",()=>{
+    expect(discoverThumbnail(items[0])).toMatch(/\\/reel\\/thumbs\\/001\\.webp$/);
+    expect(discoverThumbnail(items[4])).toMatch(/\\/reel\\/thumbs\\/005\\.webp$/);
+    expect(discoverThumbnail({id:154,video:true})).toMatch(/\\/reel\\/thumbs\\/154\\.webp$/);
+    expect(discoverThumbnail(null)).toBe("");
+    expect(discoverThumbnail({id:-2})).toBe("");
   });
 });
