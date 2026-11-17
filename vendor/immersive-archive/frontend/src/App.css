@@ -60,8 +60,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .archive-related__arrow{width:30px;height:27px;display:grid;place-items:center;appearance:none;background:transparent;color:#dce8ff;border:1px solid rgba(159,196,241,.17);border-radius:8px;cursor:pointer;transition:background .2s,border-color .2s}
 .archive-related__arrow:hover{background:rgba(73,114,228,.3);border-color:rgba(157,201,255,.6)}
 .archive-related__tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
-.archive-related__tile{appearance:none;position:relative;height:56px;min-width:0;overflow:hidden;border:1px solid rgba(167,196,241,.18);border-radius:7px;background:#11192b;padding:0;cursor:pointer;transition:border-color .22s,transform .22s,box-shadow .22s}
-.archive-related__tile>span{display:block;position:absolute;inset:0;background-repeat:no-repeat;background-color:#101829;filter:saturate(.94)}
+.archive-related__tile{appearance:none;display:grid;place-items:center;height:64px;min-width:0;overflow:hidden;border:1px solid rgba(167,196,241,.18);border-radius:7px;background:#11192b;padding:3px;cursor:pointer;transition:border-color .22s,transform .22s,box-shadow .22s}
+.archive-related__image{display:block;min-width:0;min-height:0;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;object-position:center;user-select:none;pointer-events:none}
 .archive-related__tile:hover,.archive-related__tile:focus-visible{border-color:rgba(156,199,251,.9);transform:translateY(-2px);box-shadow:0 4px 18px rgba(33,86,216,.2)}
 .archive-preview--discipline .archive-media{animation:archiveDiscipline .52s cubic-bezier(.19,1,.28,1) both}
 .archive-preview--project .archive-media{animation:archiveProject .59s cubic-bezier(.19,1,.28,1) both}
@@ -98,7 +98,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
  .cinema-gesture-guide>span{font-size:8px;padding:7px 9px;gap:6px}
  .archive-selected{top:112px;left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom));width:auto}
  .archive-hover{top:22%}
- .archive-related__tile{height:48px}
+ .archive-related__tile{height:57px}
  .archive-related{gap:5px;padding-top:5px}
  .archive-related__tiles{gap:5px}
  .portal-hud__brand{top:17px;left:14px;font-size:9px;letter-spacing:.08em}
