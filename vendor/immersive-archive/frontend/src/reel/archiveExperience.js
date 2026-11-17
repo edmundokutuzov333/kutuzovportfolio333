@@ -66,7 +66,8 @@ export function atlasTile(item,cols=10,rows=8){
     backgroundPosition:`${(item.cell%cols)/(cols-1)*100}% ${Math.floor(item.cell/cols)/(rows-1)*100}%`
   };
 }
-\n/** Original-aspect, pre-sized preview for the compact DISCOVER rail. */
+
+/** Original-aspect, pre-sized preview for the compact DISCOVER rail. */
 export function discoverThumbnail(item){
   if(!item || !Number.isInteger(item.id) || item.id < 0)return "";
   return `${BASE_URL}/thumbs/${String(item.id).padStart(3,"0")}.webp`;
