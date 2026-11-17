@@ -1,0 +1,84 @@
+{
+  "campaigns": [
+    {
+      "slug": "icor-depressao",
+      "title": "A DEPRESSÃO É REAL",
+      "client": "ICOR",
+      "frames": [
+        "/reel/campaigns/icor-depressao/00.webp",
+        "/reel/campaigns/icor-depressao/01.webp",
+        "/reel/campaigns/icor-depressao/02.webp",
+        "/reel/campaigns/icor-depressao/03.webp",
+        "/reel/campaigns/icor-depressao/04.webp",
+        "/reel/campaigns/icor-depressao/05.webp",
+        "/reel/campaigns/icor-depressao/06.webp",
+        "/reel/campaigns/icor-depressao/07.webp",
+        "/reel/campaigns/icor-depressao/08.webp",
+        "/reel/campaigns/icor-depressao/09.webp",
+        "/reel/campaigns/icor-depressao/11.webp",
+        "/reel/campaigns/icor-depressao/13.webp"
+      ]
+    },
+    {
+      "slug": "diga-yes",
+      "title": "DIGA YES & VIVA O MUNDO ONLINE",
+      "client": "WEBMASTERS",
+      "frames": [
+        "/reel/campaigns/diga-yes/00.webp",
+        "/reel/campaigns/diga-yes/01.webp",
+        "/reel/campaigns/diga-yes/02.webp",
+        "/reel/campaigns/diga-yes/03.webp",
+        "/reel/campaigns/diga-yes/04.webp",
+        "/reel/campaigns/diga-yes/05.webp",
+        "/reel/campaigns/diga-yes/06.webp",
+        "/reel/campaigns/diga-yes/07.webp",
+        "/reel/campaigns/diga-yes/08.webp"
+      ]
+    },
+    {
+      "slug": "cozinhar-arte",
+      "title": "COZINHAR É ARTE",
+      "client": "PEMBE MOZ",
+      "frames": [
+        "/reel/campaigns/cozinhar-arte/00.webp"
+      ]
+    },
+    {
+      "slug": "agua-e-vida",
+      "title": "ÁGUA É VIDA E VOCÊ É 100% ÁGUA",
+      "client": "FONTE FRESCA",
+      "frames": [
+        "/reel/campaigns/agua-e-vida/00.webp",
+        "/reel/campaigns/agua-e-vida/01.webp",
+        "/reel/campaigns/agua-e-vida/02.webp"
+      ]
+    },
+    {
+      "slug": "super-mares",
+      "title": "VIVA A EXPERIÊNCIA NO SUPER MARÉS",
+      "client": "SUPER MARÉS",
+      "frames": [
+        "/reel/campaigns/super-mares/00.webp",
+        "/reel/campaigns/super-mares/01.webp",
+        "/reel/campaigns/super-mares/02.webp",
+        "/reel/campaigns/super-mares/03.webp",
+        "/reel/campaigns/super-mares/04.webp",
+        "/reel/campaigns/super-mares/05.webp",
+        "/reel/campaigns/super-mares/06.webp"
+      ]
+    },
+    {
+      "slug": "we-are-giz",
+      "title": "WE ARE GIZ",
+      "client": "GIZ",
+      "frames": [
+        "/reel/campaigns/we-are-giz/00.webp",
+        "/reel/campaigns/we-are-giz/01.webp",
+        "/reel/campaigns/we-are-giz/02.webp",
+        "/reel/campaigns/we-are-giz/03.webp",
+        "/reel/campaigns/we-are-giz/04.webp",
+        "/reel/campaigns/we-are-giz/05.webp"
+      ]
+    }
+  ]
+}

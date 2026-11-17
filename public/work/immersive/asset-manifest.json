@@ -1,0 +1,11 @@
+{
+  "files": {
+    "main.css": "/work/immersive/static/css/main.67ec0eb0.css",
+    "main.js": "/work/immersive/static/js/main.64e9035d.js",
+    "index.html": "/work/immersive/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.67ec0eb0.css",
+    "static/js/main.64e9035d.js"
+  ]
+}

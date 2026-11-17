@@ -1,0 +1,112 @@
+:root{
+  --bg:#060a13;
+  --primary:#4466ff;
+  --ember:#9cc6f5;
+  --bone:#e8eef6;
+  --outline:rgba(170,210,245,.20);
+}
+*{box-sizing:border-box}
+html,body,#root{width:100%;height:100%;min-height:100%;margin:0;background:var(--bg);overflow:hidden}
+body{font-family:"Manrope",sans-serif;overscroll-behavior:none}
+button,a{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offset:4px}
+.cinema-shell{position:fixed;inset:0;width:100%;height:100dvh;overflow:hidden;background:#050912;color:var(--bone);isolation:isolate}
+.cinema-shell::before{content:"";position:absolute;z-index:2;pointer-events:none;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,transparent 65%,rgba(0,0,0,.30))}
+.cinema-stage{position:absolute;inset:0;background:#050912;overflow:hidden;touch-action:none;user-select:none;cursor:grab}
+.cinema-stage:active{cursor:grabbing}
+.cinema-canvas{display:block;position:absolute;inset:0;width:100%!important;height:100%!important}
+.cinema-toolbar{position:absolute;z-index:20;right:max(18px,env(safe-area-inset-right));top:max(18px,env(safe-area-inset-top));display:flex;align-items:center;gap:7px}
+.cinema-tool,.cinema-hint-toggle,.archive-filter,.archive-close{
+ appearance:none;display:grid;place-items:center;flex:none;cursor:pointer;
+ background:rgba(5,12,27,.64);border:1px solid var(--outline);color:#e4edf9;
+ backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ transition:background .17s ease,border-color .17s ease,transform .17s ease;
+}
+.cinema-tool{width:43px;height:43px;border-radius:50%}
+.cinema-tool:hover,.cinema-hint-toggle:hover,.archive-filter:hover{background:rgba(68,102,255,.44);border-color:#9cc6f5;transform:translateY(-2px)}
+.cinema-tool--active{color:var(--ember)}
+.cinema-hint-toggle{position:absolute;z-index:21;right:max(20px,env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));width:40px;height:40px;border-radius:50%}
+.cinema-gesture-guide{position:absolute;z-index:18;left:50%;bottom:calc(25px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:8px;justify-content:center;max-width:calc(100% - 130px);flex-wrap:wrap;pointer-events:none;animation:guideIn .6s ease .25s both}
+.cinema-gesture-guide>span{display:flex;align-items:center;gap:9px;padding:10px 15px;border:1px solid rgba(180,208,240,.17);border-radius:30px;background:rgba(5,10,20,.54);backdrop-filter:blur(12px);color:rgba(231,242,255,.80);font:500 10px/1 "JetBrains Mono",monospace;letter-spacing:.10em;text-transform:uppercase}
+@keyframes guideIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+.cinema-loading{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#132247,#050912 70%);pointer-events:none;z-index:12}
+.cinema-loader-ring{width:58px;height:58px;border:1px solid rgba(156,198,245,.17);border-top:2px solid #9cc6f5;border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cinema-error{position:absolute;z-index:70;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(16,25,46,.95);border:1px solid rgba(156,198,245,.3);color:#e8eef6;border-radius:14px;padding:24px;max-width:90%;min-width:230px;font-size:13px}
+.cinema-error p{margin:0 0 16px}
+.cinema-error button{cursor:pointer;background:#9cc6f5;color:#08111d;padding:9px 16px;border-radius:8px;border:0}
+.archive-overlay{position:absolute;inset:0;pointer-events:none;z-index:13}
+.archive-filters{position:absolute;left:max(18px,env(safe-area-inset-left));top:max(18px,env(safe-area-inset-top));display:flex;gap:6px;max-width:calc(100% - 250px);overflow-x:auto;padding:2px;pointer-events:auto;scrollbar-width:none}
+.archive-filters::-webkit-scrollbar{display:none}
+.archive-filter{height:41px;width:41px;border-radius:50%}
+.archive-filter--active{background:rgba(68,102,255,.85);border-color:#9cc6f5;color:#fff}
+.archive-hover{position:absolute;left:50%;top:17%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 17px;border:1px solid rgba(156,198,245,.22);background:rgba(5,10,20,.75);backdrop-filter:blur(14px);border-radius:14px;text-align:center;max-width:80vw;pointer-events:none}
+.archive-hover span{font:500 9px "JetBrains Mono",monospace;letter-spacing:.16em;color:var(--ember)}
+.archive-hover strong{font:700 14px "Syne",sans-serif;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.archive-selected{position:absolute;z-index:18;right:max(18px,env(safe-area-inset-right));top:76px;bottom:calc(82px + env(safe-area-inset-bottom));width:min(410px,calc(100% - 36px));border:1px solid rgba(156,198,245,.3);border-radius:18px;padding:12px;background:rgba(7,13,26,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;flex-direction:column;gap:12px;pointer-events:auto;box-shadow:0 14px 60px rgba(0,0,0,.6);animation:panelIn .22s cubic-bezier(.16,1,.3,1)}
+@keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.archive-close,.archive-expand{position:absolute;top:20px;z-index:2;width:37px;height:37px;border-radius:50%}
+.archive-close{right:20px}
+.archive-expand{left:20px;appearance:none;display:grid;place-items:center;cursor:pointer;background:rgba(5,12,27,.76);border:1px solid var(--outline);color:#e4edf9;backdrop-filter:blur(14px)}
+.archive-close:hover,.archive-expand:hover{background:rgba(68,102,255,.6)}
+.archive-selected.archive-selected--expanded{position:fixed;z-index:40;inset:16px;width:auto;max-width:none;max-height:none;background:rgba(7,13,26,.98)}
+.archive-selected--expanded .archive-preview{min-height:0}
+.archive-preview{flex:1;min-height:0;border-radius:12px;background:rgba(0,0,0,.4);display:grid;place-items:center;overflow:hidden}
+.archive-media{width:100%;height:100%;object-fit:contain}
+/* Curated discovery rail; actual catalogue atlas cells, no extra images. */
+.archive-related{flex:none;display:flex;flex-direction:column;gap:7px;border-top:1px solid rgba(171,209,255,.11);padding:7px 2px 0}
+.archive-related__head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:27px}
+.archive-related__head>span{font:600 9px/1 "JetBrains Mono",monospace;letter-spacing:.18em;color:rgba(190,214,244,.68)}
+.archive-related__arrow{width:30px;height:27px;display:grid;place-items:center;appearance:none;background:transparent;color:#dce8ff;border:1px solid rgba(159,196,241,.17);border-radius:8px;cursor:pointer;transition:background .2s,border-color .2s}
+.archive-related__arrow:hover{background:rgba(73,114,228,.3);border-color:rgba(157,201,255,.6)}
+.archive-related__tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.archive-related__tile{appearance:none;position:relative;height:56px;min-width:0;overflow:hidden;border:1px solid rgba(167,196,241,.18);border-radius:7px;background:#11192b;padding:0;cursor:pointer;transition:border-color .22s,transform .22s,box-shadow .22s}
+.archive-related__tile>span{display:block;position:absolute;inset:0;background-repeat:no-repeat;background-color:#101829;filter:saturate(.94)}
+.archive-related__tile:hover,.archive-related__tile:focus-visible{border-color:rgba(156,199,251,.9);transform:translateY(-2px);box-shadow:0 4px 18px rgba(33,86,216,.2)}
+.archive-preview--discipline .archive-media{animation:archiveDiscipline .52s cubic-bezier(.19,1,.28,1) both}
+.archive-preview--project .archive-media{animation:archiveProject .59s cubic-bezier(.19,1,.28,1) both}
+.archive-preview--cross .archive-media{animation:archiveCross .32s ease-out both}
+@keyframes archiveDiscipline{from{opacity:.15;transform:translateX(15px) scale(1.04);filter:blur(5px)}to{opacity:1;transform:translateX(0) scale(1);filter:blur(0)}}
+@keyframes archiveProject{from{opacity:.3;transform:scale(1.075)}to{opacity:1;transform:scale(1)}}
+@keyframes archiveCross{from{opacity:.1;transform:scale(.99)}to{opacity:1;transform:scale(1)}}
+.archive-metadata{padding:2px 6px 7px}
+.archive-metadata p{font:500 10px "JetBrains Mono",monospace;letter-spacing:.14em;color:#9cc6f5;text-transform:uppercase;margin:0}
+.archive-metadata h2{font:700 clamp(17px,2.4vw,24px)/1.2 "Syne",sans-serif;margin:12px 0 18px}
+.archive-metadata a{display:flex;align-items:center;justify-content:space-between;color:#09111e;text-decoration:none;border-radius:10px;background:#e8eef6;padding:13px 16px;font:700 11px "JetBrains Mono",monospace;letter-spacing:.12em;text-transform:uppercase}
+.archive-metadata a:hover{background:#9cc6f5}
+/* The real cinematic aperture lives in the existing Three.js canvas.
+   Only a lightweight CSS curtain is shown while the archive assets load. */
+.portal-boot{position:absolute;inset:0;z-index:40;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse 48% 60% at 50% 49%,#111d3b 0%,#070e20 48%,#030710 100%);display:grid;place-items:center;opacity:1;transition:opacity .55s cubic-bezier(.2,.72,.18,1);will-change:opacity}
+.portal-boot--release{opacity:0}
+.portal-boot__core{position:relative;display:grid;place-items:center;width:min(48vw,40vh);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(11,25,57,.2) 0%,rgba(43,78,159,.1) 47%,transparent 66%);box-shadow:0 0 110px rgba(37,80,173,.12)}
+.portal-boot__core i{position:absolute;inset:12%;border:1px solid rgba(113,163,244,.34);border-radius:50%;box-shadow:0 0 22px rgba(76,119,228,.28),inset 0 0 24px rgba(76,119,228,.08);animation:bootIris 2.2s ease-in-out infinite}
+.portal-boot__core i:nth-child(2){inset:27%;animation-delay:-.7s;opacity:.65}
+.portal-boot__core i:nth-child(3){inset:40%;animation-delay:-1.2s;opacity:.85}
+.portal-boot__status{position:absolute;bottom:max(8%,35px);left:50%;transform:translateX(-50%);display:grid;gap:10px;justify-items:center;color:rgba(184,207,245,.78);font:500 10px/1.3 "JetBrains Mono",monospace;letter-spacing:.19em;white-space:nowrap}
+.portal-boot__progress{display:block;width:70px;height:1px;background:linear-gradient(90deg,transparent,#91b8ff,transparent);opacity:.7;animation:bootProgress 1.7s ease-in-out infinite}
+.portal-hud{position:absolute;inset:0;z-index:44;pointer-events:none;color:#dbe9fb}
+.portal-hud__brand{position:absolute;top:max(23px,env(safe-area-inset-top));left:max(24px,env(safe-area-inset-left));font:600 11px "JetBrains Mono",monospace;letter-spacing:.14em;opacity:.73}
+.portal-hud__brand span{opacity:.36;padding:0 4px}
+@keyframes bootIris{0%,100%{transform:scale(.89);opacity:.35}50%{transform:scale(1.08);opacity:.85}}
+@keyframes bootProgress{0%,100%{transform:scaleX(.25);opacity:.25}50%{transform:scaleX(1);opacity:.8}}
+@media(max-width:650px){
+ .cinema-toolbar{top:12px;right:12px;gap:5px}.cinema-tool{width:38px;height:38px}
+ .archive-filters{top:62px;left:12px;max-width:calc(100% - 24px);gap:5px}
+ .archive-filter{width:37px;height:37px}
+ .cinema-hint-toggle{right:14px;bottom:calc(18px + env(safe-area-inset-bottom));width:37px;height:37px}
+ .cinema-gesture-guide{bottom:calc(68px + env(safe-area-inset-bottom));max-width:calc(100% - 20px);gap:5px}
+ .cinema-gesture-guide>span{font-size:8px;padding:7px 9px;gap:6px}
+ .archive-selected{top:112px;left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom));width:auto}
+ .archive-hover{top:22%}
+ .archive-related__tile{height:48px}
+ .archive-related{gap:5px;padding-top:5px}
+ .archive-related__tiles{gap:5px}
+ .portal-hud__brand{top:17px;left:14px;font-size:9px;letter-spacing:.08em}
+ .portal-boot__core{width:65vmin}
+}
+@media(prefers-reduced-motion:reduce){
+ .portal-boot__core i,.portal-boot__progress{animation:none}
+ .cinema-gesture-guide{animation:none}
+ .archive-preview .archive-media{animation:none!important}
+ *,*::before,*::after{transition-duration:.01ms!important}
+}

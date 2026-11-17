@@ -1,0 +1,6 @@
+Snapshot of the approved standalone immersive archive.
+Source: https://github.com/edmundokutuzov333/showreel-kutuzov-v2
+Commit: 01f195f6ff431af5a83ece58cc00293e5d0096a9
+Runtime: self-hosted by www.edmundokutuzov.art
+Artwork location: public/work/immersive/reel
+The source and built site are committed to the portfolio repository.
