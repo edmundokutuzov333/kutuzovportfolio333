@@ -595,7 +595,7 @@ body:has(.cv-experience) header.fixed {
     animation-delay: 0ms !important;
     transition-duration: .01ms !important;
   }
-  .cv-cover__name-line { opacity: 1; transform: none; }
+  .cv-cover__name-line { opacity: 1 !important; transform: none !important; animation: none !important; }
   .cv-cover__baseline span { transform: none; }
 }
 
