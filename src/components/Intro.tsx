@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouterState } from "@tanstack/react-router";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import type { IntroClock } from "./IntroScene";
 import { DirectionIcon } from "./DirectionIcon";
@@ -16,8 +17,11 @@ type Phase = "idle" | "breach" | "flash" | "done";
 
 export function Intro() {
   const { language } = useI18n();
+  const pathname = useRouterState({ select: state => state.location.pathname });
+  const isHomePage = pathname === "/";
   // Rendered on the server too, so the home page never flashes before the intro.
-  const [phase, setPhase] = useState<Phase>("idle");
+  // Direct links to CV/Work/About must never display the Home opening over content.
+  const [phase, setPhase] = useState<Phase>(isHomePage ? "idle" : "done");
   const [mounted, setMounted] = useState(false);
   const [count, setCount] = useState(0);
   const clock = useRef<IntroClock>({ breachAt: null });
@@ -36,7 +40,7 @@ export function Intro() {
   // decide whether to play
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || sessionStorage.getItem(SEEN_KEY)) setPhase("done");
+    if (!isHomePage || reduced || sessionStorage.getItem(SEEN_KEY)) setPhase("done");
     else setMounted(true);
     const replay = () => {
       clock.current = { breachAt: null };
@@ -47,7 +51,7 @@ export function Intro() {
     };
     window.addEventListener(REPLAY_EVENT, replay);
     return () => window.removeEventListener(REPLAY_EVENT, replay);
-  }, []);
+  }, [isHomePage]);
 
   // idle: triggers, counter, scroll lock
   useEffect(() => {
