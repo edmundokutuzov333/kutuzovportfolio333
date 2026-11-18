@@ -1,0 +1,131 @@
+name: Publish verified single-page CV editions (EN + PT)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/cv-onepage-apply.yml"
+      - ".github/patches/cv-onepage-20261118.tar.xz"
+      - "src/routes/cv-print.css"
+      - "src/routes/cv.tsx"
+      - "src/lib/cv-content.ts"
+      - "scripts/build-cv-pdfs.mjs"
+      - "scripts/verify-cv-pdf-visual.py"
+      - "src/test/cv-onepage.test.ts"
+      - ".e2e/tests/editorial-cv.spec.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cv-onepage-20261118-main
+  cancel-in-progress: false
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout original git history without force or rebase
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify and unpack the tested CV source changes
+        run: |
+          set -euo pipefail
+          archive=".github/patches/cv-onepage-20261118.tar.xz"
+          if test -f "$archive"; then
+            echo "ea208cc5d2cc8a915a6197374640735f82f640d30f6f658bd8778a7bb81ecad1  $archive" | sha256sum --check
+            tar -xJf "$archive" -C .
+          else
+            echo "No source package; rebuilding previously integrated CV sources."
+          fi
+          git diff --check
+
+      - name: Install Node and Bun
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22.16.0"
+
+      - name: Install Bun 1.4.4
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install PDF verification packages and Chromium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          python -m pip install --disable-pip-version-check --break-system-packages Pillow numpy
+          bun install --frozen-lockfile
+          npm install --prefix .e2e --no-save --no-package-lock --no-audit --no-fund @playwright/test@1.64.1
+          .e2e/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Verify type safety and all portfolio unit tests
+        run: |
+          bunx tsc --noEmit
+          bun run test
+
+      - name: Generate and validate both single-page A4 PDFs
+        run: |
+          set -euo pipefail
+          node scripts/build-cv-pdfs.mjs
+          python scripts/verify-cv-pdf-visual.py
+          for code in EN PT; do
+            pdf="public/cv/Edmundo-Kutuzov-CV-$code.pdf"
+            test -s "$pdf"
+            test "$(pdfinfo "$pdf" | awk '/^Pages:/ {print $2}')" = "1"
+            pdftotext -layout "$pdf" "/tmp/cv-$code.txt"
+            grep -Fq "contact@edmundokutuzov.art" "/tmp/cv-$code.txt"
+            if grep -Fq "edmundokutuzov.mz@gmail.com" "/tmp/cv-$code.txt"; then
+              echo "::error::Old address remained in $code PDF"; exit 1
+            fi
+          done
+
+      - name: Browser verify responsive web, bilingual switch and PDFs
+        run: |
+          .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
+            editorial-cv.spec.mjs \
+            --grep 'English is default|CV language follows|Both localized designed PDFs download|A4 print keeps|Full name'
+
+      - name: Publish only fully validated source and both PDFs to main
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if test -f .github/patches/cv-onepage-20261118.tar.xz; then
+            git rm -f .github/patches/cv-onepage-20261118.tar.xz
+          fi
+          git add -A -- \
+            src/lib/cv-content.ts \
+            src/routes/cv.tsx \
+            src/routes/cv-print.css \
+            .e2e/tests/editorial-cv.spec.mjs \
+            src/test/cv-onepage.test.ts \
+            scripts/build-cv-pdfs.mjs \
+            scripts/verify-cv-pdf-visual.py \
+            public/cv/Edmundo-Kutuzov-CV-EN.pdf \
+            public/cv/Edmundo-Kutuzov-CV-PT.pdf
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "Already published and verified."
+          else
+            git commit -m "fix(cv): publish one-page A4 EN/PT exports and updated contact email"
+            git push origin HEAD:main
+          fi
+
+      - name: Keep release evidence for diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onepage-cv-release-evidence
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            public/cv/Edmundo-Kutuzov-CV-EN.pdf
+            public/cv/Edmundo-Kutuzov-CV-PT.pdf
+            .e2e/test-results/
+            .e2e/playwright-report/
