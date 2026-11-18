@@ -40,7 +40,7 @@ test("English is default and every original experience, reference and skill valu
   await expect(root).toContainText("Joaquim Chaves Saúde");
   await expect(root).toContainText("Moçambique Companhia de Seguros");
   await expect(root).toContainText("Ferrão Chico");
-  await expect(root).toContainText("edmundokutuzov.mz@gmail.com");
+  await expect(root).toContainText("contact@edmundokutuzov.art");
   await expect(root.locator(".cv-skills__item")).toHaveCount(5);
   for(const [skill,value] of [
     ["Adobe Potoshop",95],["Adobe Illustrator",75],["Adobe Premiere",55],
@@ -121,6 +121,8 @@ test("Full name is readable, never collides with portrait, and no horizontal ove
 
 test("Both localized designed PDFs download, never the old image-only source",async ({page})=>{
   await page.goto("/cv",{waitUntil:"domcontentloaded"});
+  // Wait until React hydration finishes before exercising JS-only controls.
+  await page.waitForLoadState("networkidle");
   const old=await page.request.get(ORIGINAL_PDF);
   expect(old.status()).toBe(200);
   const oldHash=createHash("sha256").update(await old.body()).digest("hex");

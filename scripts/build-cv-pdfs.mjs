@@ -1,8 +1,9 @@
-import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { execFileSync, spawn } from "node:child_process";
+import { mkdirSync, mkdtempSync, renameSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const require = createRequire(import.meta.url);
@@ -10,6 +11,8 @@ const { chromium } = require(join(ROOT, ".e2e/node_modules/@playwright/test"));
 const URL = "http://127.0.0.1:5173";
 const OUT = join(ROOT, "public/cv");
 mkdirSync(OUT,{recursive:true});
+const TEMP=mkdtempSync(join(tmpdir(),"ek-cv-onepage-"));
+const generated=[];
 
 const server=spawn("bun",["run","dev","--host","127.0.0.1","--port","5173","--strictPort"],{
   cwd:ROOT,env:{...process.env,CI:"true"},stdio:["ignore","pipe","pipe"]
@@ -30,6 +33,20 @@ async function health(){
   throw new Error("CV server did not start: "+logs);
 }
 
+function validatePdf(file, locale) {
+  const info=execFileSync("pdfinfo",[file],{encoding:"utf8"});
+  const pages=Number(info.match(/^Pages:\s*(\d+)/m)?.[1]);
+  if(pages!==1)throw new Error("CV "+locale+" must be exactly one A4 page (got "+pages+").");
+  if(!/Page size:\s*59[45].*84[12].*A4/m.test(info))throw new Error("CV "+locale+" is not A4.");
+  const text=execFileSync("pdftotext",["-layout",file,"-"],{encoding:"utf8"});
+  for(const required of ["EDMUNDO","KUTUZOV.","WEBMASTERS","Flying Fish","Hyundai","Ferrão Chico","contact@edmundokutuzov.art"]) {
+    if(!text.includes(required))throw new Error("CV "+locale+" missing PDF text: "+required);
+  }
+  if(text.includes("edmundokutuzov.mz@gmail.com"))throw new Error("CV "+locale+" contains an obsolete email");
+  for(const forbidden of ["Download designed CV","Descarregar CV actual","Print CV","Imprimir CV"]) {
+    if(text.includes(forbidden))throw new Error("CV "+locale+" leaked an on-screen control: "+forbidden);
+  }
+}
 let browser;
 try{
   await health();
@@ -54,17 +71,25 @@ try{
     await page.emulateMedia({media:"print",reducedMotion:"reduce"});
     const removed=await page.locator("[data-cv-controls]").first().evaluate(el=>getComputedStyle(el).display);
     if(removed!=="none")throw Error("PDF would print download/print controls: "+locale);
-    const output=join(OUT,"Edmundo-Kutuzov-CV-"+code+".pdf");
+    const filename="Edmundo-Kutuzov-CV-"+code+".pdf";
+    const output=join(TEMP,filename);
     const bytes=await page.pdf({
       path:output,printBackground:true,preferCSSPageSize:true,
       displayHeaderFooter:false,scale:1
     });
     if(bytes.length<17000)throw Error("Suspiciously small CV PDF "+locale);
+    validatePdf(output,locale);
+    generated.push({locale,filename,output,bytes:bytes.length});
     await page.close();
-    console.log(JSON.stringify({locale,output,bytes:bytes.length,htmlSource:"/cv",
-      noControls:true,photo:"/edmundo-kutuzov-cv-mineral.png"}));
+  }
+  // Publish both PDFs only after both languages pass the same one-page gate.
+  for(const item of generated){
+    renameSync(item.output,join(OUT,item.filename));
+    console.log(JSON.stringify({...item,output:join(OUT,item.filename),
+      pages:1,htmlSource:"/cv",noControls:true,photo:"/edmundo-kutuzov-cv-mineral.png"}));
   }
 }finally{
   await browser?.close();
   server.kill("SIGTERM");
+  rmSync(TEMP,{recursive:true,force:true});
 }

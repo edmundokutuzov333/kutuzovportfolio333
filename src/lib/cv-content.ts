@@ -96,5 +96,7 @@ export function getCvContent(lang: SiteLanguage) {
   return { ...content, experiences, sections, brands:cvBrands };
 }
 
+export const cvContactEmail = "contact@edmundokutuzov.art" as const;
+
 export const cvPdfForLanguage = (lang: SiteLanguage) =>
   lang==="pt-PT" ? "/cv/Edmundo-Kutuzov-CV-PT.pdf" : "/cv/Edmundo-Kutuzov-CV-EN.pdf";

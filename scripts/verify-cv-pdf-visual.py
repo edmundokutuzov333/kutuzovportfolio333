@@ -16,6 +16,17 @@ PDF_DIR=ROOT/"public"/"cv"
 
 def check(code,heading):
     doc=PDF_DIR/f"Edmundo-Kutuzov-CV-{code}.pdf"
+    info=subprocess.run(["pdfinfo",str(doc)],capture_output=True,text=True,timeout=30,check=True).stdout
+    pages=next((int(line.split(":",1)[1].strip()) for line in info.splitlines()
+                if line.startswith("Pages:")),None)
+    assert pages==1,(code,f"expected one A4 page, got {pages}")
+    assert "A4" in info,(code,"wrong paper format")
+    entire=subprocess.run(["pdftotext","-layout",str(doc),"-"],capture_output=True,
+                          text=True,timeout=30,check=True).stdout
+    for required in ["EDMUNDO","KUTUZOV.","WEBMASTERS","Ferrão Chico",
+                     "Flying Fish","Hyundai","contact@edmundokutuzov.art"]:
+        assert required in entire,(code,f"missing content: {required}")
+    assert "edmundokutuzov.mz@gmail.com" not in entire,(code,"obsolete email")
     with tempfile.TemporaryDirectory(prefix="cv-pdf-qa-") as temp:
         out=Path(temp)/"page1"
         proc=subprocess.run(["pdftoppm","-f","1","-l","1","-scale-to","900",
@@ -34,7 +45,8 @@ def check(code,heading):
         assert heading in first,(code,"heading absent from first page")
         for invalid in ["CLICK · SCROLL", "Click · Scroll", "TO BREACH", "SKIP"]:
             assert invalid not in first,(code,"intro text reached the PDF")
-        print(f"{code}: first-page ivory {fraction:.2%}, {heading} visible, no intro")
+        print(f"{code}: exactly one A4 page, ivory {fraction:.2%}, "
+              f"complete content, new email, {heading} visible, no intro")
 
 if __name__=="__main__":
     check("EN","About Me")

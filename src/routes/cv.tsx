@@ -2,10 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { cvPdfForLanguage, getCvContent } from "@/lib/cv-content";
+import { cvContactEmail, cvPdfForLanguage, getCvContent } from "@/lib/cv-content";
 import { useI18n, type SiteLanguage } from "@/lib/i18n";
 import { normaliseCvPhone, originalCv } from "@/lib/cv-original";
 import "./cv.css";
+import "./cv-print.css";
 
 export const Route = createFileRoute("/cv")({
   head: () => ({
@@ -270,7 +271,7 @@ export function CurriculumPage() {
                   </div>
                   <div>
                     <dt>{content.email}</dt>
-                    <dd><a href={`mailto:${originalCv.contact.email}`}>{originalCv.contact.email}</a></dd>
+                    <dd><a href={`mailto:${cvContactEmail}`}>{cvContactEmail}</a></dd>
                   </div>
                   <div>
                     <dt>{content.address}</dt>
