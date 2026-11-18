@@ -277,14 +277,36 @@
     color: #394251 !important;
     font: 600 7.25pt/1.25 var(--font-sans), Manrope, sans-serif !important;
   }
+  /* A fixed, pixel-aligned thickness prevents subpixel hairline rendering
+     of individual skill bars in Chromium's A4 PDF rasterization. */
   .cv-skills__track {
+    position: relative !important;
     width: 100% !important;
-    height: 1.5px !important;
+    height: 3px !important;
+    min-height: 3px !important;
+    max-height: 3px !important;
     margin: 0 !important;
+    padding: 0 !important;
     border: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
     background: #c5c9d1 !important;
   }
-  .cv-skills__fill { background: #5367eb !important; }
+  .cv-skills__fill {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 3px !important;
+    min-height: 3px !important;
+    max-height: 3px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-sizing: border-box !important;
+    background: #5367eb !important;
+    transition: none !important;
+  }
 
   /* Direct contact and reference resolve the visual reading path. */
   .cv-document__duo--end {

@@ -7,6 +7,7 @@ on:
       - ".github/workflows/cv-onepage-apply.yml"
       - ".github/patches/cv-onepage-20261118.tar.xz"
       - "src/routes/cv-print.css"
+      - "src/routes/cv.css"
       - "src/routes/cv.tsx"
       - "src/routes/about.tsx"
       - "src/lib/profile-portrait.ts"
@@ -15,6 +16,7 @@ on:
       - "src/lib/cv-content.ts"
       - "scripts/build-cv-pdfs.mjs"
       - "scripts/verify-cv-pdf-visual.py"
+      - "scripts/verify-cv-skill-bars.py"
       - "src/test/cv-onepage.test.ts"
       - ".e2e/tests/editorial-cv.spec.mjs"
   workflow_dispatch:
@@ -78,6 +80,7 @@ jobs:
           set -euo pipefail
           node scripts/build-cv-pdfs.mjs
           python scripts/verify-cv-pdf-visual.py
+          python scripts/verify-cv-skill-bars.py
           for code in EN PT; do
             pdf="public/cv/Edmundo-Kutuzov-CV-$code.pdf"
             test -s "$pdf"
@@ -93,7 +96,7 @@ jobs:
         run: |
           .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
             editorial-cv.spec.mjs \
-            --grep 'English is default|CV language follows|Approved master portrait|Both localized designed PDFs download|A4 print keeps|Full name'
+            --grep 'English is default|CV language follows|Approved master portrait|Skill meter bars have uniform thickness|Both localized designed PDFs download|A4 print keeps|Full name'
 
       - name: Publish only fully validated source and both PDFs to main
         run: |
@@ -111,6 +114,7 @@ jobs:
             src/test/cv-onepage.test.ts \
             scripts/build-cv-pdfs.mjs \
             scripts/verify-cv-pdf-visual.py \
+            scripts/verify-cv-skill-bars.py \
             public/cv/Edmundo-Kutuzov-CV-EN.pdf \
             public/cv/Edmundo-Kutuzov-CV-PT.pdf
           git diff --cached --check

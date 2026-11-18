@@ -27,4 +27,18 @@ describe("single-sheet CV export", () => {
     expect(script).toContain("renameSync(item.output");
     expect(script).toContain("contact@edmundokutuzov.art");
   });
+  it("renders fixed-thickness skills on screen and paper, without fractional print bars", () => {
+    const screen=readFileSync("src/routes/cv.css","utf8");
+    const print=readFileSync("src/routes/cv-print.css","utf8");
+    expect(screen).toContain("height: 3px;");
+    expect(screen).toContain("min-height: 3px;");
+    expect(screen).toContain("max-height: 3px;");
+    expect(screen).toContain("position: absolute;");
+    expect(print).toContain("height: 3px !important;");
+    expect(print).toContain("min-height: 3px !important;");
+    expect(print).toContain("max-height: 3px !important;");
+    expect(print).not.toContain("height: 1.5px");
+    expect(screen).not.toContain("height:2px!important");
+  });
+
 });

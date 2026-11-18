@@ -178,3 +178,46 @@ test("Reduced motion is genuinely static and CV section links remain keyboard ac
   await expect(page).toHaveURL(/\/cv#skills$/);
   await expect(page.locator("#skills")).toBeInViewport();
 });
+
+
+test("Skill meter bars have uniform thickness, including Adobe InDesign, in web and A4 PDF styles",async ({page})=>{
+  test.setTimeout(160_000);
+  for(const language of ["en","pt-PT"]){
+    await page.goto("/cv?cvLang="+language,{waitUntil:"domcontentloaded"});
+    await expect(page.getByTestId("cv-page")).toHaveAttribute("data-cv-language",language);
+    await page.evaluate(()=>document.fonts.ready);
+    for(const width of [390,1440]){
+      await page.setViewportSize({width,height:950});
+      for(const media of ["screen","print"]){
+        await page.emulateMedia({media,reducedMotion:"reduce"});
+        const bars=await page.locator(".cv-skills__item").evaluateAll(items=>items.map(item=>{
+          const track=item.querySelector(".cv-skills__track");
+          const fill=item.querySelector(".cv-skills__fill");
+          const name=item.querySelector(".cv-skills__name")?.textContent?.trim();
+          if(!track || !fill)throw new Error("Skill bar structure is incomplete");
+          const trackRect=track.getBoundingClientRect();
+          const fillRect=fill.getBoundingClientRect();
+          const value=Number(track.getAttribute("aria-valuenow"));
+          return {
+            name,value,trackHeight:trackRect.height,fillHeight:fillRect.height,
+            fillWidth:fillRect.width,trackWidth:trackRect.width,
+            fillTop:fillRect.top,trackTop:trackRect.top,
+            fillColor:getComputedStyle(fill).backgroundColor,
+          };
+        }));
+        expect(bars).toHaveLength(5);
+        const inDesign=bars.find(bar=>bar.name==="Adobe InDesign");
+        expect(inDesign,"Adobe InDesign missing in "+language).toBeDefined();
+        for(const bar of bars){
+          expect(bar.trackHeight,language+"/"+media+"/"+width+": "+bar.name+" track").toBe(3);
+          expect(bar.fillHeight,language+"/"+media+"/"+width+": "+bar.name+" fill").toBe(3);
+          expect(Math.abs(bar.fillTop-bar.trackTop),bar.name+" not flush").toBeLessThan(0.05);
+          expect(Math.abs(bar.fillWidth/bar.trackWidth*100-bar.value),bar.name+" percentage").toBeLessThan(0.5);
+          expect(bar.fillColor,bar.name+" coloured fill").toMatch(/^rgb\(/);
+        }
+        expect(inDesign.fillHeight).toBe(bars[0].fillHeight);
+        expect(inDesign.trackHeight).toBe(bars[0].trackHeight);
+      }
+    }
+  }
+});
