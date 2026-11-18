@@ -70,15 +70,18 @@ test("CV language follows site preference but can be independently overridden",a
   await expect(page.getByTestId("cv-download").first()).toHaveAttribute("href",PDF_PT);
 });
 
-test("Original portrait is retinted only in background, with intact visible face",async ({page})=>{
+test("Approved master portrait is shared by About and the bilingual CV",async ({page})=>{
   await page.goto("/cv",{waitUntil:"domcontentloaded"});
   const portrait=page.getByTestId("cv-portrait");
-  await expect(portrait).toHaveAttribute("src","/edmundo-kutuzov-cv-mineral.png");
-  await expect.poll(()=>portrait.evaluate(el=>el.complete&&el.naturalWidth>400&&el.naturalHeight>400)).toBe(true);
+  await expect(portrait).toHaveAttribute("src","/portraits/edmundo-kutuzov.jpg");
+  await expect.poll(()=>portrait.evaluate(el=>el.complete&&el.naturalWidth===4096&&el.naturalHeight===4096)).toBe(true);
   expect(await portrait.evaluate(el=>getComputedStyle(el).objectFit)).toBe("cover");
-  const png=await page.request.get("/edmundo-kutuzov-cv-mineral.png");
-  expect(png.status()).toBe(200);
-  expect(png.headers()["content-type"]).toMatch(/image\/png/);
+  const jpeg=await page.request.get("/portraits/edmundo-kutuzov.jpg");
+  expect(jpeg.status()).toBe(200);
+  expect(jpeg.headers()["content-type"]).toMatch(/image\/jpeg/);
+  expect((await jpeg.body()).length).toBeGreaterThan(8_000_000);
+  await page.goto("/about",{waitUntil:"domcontentloaded"});
+  await expect(page.locator(".about-portrait img")).toHaveAttribute("src","/portraits/edmundo-kutuzov.jpg");
 });
 
 test("Full name is readable, never collides with portrait, and no horizontal overflows",async ({page})=>{

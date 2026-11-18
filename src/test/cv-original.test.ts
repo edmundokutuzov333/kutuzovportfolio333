@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { cvSections, normaliseCvPhone, originalCv } from "@/lib/cv-original";
+import { profilePortrait } from "@/lib/profile-portrait";
 
 describe("native CV — exact information contract", () => {
   it("retains the original PDF byte for byte", () => {
@@ -14,8 +15,8 @@ describe("native CV — exact information contract", () => {
 
   it("uses precisely the portrait already supplied on the About page", () => {
     const about = readFileSync("src/routes/about.tsx","utf8");
-    expect(about).toContain('"/edmundo-kutuzov-foto.jpg"');
-    expect(originalCv.photo).toBe("/edmundo-kutuzov-foto.jpg");
+    expect(about).toContain("const portrait = profilePortrait");
+    expect(originalCv.photo).toBe(profilePortrait);
   });
 
   it("preserves the original name, role, every career step and exact dates", () => {
@@ -69,10 +70,10 @@ describe("native CV — exact information contract", () => {
     expect(route).not.toMatch(/<iframe|<embed|<object|pdfjs-dist|react-pdf/i);
     expect(route).toContain('cvPdfForLanguage(lang)');
     expect(route).toContain('to="/about"');
-    expect(route).toContain("originalCv.photo");
+    expect(route).toContain("src={profilePortrait}");
     expect(route).toContain('data-cv-language={lang}');
     expect(route).toContain('CvLanguageControl');
-    expect(route).toContain('/edmundo-kutuzov-cv-mineral.png');
+    expect(route).not.toContain('/edmundo-kutuzov-cv-mineral.png');
     const content=readFileSync("src/lib/cv-content.ts","utf8");
     expect(content).toContain('Hyundai Moçambique');
     expect(content).toContain('Flying Fish');

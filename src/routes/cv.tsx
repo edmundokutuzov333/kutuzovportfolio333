@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { cvContactEmail, cvPdfForLanguage, getCvContent } from "@/lib/cv-content";
 import { useI18n, type SiteLanguage } from "@/lib/i18n";
 import { normaliseCvPhone, originalCv } from "@/lib/cv-original";
+import { profilePortrait } from "@/lib/profile-portrait";
 import "./cv.css";
 import "./cv-print.css";
 
@@ -172,20 +173,15 @@ export function CurriculumPage() {
           </div>
           <div className="cv-cover__portrait-frame">
             <img
-              src="/edmundo-kutuzov-cv-mineral.png"
+              src={profilePortrait}
               alt="Edmundo Kutuzov"
               className="cv-cover__portrait"
               loading="eager"
               decoding="async"
               fetchPriority="high"
-              width={780}
-              height={1040}
+              width={4096}
+              height={4096}
               data-testid="cv-portrait"
-              onError={event => {
-                if(!event.currentTarget.src.endsWith(originalCv.photo)){
-                  event.currentTarget.src=originalCv.photo;
-                }
-              }}
             />
             <span className="cv-cover__portrait-stroke" aria-hidden="true"/>
           </div>

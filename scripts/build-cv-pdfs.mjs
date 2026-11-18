@@ -62,7 +62,12 @@ try{
     await page.evaluate(async()=>{
       await document.fonts.ready;
       const portrait=document.querySelector('[data-testid="cv-portrait"]');
-      if(portrait&&!portrait.complete)await new Promise(resolve=>{portrait.onload=resolve;portrait.onerror=resolve;});
+      if(!portrait)throw new Error("CV portrait element missing");
+      if(!portrait.complete)await new Promise(resolve=>{portrait.onload=resolve;portrait.onerror=resolve;});
+      if(new URL(portrait.currentSrc,window.location.origin).pathname!=="/portraits/edmundo-kutuzov.jpg"
+        || portrait.naturalWidth!==4096 || portrait.naturalHeight!==4096) {
+        throw new Error("Approved new portrait was not loaded before PDF export");
+      }
     });
     const name=await page.locator("#cv-name").innerText();
     if(!name.includes("EDMUNDO")||!name.includes("KUTUZOV."))throw Error("Missing name in "+locale);
@@ -86,7 +91,7 @@ try{
   for(const item of generated){
     renameSync(item.output,join(OUT,item.filename));
     console.log(JSON.stringify({...item,output:join(OUT,item.filename),
-      pages:1,htmlSource:"/cv",noControls:true,photo:"/edmundo-kutuzov-cv-mineral.png"}));
+      pages:1,htmlSource:"/cv",noControls:true,photo:"/portraits/edmundo-kutuzov.jpg"}));
   }
 }finally{
   await browser?.close();

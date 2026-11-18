@@ -1,3 +1,5 @@
+import { profilePortrait } from "@/lib/profile-portrait";
+
 /**
  * Verbatim content from the original single-page image-based CV.
  *
@@ -5,12 +7,13 @@
  * Original PDF SHA256: 4ebf841282ac47b386c8dab6e4f37dfc09950704aa925bd563ac08efb7ce9e37
  * All visible content was visually checked against the embedded page image.
  * Deliberately preserve spellings and figures, including "Adobe Potoshop".
+ * The portfolio image is a replaceable presentation asset, not archival PDF text.
  * This is not sourced from the About CMS, translations or profile fallbacks.
  */
 export const originalCv = {
   name: ["EDMUNDO", "KUTUZOV."],
   role: ["VISUAL COMMUNICATION DESIGNER", "& ART DIRECTOR"],
-  photo: "/edmundo-kutuzov-foto.jpg",
+  photo: profilePortrait,
   pdf: "/edmundo-kutuzov-cv-2026.pdf",
   about: {
     heading: "Sobre Mim",

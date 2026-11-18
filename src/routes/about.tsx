@@ -7,6 +7,7 @@ import { loadAboutContent } from "@/lib/cms/loaders";
 import { requireHeroSection } from "@/lib/cms/section-utils";
 import { aboutBiography } from "@/lib/content";
 import { resolvePublicAssetUrl } from "@/lib/public-assets";
+import { profilePortrait } from "@/lib/profile-portrait";
 import { seoFromPage } from "@/lib/seo";
 import { useI18n } from "@/lib/i18n";
 
@@ -32,7 +33,7 @@ function About() {
     : aboutBiography;
   // The About portrait is the approved profile image supplied for the current site.
   // Keep it local so the public page does not depend on an outdated CMS asset path.
-  const portrait = "/edmundo-kutuzov-foto.jpg";
+  const portrait = profilePortrait;
   const selectedProjects = projects.slice(0, 4);
 
   return (

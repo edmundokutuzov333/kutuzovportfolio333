@@ -8,6 +8,10 @@ on:
       - ".github/patches/cv-onepage-20261118.tar.xz"
       - "src/routes/cv-print.css"
       - "src/routes/cv.tsx"
+      - "src/routes/about.tsx"
+      - "src/lib/profile-portrait.ts"
+      - "src/lib/cv-original.ts"
+      - "public/portraits/**"
       - "src/lib/cv-content.ts"
       - "scripts/build-cv-pdfs.mjs"
       - "scripts/verify-cv-pdf-visual.py"
@@ -89,7 +93,7 @@ jobs:
         run: |
           .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
             editorial-cv.spec.mjs \
-            --grep 'English is default|CV language follows|Both localized designed PDFs download|A4 print keeps|Full name'
+            --grep 'English is default|CV language follows|Approved master portrait|Both localized designed PDFs download|A4 print keeps|Full name'
 
       - name: Publish only fully validated source and both PDFs to main
         run: |
