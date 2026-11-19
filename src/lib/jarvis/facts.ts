@@ -106,7 +106,7 @@ export function answerContactQuestion(question: string, facts: Fact[], locale: J
   if (/instagram/i.test(q) && c.instagram) return en ? "Verified Instagram: " + c.instagram : "Instagram oficial: " + c.instagram;
   if (/(?:site oficial|official (?:site|website)|site do edmundo|website do edmundo)/i.test(q) && c.site)
     return en ? "Official website: " + c.site : "O site oficial é " + c.site;
-  if (/(?:como (?:posso )?(?:entrar em )?contact|contactar|contacto do edmundo|how (?:can i )?contact|hire edmundo)/i.test(q) && c.email)
+  if (/(?:como (?:posso )?(?:entrar em )?contact|contactar|contacto(?:s)?(?: oficiais?)?|contacto do edmundo|how (?:can i )?contact|(?:your|official|edmundo'?s) contact(?: details| info)?|hire edmundo)/i.test(q) && c.email)
     return en ? "You can contact Edmundo at " + c.email
       : "Pode contactar o Edmundo através de " + c.email;
   return null;

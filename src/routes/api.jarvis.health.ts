@@ -6,13 +6,13 @@ export const Route = createFileRoute("/api/jarvis/health")({
       GET: async () => {
         const start = Date.now();
         try {
-          const { getVerifiedFacts } = await import("@/lib/server/jarvis-kb.server");
+          const { getVerifiedFacts, getJarvisKnowledgeSource } = await import("@/lib/server/jarvis-kb.server");
           const { getContact } = await import("@/lib/jarvis/facts");
           const facts = await getVerifiedFacts();
           const contact = getContact(facts);
           if (!contact.email) throw new Error("unverified_contact");
           // No credentials, IPs, user questions, or private facts are exposed.
-          return Response.json({ status: "ready", facts: facts.length, kb: "verified",
+          return Response.json({ status: getJarvisKnowledgeSource() === "database" ? "ready" : "degraded", facts: facts.length, kb: getJarvisKnowledgeSource(),
             latencyMs: Date.now() - start }, {
             headers: { "Cache-Control": "no-store, private" },
           });

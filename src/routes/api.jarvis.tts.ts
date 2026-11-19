@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { fetchJarvisTtsWithRetry } from "@/lib/server/jarvis-tts-retry.server";
 import { z } from "zod";
 import { extractJarvisWav } from "@/lib/jarvis/tts-response";
 import type { JarvisLocale } from "@/lib/jarvis/facts";
@@ -30,7 +31,7 @@ export const Route=createFileRoute("/api/jarvis/tts")({
       const key=process.env["GEMINI_API_KEY"];
       if(!key)return new Response(null,{status:503,headers});
       const voiceText=spokenJarvisText(safe.text,locale).slice(0,850);
-      const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+      const response=await fetchJarvisTtsWithRetry("https://generativelanguage.googleapis.com/v1beta/interactions",{
         method:"POST",headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
         body:JSON.stringify({
           model:"gemini-3.8-flash-lite-tts",
