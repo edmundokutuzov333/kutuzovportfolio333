@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { fetchJarvisTtsWithRetry } from "@/lib/server/jarvis-tts-retry.server";
 import { z } from "zod";
 import { Buffer } from "node:buffer";
 import {
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/api/jarvis/tts-stream")({
           if (!key) return new Response(null, { status: 503, headers });
           const safe = validateContacts(input.text, facts, input.locale);
           const speech = spokenJarvisText(safe.text, input.locale).slice(0, 850);
-          const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+          const response = await fetchJarvisTtsWithRetry("https://generativelanguage.googleapis.com/v1beta/interactions", {
             method: "POST",
             headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
             body: JSON.stringify({
