@@ -238,3 +238,110 @@ test("unavailable streamed TTS gracefully falls back to the existing WAV pipelin
   await jarvis.getByRole("button", { name: "Open text chat" }).click();
   await expect(jarvis.locator(".jv-chat-message--assistant")).toContainText("Edmundo is an art director.");
 });
+
+test("spoken answer displays a progressive, retained transcript beside the voice visual", async ({ page }) => {
+  await installFakeMicrophone(page);
+  await page.route("**/api/jarvis/transcribe", route =>
+    route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ transcript: "What can you create?", error: null }) }));
+  await page.route("**/api/jarvis/stream", route =>
+    route.fulfill({ status: 200, contentType: "text/event-stream",
+      body: 'event: chunk\ndata: {"text":"I create visual identities."}\n\n'
+        + 'event: chunk\ndata: {"text":"I also direct campaigns."}\n\n'
+        + 'event: done\ndata: {}\n\n' }));
+  await page.route("**/api/jarvis/tts-stream", route => route.fulfill({ status: 503 }));
+  let audioRequests = 0;
+  await page.route("**/api/jarvis/tts", async route => {
+    audioRequests++;
+    await new Promise(resolve => setTimeout(resolve, 350));
+    await route.fulfill({ status: 200, contentType: "audio/wav", body: mockWav() });
+  });
+
+  await openJarvis(page);
+  const jarvis = page.locator(".jv-root");
+  await jarvis.getByRole("button", { name: "TALK TO KUTUZOV" }).click();
+  await jarvis.locator(".jv-orbit-hit").click();
+  const transcript = jarvis.getByRole("region", { name: "LIVE TRANSCRIPT" });
+  await expect(transcript).toBeVisible();
+  await expect(transcript).toContainText("The spoken response will appear here");
+  await expect.poll(() => audioRequests).toBeGreaterThan(0);
+  await expect(transcript).toContainText("I create visual identities.");
+  await expect(transcript).toContainText("I also direct campaigns.");
+  await expect(jarvis.locator(".jv-voice-state")).toContainText("Ready to talk");
+  await expect(transcript).toContainText("I create visual identities. I also direct campaigns.");
+
+  // Spoken captions remain readable after the audio ends, in both UI modes.
+  await jarvis.getByRole("button", { name: "Open text chat" }).click();
+  await expect(jarvis.locator(".jv-chat-message--assistant").last())
+    .toContainText("I create visual identities. I also direct campaigns.");
+});
+
+test("closing the voice UI clears stale captions before the next session", async ({ page }) => {
+  await installFakeMicrophone(page);
+  await page.route("**/api/jarvis/transcribe", route =>
+    route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ transcript: "What do you do?", error: null }) }));
+  await page.route("**/api/jarvis/stream", route =>
+    route.fulfill({ status: 200, contentType: "text/event-stream",
+      body: 'event: chunk\ndata: {"text":"I am a creative director."}\n\n'
+        + 'event: done\ndata: {}\n\n' }));
+  await page.route("**/api/jarvis/tts-stream", route => route.fulfill({ status: 503 }));
+  await page.route("**/api/jarvis/tts", route =>
+    route.fulfill({ status: 200, contentType: "audio/wav", body: mockWav() }));
+  await openJarvis(page);
+  const jarvis = page.locator(".jv-root");
+  await jarvis.getByRole("button", { name: "TALK TO KUTUZOV" }).click();
+  await jarvis.locator(".jv-orbit-hit").click();
+  await expect(jarvis.locator(".jv-voice-transcript__body")).toContainText("I am a creative director.");
+  await jarvis.getByRole("button", { name: "Close", exact: true }).click();
+  await page.evaluate(() => window.dispatchEvent(new Event("ek:jarvis-open")));
+  await expect(jarvis).toBeVisible();
+  await expect(jarvis.locator(".jv-voice-transcript")).toHaveCount(0);
+});
+
+
+test("spoken transcript remains readable, contained and scrollable on narrow mobile screens", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await installFakeMicrophone(page);
+  const answer = Array.from({ length: 9 }, (_, index) =>
+    "Part " + (index + 1) + ": clear creative direction connects strong ideas with memorable design.")
+    .join(" ");
+  await page.route("**/api/jarvis/transcribe", route =>
+    route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ transcript: "Describe your creative approach.", error: null }) }));
+  await page.route("**/api/jarvis/stream", route =>
+    route.fulfill({ status: 200, contentType: "text/event-stream",
+      body: 'event: chunk\ndata: ' + JSON.stringify({ text: answer }) + '\n\n'
+        + 'event: done\ndata: {}\n\n' }));
+  await page.route("**/api/jarvis/tts-stream", route => route.fulfill({ status: 503 }));
+  await page.route("**/api/jarvis/tts", route =>
+    route.fulfill({ status: 200, contentType: "audio/wav", body: mockWav() }));
+
+  await openJarvis(page);
+  const jarvis = page.locator(".jv-root");
+  await jarvis.getByRole("button", { name: "TALK TO KUTUZOV" }).click();
+  await jarvis.locator(".jv-orbit-hit").click();
+  const transcript = jarvis.getByRole("region", { name: "LIVE TRANSCRIPT" });
+  await expect(transcript).toContainText("Part 9:", { timeout: 20_000 });
+  const geometry = await page.evaluate(() => {
+    const panel = document.querySelector(".jv-panel").getBoundingClientRect();
+    const caption = document.querySelector(".jv-voice-transcript").getBoundingClientRect();
+    const scroller = document.querySelector(".jv-voice-transcript__body");
+    return {
+      panelLeft: panel.left,
+      panelRight: panel.right,
+      captionLeft: caption.left,
+      captionRight: caption.right,
+      captionHeight: scroller.clientHeight,
+      contentHeight: scroller.scrollHeight,
+      viewportWidth: window.innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+  expect(geometry.captionLeft).toBeGreaterThanOrEqual(geometry.panelLeft);
+  expect(geometry.captionRight).toBeLessThanOrEqual(geometry.panelRight);
+  expect(geometry.captionHeight).toBeLessThanOrEqual(108);
+  expect(geometry.contentHeight).toBeGreaterThan(geometry.captionHeight);
+  expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+});
+
