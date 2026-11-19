@@ -5,14 +5,17 @@ import {
 } from "@/lib/jarvis/facts";
 import { jarvisPersona } from "@/lib/jarvis/persona";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
+import { acquireEmergencyQuota, publishedJarvisFacts } from "./jarvis-resilience.server";
 import { jarvisServerCopy } from "@/lib/jarvis/locale";
 
 type GeminiResult = { reply: string | null; error: string | null };
 type Content = { role: "user" | "model"; parts: { text: string }[] };
 type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-type FactCache = { facts: Fact[]; version: number; expires: number };
+type FactCache = { facts: Fact[]; version: number; expires: number; source: "database" | "cached_verified" | "published_snapshot" };
 let cache: FactCache | null = null;
 let loading: Promise<FactCache> | null = null;
+let databaseRetryAt = 0;
+export const getJarvisKnowledgeSource = () => cache?.source ?? "unavailable";
 const queryEmbeddingCache = new Map<string, number[]>();
 const ALLOWED_MODELS = new Set([
   "gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash",
@@ -50,14 +53,41 @@ export async function db<T>(resource: string, options: { method?: string; body?:
 export async function getVerifiedFacts(): Promise<Fact[]> {
   if (cache && Date.now() < cache.expires) return cache.facts;
   if (!loading) {
-    loading = (async () => {
-      const core=await db<{version:number;facts:Fact[]}>("rpc/kb_get_core_facts",{
-        method:"POST",body:{},timeoutMs:2000,
-      });
-      if (!Array.isArray(core.facts)) throw new Error("JARVIS_CORE_FACTS_UNAVAILABLE");
-      if (cache?.version === core.version) return { ...cache, expires: Date.now() + 60_000 };
-      return { facts: core.facts, version: core.version, expires: Date.now() + 60_000 };
-    })().then((value) => { cache = value; return value; }).finally(() => { loading = null; });
+    loading = (async (): Promise<FactCache> => {
+      const now = Date.now();
+      if (now < databaseRetryAt) {
+        if (cache?.source === "database" || cache?.source === "cached_verified") {
+          return { ...cache, source: "cached_verified", expires: now + 20_000 };
+        }
+        const published = publishedJarvisFacts();
+        if (!published.length) throw new Error("JARVIS_PUBLISHED_KB_EMPTY");
+        return { facts: published, version: -1, source: "published_snapshot", expires: now + 20_000 };
+      }
+      try {
+        const core = await db<{version:number;facts:Fact[]}>("rpc/kb_get_core_facts", {
+          method: "POST", body: {}, timeoutMs: 2000,
+        });
+        if (!Array.isArray(core.facts) || !core.facts.some(f =>
+          f.key === "contact.email" && f.status === "verified" && f.visibility === "public"
+        )) throw new Error("JARVIS_CORE_FACTS_UNAVAILABLE");
+        if (cache?.source === "database" && cache.version === core.version) {
+          return { ...cache, expires: Date.now() + 60_000 };
+        }
+        return { facts: core.facts, version: core.version,
+          source: "database", expires: Date.now() + 60_000 };
+      } catch (error) {
+        databaseRetryAt = Date.now() + 30_000;
+        console.warn("JARVIS_VERIFIED_KB_FALLBACK",
+          error instanceof Error ? error.message.slice(0, 50) : "unavailable");
+        if (cache?.source === "database" || cache?.source === "cached_verified") {
+          return { ...cache, source: "cached_verified", expires: Date.now() + 20_000 };
+        }
+        const published = publishedJarvisFacts();
+        if (!published.length) throw new Error("JARVIS_PUBLISHED_KB_EMPTY");
+        return { facts: published, version: -1,
+          source: "published_snapshot", expires: Date.now() + 20_000 };
+      }
+    })().then(value => { cache = value; return value; }).finally(() => { loading = null; });
   }
   return (await loading).facts;
 }
@@ -70,13 +100,21 @@ export async function acquireQuota(): Promise<boolean> {
     (process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "jarvis") + "|" + origin.slice(0, 100),
   ));
   const hash = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, "0")).join("");
-  return db<boolean>("rpc/kb_acquire_quotas", {
-    method: "POST", timeoutMs: 2500, body: {
-      p_bucket: hash, p_daily: Math.max(1, Math.min(1000, Number(process.env["JARVIS_DAILY_REQUEST_LIMIT"] || "300"))),
-    },
-  });
+  if (Date.now() < databaseRetryAt) return acquireEmergencyQuota(hash);
+  try {
+    return await db<boolean>("rpc/kb_acquire_quotas", {
+      method: "POST", timeoutMs: 2500, body: {
+        p_bucket: hash,
+        p_daily: Math.max(1, Math.min(1000, Number(process.env["JARVIS_DAILY_REQUEST_LIMIT"] || "300"))),
+      },
+    });
+  } catch (error) {
+    databaseRetryAt = Date.now() + 30_000;
+    console.warn("JARVIS_QUOTA_USING_EMERGENCY_LIMITS",
+      error instanceof Error ? error.message.slice(0, 50) : "unavailable");
+    return acquireEmergencyQuota(hash);
+  }
 }
-
 
 async function logQuery(data: {
   query: string; locale: JarvisLocale; answer: boolean; tier: string; flagged: boolean;
