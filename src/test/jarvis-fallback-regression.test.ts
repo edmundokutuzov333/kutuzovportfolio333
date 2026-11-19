@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getContact, validateContacts } from "@/lib/jarvis/facts";
+import { answerContactQuestion, getContact, validateContacts } from "@/lib/jarvis/facts";
 import { acquireEmergencyQuota, publishedJarvisFacts } from "@/lib/server/jarvis-resilience.server";
 
 describe("Jarvis fallback", () => {
@@ -10,6 +10,13 @@ describe("Jarvis fallback", () => {
     expect(getContact(facts, "en").email).toBe("contact@edmundokutuzov.art");
     expect(getContact(facts, "pt").facebook).toBe(null);
   });
+  it("answers Portuguese and English contact questions without calling the model", () => {
+    const pt = answerContactQuestion("Qual é o teu contacto oficial?", facts, "pt");
+    const en = answerContactQuestion("What are your official contact details?", facts, "en");
+    expect(pt).toContain("contact@edmundokutuzov.art");
+    expect(en).toContain("contact@edmundokutuzov.art");
+  });
+
   it("never publishes unknown contacts", () => {
     const result = validateContacts("Use fake@example.org and https://example.org", facts, "en");
     expect(result.flagged).toBe(true);
