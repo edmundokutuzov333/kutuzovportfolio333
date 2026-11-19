@@ -8,6 +8,7 @@ import { askJarvis } from "@/lib/jarvis.functions";
 import { MAX_JARVIS_AUDIO_BYTES, MAX_JARVIS_RECORDING_MS, normalizedAudioMime, preferredRecordingMime, shouldEndRecording } from "@/lib/jarvis/audio-capture";
 import { JARVIS_PCM_SAMPLE_RATE, parseSseData, pcmBytesFromBase64, pcmToFloat32, takeSseEvents } from "@/lib/jarvis/pcm-stream";
 import { splitVoiceSegments } from "@/lib/jarvis/voice-chunks";
+import { appendSpokenCaption } from "@/lib/jarvis/voice-captions";
 import { cleanJarvisReply } from "@/lib/jarvis-text";
 import { spokenJarvisText } from "@/lib/jarvis/speech";
 import { chooseJarvisMaleVoice, describeVoiceFallback } from "@/lib/jarvis/voice-selection";
@@ -181,7 +182,9 @@ function useConversation(locale: JarvisLocale) {
   }, []);
 
   const remember = useCallback((role: Msg["role"], raw: string) => {
-    const content = raw.trim().slice(0, 1900);
+    // Preserve the full spoken answer in the visible conversation. The model
+    // input/history is independently bounded by buildJarvisHistory.
+    const content = raw.trim().slice(0, role === "assistant" ? 24_000 : 1900);
     if (!content) return;
     const updated = [...current.current, { role, content }].slice(-100);
     current.current = updated;
@@ -346,6 +349,9 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const [chatOpen, setChatOpen] = useState(false);
   const [voice, setVoice] = useState<VoiceState>("idle");
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
+  const [voiceTranscript, setVoiceTranscript] = useState("");
+  const transcriptScrollRef = useRef<HTMLDivElement>(null);
+  const transcriptFollowRef = useRef(true);
   const convo = useConversation(locale);
   const recRef = useRef<SpeechRec | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -362,6 +368,18 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   const visualRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Follow incoming speech without stealing scroll position when the visitor
+  // chooses to read an earlier part of the same spoken answer.
+  useLayoutEffect(() => {
+    if (!transcriptFollowRef.current || !transcriptScrollRef.current) return;
+    transcriptScrollRef.current.scrollTop = transcriptScrollRef.current.scrollHeight;
+  }, [voiceTranscript]);
+
+  const appendAudibleTranscript = (segment: string, session: number) => {
+    if (voiceSession.current !== session) return;
+    setVoiceTranscript(previous => appendSpokenCaption(previous, segment));
+  };
 
   const stopMeter = useCallback(() => {
     cancelAnimationFrame(meterFrame.current);
@@ -457,11 +475,13 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     if (previousLocale.current === locale) return;
     previousLocale.current = locale;
     stopVoice();
+    setVoiceTranscript("");
     convo.reset();
   }, [locale, stopVoice, convo.reset]);
 
   const close = useCallback(() => {
     stopVoice();
+    setVoiceTranscript("");
     setChatOpen(false);
     setOpen(false);
     window.dispatchEvent(new Event(JARVIS_CLOSE_EVENT));
@@ -545,7 +565,13 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
   }, [stopMeter]);
 
   /** Cloud Orus is preferred for a consistent male voice; device speech is a nonblocking fallback. */
-  const speak = async (text: string, session: number, onFinished?: () => void) => {
+  const speak = async (text: string, session: number, onFinished?: () => void, onStarted?: () => void) => {
+    let announced = false;
+    const announcePlayback = () => {
+      if (announced || voiceSession.current !== session) return;
+      announced = true;
+      onStarted?.();
+    };
     const finish = (failed = false) => {
       if (voiceSession.current !== session || failed) return;
       if (onFinished) onFinished();
@@ -589,6 +615,12 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
       utterance.lang = selected.lang;
       utterance.rate = 1.02;
       utterance.pitch = 0.91;
+      utterance.onstart = () => {
+        if (voiceSession.current === session) {
+          announcePlayback();
+          setVoice("speaking");
+        }
+      };
       utterance.onend = () => finish();
       utterance.onerror = () => {
         if (voiceSession.current === session) {
@@ -660,6 +692,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         nextAudioTime = when + audio.duration;
         node.start(when);
         playedAny = true;
+        announcePlayback();
         setVoice("speaking");
       };
       const process = (block: string) => {
@@ -738,6 +771,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         finish();
       };
       source.start();
+      announcePlayback();
       setVoice("speaking");
     } catch (error) {
       if (voiceSession.current === session && !controller.signal.aborted) {
@@ -753,6 +787,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
     stopMeter();
     if (voiceSession.current !== session) return;
     if (!text.trim()) { setVoice("idle"); return; }
+    transcriptFollowRef.current = true;
+    setVoiceTranscript("");
     setVoice("processing");
 
     // Start TTS as soon as the FIRST verified SSE sentence arrives; the LLM
@@ -774,7 +810,7 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
         if (voiceSession.current !== session) return;
         active = false;
         pump();
-      });
+      }, () => appendAudibleTranscript(next, session));
     };
     const enqueue = (part: string) => {
       queue.push(...splitVoiceSegments(part));
@@ -817,6 +853,8 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
 
     stopVoice();
     const session = voiceSession.current;
+    transcriptFollowRef.current = true;
+    setVoiceTranscript("");
     setVoiceMessage(null);
     setVoice("listening");
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -1009,14 +1047,26 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
             onUserTranscript: text => {
               if (voiceSession.current === session) convo.remember("user", text);
             },
+            onAssistantTurnStart: () => {
+              if (voiceSession.current !== session) return;
+              transcriptFollowRef.current = true;
+              setVoiceTranscript("");
+            },
+            onAssistantTranscriptPartial: text => {
+              if (voiceSession.current === session) setVoiceTranscript(text);
+            },
             onAssistantTranscript: text => {
-              if (voiceSession.current === session) convo.remember("assistant", text);
+              if (voiceSession.current !== session) return;
+              setVoiceTranscript(text);
+              convo.remember("assistant", text);
             },
             onError: message => {
               if (voiceSession.current !== session) return;
               liveRef.current?.stop();
               liveRef.current = null;
               if (stream.getTracks().some(track => track.readyState === "live")) {
+                transcriptFollowRef.current = true;
+                setVoiceTranscript("");
                 setVoiceMessage(null);
                 setVoice("listening");
                 beginRecordedTurn();
@@ -1078,6 +1128,26 @@ export function JarvisLauncher({ whatsapp }: { whatsapp?: string | null | undefi
                 {voice === "unavailable" ? (voiceMessage || convo.error || t.voice[voice]) : t.voice[voice]}
               </span>
             </div>
+            {(voiceTranscript || voice === "processing" || voice === "speaking") && (
+              <section className="jv-voice-transcript" aria-label={t.voiceTranscriptLabel}>
+                <div className="jv-voice-transcript__top">
+                  <span className="jv-voice-transcript__mark" aria-hidden="true" />
+                  <span>{t.voiceTranscriptLabel}</span>
+                </div>
+                <div ref={transcriptScrollRef} className="jv-voice-transcript__body"
+                  role="log" aria-live="polite" aria-relevant="text" tabIndex={0}
+                  data-lenis-prevent=""
+                  onScroll={event => {
+                    const node = event.currentTarget;
+                    transcriptFollowRef.current =
+                      node.scrollHeight - node.scrollTop - node.clientHeight < 36;
+                  }}>
+                  <p className={voiceTranscript ? "" : "jv-voice-transcript__placeholder"}>
+                    {voiceTranscript || t.voiceTranscriptWaiting}
+                  </p>
+                </div>
+              </section>
+            )}
             <button type="button" className="jv-chat-button" onClick={() => { stopVoice(); setChatOpen(true); }}>
               <MessageSquare size={21} strokeWidth={1.5} aria-hidden="true" />
               {t.openTextChat}
