@@ -7,6 +7,7 @@ type LiveContact = { email: string|null; phone: string|null; whatsapp: string|nu
   site: string|null; linkedin: string|null; instagram: string|null; facebook: string|null };
 import type { JarvisLocale } from "@/lib/jarvis/facts";
 import { jarvisCopy } from "@/lib/jarvis/locale";
+import { appendLiveCaption } from "@/lib/jarvis/voice-captions";
 type TokenReply = { token: string; model: string; contact: LiveContact; config: Record<string,unknown> };
 type LivePart = {inlineData?:{data?:string;mimeType?:string};text?:string};
 type LiveEvent = {
@@ -23,6 +24,9 @@ type Callbacks = {
   onError:(message:string)=>void;
   onUserTranscript?:(text:string)=>void;
   onAssistantTranscript?:(text:string)=>void;
+  onAssistantTurnStart?:()=>void;
+  onAssistantTranscriptPartial?:(text:string)=>void;
+  onAssistantTranscriptInterrupted?:()=>void;
 };
 const LIVE_SOCKET="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=";
 
@@ -82,7 +86,7 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
   let ws:WebSocket|null=null,closed=false,ready=false,nextAudioTime=0,handle="";
   let retries=0,reconnectTimer=0;
   const startedAt=Date.now();
-  let inputTranscript="",outputTranscript="",correctionRequested=false;
+  let inputTranscript="",outputTranscript="",correctionRequested=false,assistantTurnStarted=false;
 
   const clearPlayback=()=>{
     for(const node of playing){try{node.stop();}catch{/* already stopped */}}
@@ -126,13 +130,28 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
       callbacks.onState("speaking");
     }catch{/* Ignore malformed server audio frames. */}
   };
+  const beginAssistantTurn=()=>{
+    if(assistantTurnStarted)return;
+    assistantTurnStarted=true;
+    outputTranscript="";
+    callbacks.onAssistantTurnStart?.();
+  };
+  const safePartialTranscript=(raw:string):string=>{
+    const filtered=validatedTranscript(raw,token.contact,locale).text;
+    // A provider event can end in half an email address. Never expose an
+    // unverified fragment while waiting for the next event to finish the word.
+    return filtered.replace(/[^\s@]+@[\w.-]*$/i,partial=>
+      token.contact.email?.toLowerCase().startsWith(partial.toLowerCase())
+        ? partial : (token.contact.email||t.liveContactUnconfirmed));
+  };
   const finishTranscripts=()=>{
     const user=inputTranscript.trim(),assistant=outputTranscript.trim();
     inputTranscript="";outputTranscript="";
     if(user)callbacks.onUserTranscript?.(user.slice(0,1900));
+    assistantTurnStarted=false;
     if(assistant) {
       const result=validatedTranscript(assistant,token.contact,locale);
-      callbacks.onAssistantTranscript?.(result.text.slice(0,1900));
+      callbacks.onAssistantTranscript?.(result.text);
       if(result.flagged&&!correctionRequested){
         correctionRequested=true;
         clearPlayback();
@@ -152,11 +171,26 @@ export async function connectJarvisLive(microphone:MediaStream,callbacks:Callbac
     }
     const content=message.serverContent;
     if(!content)return;
-    if(content.interrupted){clearPlayback();callbacks.onState("listening");}
+    if(content.interrupted){
+      clearPlayback();
+      if(assistantTurnStarted){
+        assistantTurnStarted=false;
+        outputTranscript="";
+        callbacks.onAssistantTranscriptInterrupted?.();
+      }
+      callbacks.onState("listening");
+    }
     if(content.inputTranscription?.text)inputTranscript+=content.inputTranscription.text;
-    if(content.outputTranscription?.text)outputTranscript+=content.outputTranscription.text;
+    if(content.outputTranscription?.text){
+      beginAssistantTurn();
+      outputTranscript=appendLiveCaption(outputTranscript,content.outputTranscription.text);
+      callbacks.onAssistantTranscriptPartial?.(safePartialTranscript(outputTranscript));
+    }
     for(const part of content.modelTurn?.parts??[]){
-      if(part.inlineData?.data)play(part.inlineData.data,part.inlineData.mimeType||"audio/pcm;rate=24000");
+      if(part.inlineData?.data){
+        beginAssistantTurn();
+        play(part.inlineData.data,part.inlineData.mimeType||"audio/pcm;rate=24000");
+      }
     }
     if(content.turnComplete)finishTranscripts();
   };
