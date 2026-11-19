@@ -344,4 +344,3 @@ test("spoken transcript remains readable, contained and scrollable on narrow mob
   expect(geometry.contentHeight).toBeGreaterThan(geometry.captionHeight);
   expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewportWidth + 1);
 });
-
