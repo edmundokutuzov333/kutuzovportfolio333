@@ -105,14 +105,11 @@ jobs:
           retention-days: 30
 
   dependency-remediation:
-    name: Validate and promote patched dependencies
+    name: Validate dependency update candidate
     runs-on: ubuntu-latest
     needs: quality
     if: ${{ always() && github.event_name == 'push' && needs.quality.outputs.dependency_audit_failed == 'true' }}
     timeout-minutes: 35
-    permissions:
-      contents: write
-      actions: write
     steps:
       - name: Checkout current main commit
         uses: actions/checkout@v4
@@ -131,7 +128,6 @@ jobs:
 
       - name: Generate candidate and run every available release gate
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
         run: |
           set -euo pipefail
@@ -175,41 +171,7 @@ jobs:
           .e2e/node_modules/.bin/playwright install --with-deps chromium 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/chromium-install.txt"
           .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs 2>&1 | tee "$RUNNER_TEMP/phase5-dependency-logs/playwright.txt"
 
-          api="https://api.github.com/repos/$GITHUB_REPOSITORY"
-          auth_header="Authorization: Bearer $GITHUB_TOKEN"
-          api_version="X-GitHub-Api-Version: 2022-11-28"
-          current_json=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/ref/heads/main")
-          current_sha=$(printf '%s' "$current_json" | jq -er '.object.sha')
-          if [[ "$current_sha" != "$GITHUB_SHA" ]]; then
-            echo "main advanced during candidate validation; refusing to update it."
-            exit 1
-          fi
-          base_tree=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/commits/$current_sha" | jq -er '.tree.sha')
-          package_blob_payload="$proposal/package-blob.json"
-          lock_blob_payload="$proposal/lock-blob.json"
-          jq -n --rawfile content package.json '{content: ($content | @base64), encoding: "base64"}' > "$package_blob_payload"
-          jq -n --rawfile content bun.lock '{content: ($content | @base64), encoding: "base64"}' > "$lock_blob_payload"
-          package_blob=$(curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "@$package_blob_payload" "$api/git/blobs")
-          package_blob_sha=$(printf '%s' "$package_blob" | jq -er '.sha')
-          lock_blob=$(curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "@$lock_blob_payload" "$api/git/blobs")
-          lock_blob_sha=$(printf '%s' "$lock_blob" | jq -er '.sha')
-          tree_payload=$(jq -n --arg base "$base_tree" --arg package_sha "$package_blob_sha" --arg lock_sha "$lock_blob_sha" '{base_tree:$base,tree:[{path:"package.json",mode:"100644",type:"blob",sha:$package_sha},{path:"bun.lock",mode:"100644",type:"blob",sha:$lock_sha}]}')
-          tree_json=$(printf '%s' "$tree_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/trees")
-          tree_sha=$(printf '%s' "$tree_json" | jq -er '.sha')
-          commit_payload=$(jq -n --arg message "fix(deps): patch high and critical dependency advisories" --arg tree "$tree_sha" --arg parent "$current_sha" '{message:$message,tree:$tree,parents:[$parent]}')
-          commit_json=$(printf '%s' "$commit_payload" | curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary @- "$api/git/commits")
-          commit_sha=$(printf '%s' "$commit_json" | jq -er '.sha')
-          update_payload=$(jq -n --arg sha "$commit_sha" '{sha:$sha,force:false}')
-          curl -fsS -X PATCH -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "$update_payload" "$api/git/refs/heads/main" >/dev/null
-          verified_sha=$(curl -fsS -H "$auth_header" -H "$api_version" "$api/git/ref/heads/main" | jq -er '.object.sha')
-          if [[ "$verified_sha" != "$commit_sha" ]]; then
-            echo "The dependency commit was not confirmed at main."
-            exit 1
-          fi
-          echo "Validated dependency commit published to main: $commit_sha"
-          dispatch_payload=$(jq -n '{ref:"main"}')
-          curl -fsS -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -H "$api_version" --data-binary "$dispatch_payload" "$api/actions/workflows/ci.yml/dispatches" >/dev/null
-          echo "Dispatched a fresh CI run against the patched main SHA."
+          cp package.json bun.lock "$RUNNER_TEMP/phase5-dependency-logs/"
 
       - name: Upload dependency candidate evidence
         if: always()

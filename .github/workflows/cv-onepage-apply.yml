@@ -1,4 +1,4 @@
-name: Publish verified single-page CV editions (EN + PT)
+name: Validate single-page CV editions (EN + PT)
 
 on:
   push:
@@ -22,14 +22,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: cv-onepage-20261118-main
   cancel-in-progress: false
 
 jobs:
-  validate-and-publish:
+  validate:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -97,33 +97,6 @@ jobs:
           .e2e/node_modules/.bin/playwright test --config .e2e/playwright.config.mjs \
             editorial-cv.spec.mjs \
             --grep 'English is default|CV language follows|Approved master portrait|Skill meter bars have uniform thickness|Both localized designed PDFs download|A4 print keeps|Full name'
-
-      - name: Publish only fully validated source and both PDFs to main
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if test -f .github/patches/cv-onepage-20261118.tar.xz; then
-            git rm -f .github/patches/cv-onepage-20261118.tar.xz
-          fi
-          git add -A -- \
-            src/lib/cv-content.ts \
-            src/routes/cv.tsx \
-            src/routes/cv-print.css \
-            .e2e/tests/editorial-cv.spec.mjs \
-            src/test/cv-onepage.test.ts \
-            scripts/build-cv-pdfs.mjs \
-            scripts/verify-cv-pdf-visual.py \
-            scripts/verify-cv-skill-bars.py \
-            public/cv/Edmundo-Kutuzov-CV-EN.pdf \
-            public/cv/Edmundo-Kutuzov-CV-PT.pdf
-          git diff --cached --check
-          if git diff --cached --quiet; then
-            echo "Already published and verified."
-          else
-            git commit -m "fix(cv): publish one-page A4 EN/PT exports and updated contact email"
-            git push origin HEAD:main
-          fi
 
       - name: Keep release evidence for diagnostics
         if: always()

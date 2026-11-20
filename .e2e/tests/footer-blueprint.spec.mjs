@@ -7,11 +7,8 @@ test("footer EK uses geometry-derived construction guides and repeats its point-
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
 
-  // The looping state below confirms hydration after the footer enters the viewport.
-  await page.evaluate(() => {
-    window.scrollTo(0, document.documentElement.scrollHeight);
-  });
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await blueprint.scrollIntoViewIfNeeded();
+  await expect(blueprint).toBeInViewport();
   await expect(blueprint).toHaveAttribute("data-animation-state", "looping");
 
   const geometry = await blueprint.evaluate((root) => {

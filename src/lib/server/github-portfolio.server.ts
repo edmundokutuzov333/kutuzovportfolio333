@@ -1,3 +1,4 @@
+import { isExactOrder, publishedProjectRows } from "@/lib/admin-project-order";
 import { getAdminServerContext } from "./admin-auth.server";
 import mediaManifest from "@/data/portfolio-media-manifest.json";
 
@@ -163,12 +164,24 @@ export async function reorderGitHubProjects(ids: string[], expectedIds: string[]
   }
   const current = await readSnapshot();
   const projects = current.snapshot.tables["projects"] as PortfolioRow[];
-  const byId = new Map(projects.map(row => [String(row["id"]), row]));
-  ids.forEach((id, position) => { const row = byId.get(id); if (row) row["position"] = position; });
+  const published = publishedProjectRows(projects.map(row => ({
+    id: String(row["id"]),
+    status: String(row["status"]),
+    position: Number(row["position"]),
+    row,
+  })));
+  const currentIds = published.map(project => project.id);
+  if (!isExactOrder(currentIds, expectedIds)) {
+    throw new GitHubPortfolioError("A ordem publicada mudou. Actualize o Admin e tente novamente.", "conflict");
+  }
+  const byId = new Map(published.map(project => [project.id, project.row]));
+  const changed = ids.filter((id, position) => id !== currentIds[position]).length;
+  if (changed === 0) return { count: ids.length, changed, published_revision: 0 };
+  ids.forEach((id, position) => { byId.get(id)!["position"] = position; });
   current.snapshot.snapshot_generated_at = new Date().toISOString();
   const content = Buffer.from(JSON.stringify(current.snapshot, null, 2) + "\n", "utf8").toString("base64");
   await github(`/repos/${OWNER}/${REPO}/contents/${PATH}`, { method: "PUT", body: JSON.stringify({ message: "admin: reorder portfolio projects", content, sha: current.sha, branch: BRANCH }) });
-  return { count: ids.length, changed: ids.length, published_revision: 0 };
+  return { count: ids.length, changed, published_revision: 0 };
 }
 
 export async function setGitHubProjectsFeatured(ids: string[], featured: boolean) {
