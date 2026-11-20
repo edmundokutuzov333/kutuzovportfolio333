@@ -2,11 +2,9 @@ import { test, expect } from "@playwright/test";
 
 test("footer EK uses geometry-derived construction guides and repeats its point-by-point drawing forever", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.addInitScript(() => sessionStorage.setItem("ek-intro-seen", "1"));
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.bringToFront();
-  const skipIntro = page.getByRole("button", { name: "Skip" });
-  await skipIntro.click();
-  await expect(skipIntro).toBeHidden();
 
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
