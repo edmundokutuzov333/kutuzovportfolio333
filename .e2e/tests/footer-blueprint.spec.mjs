@@ -9,9 +9,12 @@ test("footer EK uses geometry-derived construction guides and repeats its point-
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
 
-  await blueprint.scrollIntoViewIfNeeded();
+  await expect(page.getByRole("button", { name: "Skip" })).toBeHidden();
+  await expect.poll(async () => {
+    await blueprint.scrollIntoViewIfNeeded();
+    return blueprint.getAttribute("data-animation-state");
+  }).toBe("looping");
   await expect(blueprint).toBeInViewport();
-  await expect(blueprint).toHaveAttribute("data-animation-state", "looping");
 
   const geometry = await blueprint.evaluate((root) => {
     const svg = root.querySelector("svg");
