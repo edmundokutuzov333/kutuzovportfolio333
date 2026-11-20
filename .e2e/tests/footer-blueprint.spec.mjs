@@ -7,13 +7,7 @@ test("footer EK uses geometry-derived construction guides and repeats its point-
   const blueprint = page.locator("[data-ek-blueprint]");
   await expect(blueprint).toHaveCount(1);
 
-  // Confirm client hydration before moving the page to the footer.
-  const menuToggle = page.locator('header button[aria-expanded]');
-  await menuToggle.click();
-  await expect(menuToggle).toHaveAttribute("aria-expanded", "true");
-  await menuToggle.click();
-  await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
-
+  // The looping state below confirms hydration after the footer enters the viewport.
   await page.evaluate(() => {
     window.scrollTo(0, document.documentElement.scrollHeight);
   });

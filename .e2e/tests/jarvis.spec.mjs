@@ -181,7 +181,13 @@ test("JARVIS private maintenance endpoints reject unauthenticated visitors", asy
   expect([200, 503]).toContain(health.status());
   expect(health.headers()["cache-control"]).toContain("no-store");
   const publicHealth = await health.json();
-  expect(["ready", "unavailable"]).toContain(publicHealth.status);
+  if (health.status() === 503) {
+    expect(publicHealth.status).toBe("unavailable");
+  } else {
+    expect(["ready", "degraded"]).toContain(publicHealth.status);
+    expect(publicHealth.kb).toBe(publicHealth.status === "ready" ? "database" : "published_snapshot");
+    expect(publicHealth.facts).toBeGreaterThan(0);
+  }
   expect(JSON.stringify(publicHealth)).not.toContain("GEMINI_API_KEY");
   expect(JSON.stringify(publicHealth)).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
 });
