@@ -1,3 +1,4 @@
+import { PORTFOLIO_REVIEW_URL } from "@/lib/portfolio-editorial";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   Activity, Archive, BookOpen, Check, ChevronRight,
@@ -674,12 +675,12 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       }
       if (!result) throw new Error("A base de dados não confirmou a gravação.");
       if (bulkProjectPayloads) {
-        setNotice({ tone: "success", text: `${bulkProjectPayloads.length} trabalhos foram guardados e publicados.` });
+        setNotice({ tone: "success", text: `${bulkProjectPayloads.length} trabalhos foram guardados para revisão.` });
         await refresh();
         cancelEdit();
         return;
       }
-      setNotice({ tone: "success", text: `Base de dados confirmou a revisão ${result.published_revision}. O conteúdo foi guardado e publicado.` });
+      setNotice({ tone: "success", text: activeId === "projects" ? "Trabalho guardado na área editorial. Revise as alterações no GitHub antes de publicar." : `Revisão ${result.published_revision} guardada.` });
       await refresh();
       setSelectedId(asText(result.record["id"]));
       setBaseline(result.record);
@@ -770,7 +771,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
       await refresh();
       setNotice({
         tone: "success",
-        text: `Ordem global publicada: ${result.count} trabalhos, ${result.changed} posições actualizadas. Revisão ${result.published_revision}.`,
+        text: `Ordem guardada para revisão: ${result.count} trabalhos, ${result.changed} posições actualizadas.`,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Não foi possível publicar a nova ordem.";
@@ -942,7 +943,7 @@ export function AdminWorkspace({ email, onLogout }: { email: string; onLogout: (
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#17295f] text-sm font-bold text-white">K</div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold tracking-tight">Kutuzov Admin</p>
-            <p className="truncate text-[11px] text-[#707582]">Gestão editorial do portfólio</p>
+            <a className="text-[11px] font-semibold text-[#253c8d] underline" href={PORTFOLIO_REVIEW_URL} target="_blank" rel="noopener noreferrer">Rever alterações no GitHub</a>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">

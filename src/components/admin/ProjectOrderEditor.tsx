@@ -225,7 +225,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       await onPublish(order, baseline);
       setConfirming(false);
       setHistory([]);
-      setMessage("Ordem publicada com sucesso.");
+      setMessage("Ordem guardada para revisão.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "A publicação falhou. A ordem local foi mantida.");
     }
@@ -360,7 +360,7 @@ export function ProjectOrderEditor({ records, saving, savedOrder, onPublish, onC
       {confirming && changed && <div role="group" aria-label="Confirmar publicação da ordem" className="rounded-lg border border-[#c6d2ed] bg-[#f3f6ff] p-4">
         <p className="text-sm font-semibold text-[#233e83]">Publicar nova ordem dos {order.length} trabalhos?</p>
           <p className="mt-1 text-xs leading-5 text-[#475b8b]">
-            {movingCount} posições serão actualizadas. O portfólio público só muda depois de o commit no GitHub ser confirmado e o Vercel publicar a nova versão.
+            {movingCount} posições serão actualizadas. A ordem é guardada na branch editorial. O site público muda após a integração do pull request e o deploy da Vercel.
           Os trabalhos arquivados, os destaques e os ficheiros não serão alterados.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">

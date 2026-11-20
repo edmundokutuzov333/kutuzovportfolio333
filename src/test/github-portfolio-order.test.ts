@@ -50,6 +50,7 @@ describe("GitHub portfolio reorder persistence", () => {
     expect(request?.method).toBe("PUT");
     const payload = JSON.parse(String(request?.body));
     expect(payload.sha).toBe("snapshot-sha");
+    expect(payload.branch).toBe("editorial/portfolio");
     expect(JSON.parse(Buffer.from(payload.content, "base64").toString()).tables.projects).toEqual([
       { id: "b", status: "published", position: 0 },
       { id: "draft", status: "draft", position: 0 },

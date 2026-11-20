@@ -1,3 +1,4 @@
+import { PORTFOLIO_EDITORIAL_BRANCH } from "@/lib/portfolio-editorial";
 import { isExactOrder, publishedProjectRows } from "@/lib/admin-project-order";
 import { getAdminServerContext } from "./admin-auth.server";
 import mediaManifest from "@/data/portfolio-media-manifest.json";
@@ -8,7 +9,7 @@ type Snapshot = { snapshot_generated_at?: string; tables: { [key: string]: JsonV
 
 const OWNER = process.env["GITHUB_PORTFOLIO_OWNER"]?.trim() || "edmundokutuzov333";
 const REPO = process.env["GITHUB_PORTFOLIO_REPO"]?.trim() || "kutuzovportfolio333";
-const BRANCH = process.env["GITHUB_PORTFOLIO_BRANCH"]?.trim() || "main";
+const BRANCH = PORTFOLIO_EDITORIAL_BRANCH;
 const PATH = "src/data/public-cms-snapshot.json";
 
 export class GitHubPortfolioError extends Error {
@@ -78,7 +79,7 @@ function stamp(row: PortfolioRow, timestamp: string): PortfolioRow {
     ...row,
     gallery: gallery.map((value, index) => media(value, galleryAlt[index])),
     cover_path: media(cover, coverAlt),
-    updated_at: timestamp,
+    updated_at: row["updated_at"] ?? timestamp,
   };
 }
 
