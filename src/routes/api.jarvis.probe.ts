@@ -4,9 +4,9 @@ import {createFileRoute} from "@tanstack/react-router";
 export const Route=createFileRoute("/api/jarvis/probe")({
   server:{handlers:{GET:async ({request})=>{
     const url=new URL(request.url);
-    const token = process.env["JARVIS_TEST_TOKEN"];
-    if (process.env["NODE_ENV"] !== "development" || !token ||
-      request.headers.get("authorization") !== "Bearer " + token)
+    const diagnosticCredential = process.env["JARVIS_TEST_TOKEN"];
+    if (process.env["NODE_ENV"] !== "development" || !diagnosticCredential ||
+      request.headers.get("authorization") !== "Bearer " + diagnosticCredential)
       return new Response(null,{status:404,headers:{"Cache-Control":"no-store"}});
     if(url.searchParams.get("action")==="tts"){
       const started=Date.now();
