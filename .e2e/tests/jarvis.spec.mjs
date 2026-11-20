@@ -174,6 +174,10 @@ test("mobile project gallery starts at the heading and scrolls both directions",
 
 
 test("JARVIS private maintenance endpoints reject unauthenticated visitors", async ({ request }) => {
+  const probe = await request.get("/api/jarvis/probe?token=invalid");
+  expect(probe.status()).toBe(404);
+  expect(probe.headers()["cache-control"]).toContain("no-store");
+
   const sync = await request.get("/api/jarvis/sync");
   expect(sync.status()).toBe(401);
 
