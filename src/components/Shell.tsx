@@ -217,7 +217,9 @@ export function Shell({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    if (!window.location.hash) window.scrollTo(0, 0);
+  }, [pathname]);
 
   useEffect(() => {
     let active = true;
