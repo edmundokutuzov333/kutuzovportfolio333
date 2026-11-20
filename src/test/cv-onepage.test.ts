@@ -6,7 +6,7 @@ describe("single-sheet CV export", () => {
   it("keeps the public CV email independent of the untouched archival CV", () => {
     const cv = readFileSync("src/routes/cv.tsx","utf8");
     expect(cvContactEmail).toBe("contact@edmundokutuzov.art");
-    expect(cv).toContain("mailto:\${cvContactEmail}");
+    expect(cv).toContain("mailto:${cvContactEmail}");
     expect(cv).toContain('import "./cv-print.css"');
   });
 
