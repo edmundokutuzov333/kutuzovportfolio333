@@ -45,8 +45,10 @@ test("Work has one animated, floating archive link without disturbing the projec
   expect(motion.size.height).toBeLessThan(150);
 
   // Existing filter and the independent project route must remain operational.
-  await page.getByRole("button", { name: "Video", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Video", exact: true })).toHaveAttribute("aria-pressed", "true");
+  const videoFilter = page.getByRole("button", { name: "Video", exact: true });
+  await expect(videoFilter).toBeEnabled();
+  await videoFilter.click();
+  await expect(videoFilter).toHaveAttribute("aria-pressed", "true");
   await expect(launcher).toBeVisible();
 
   // The archive is a self-hosted document, not an external showreel popup.

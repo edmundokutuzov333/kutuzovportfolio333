@@ -45,7 +45,7 @@ export async function loadHomeContent() {
   const base = await loadPage("/");
   assertHomeSections(base.sections);
   const [projects, metrics, principles, services, clients, capabilities] = await Promise.all([
-    getProjects(),
+    getProjects(true),
     getMetrics(),
     getPrinciples(),
     getServices(),
@@ -70,7 +70,16 @@ export async function loadProjectDetailContent(slug: string) {
     loadPage("/work/:slug"),
     getProjects(),
   ]);
-  return { ...base, project, projects };
+  const currentIndex = projects.findIndex(({ slug: itemSlug }) => itemSlug === project.slug);
+  const following = projects.length > 1 && currentIndex >= 0
+    ? projects[(currentIndex + 1) % projects.length]
+    : undefined;
+  const nextProject = following ? {
+    slug: following.slug,
+    title: following.title,
+    discipline: following.discipline,
+  } : null;
+  return { ...base, project, nextProject };
 }
 
 export async function loadAboutContent() {

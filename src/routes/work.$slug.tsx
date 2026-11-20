@@ -57,10 +57,8 @@ export const Route = createFileRoute("/work/$slug")({
 });
 
 function CaseStudy() {
-  const { project, projects } = Route.useLoaderData();
+  const { project, nextProject: next } = Route.useLoaderData();
   const { t } = useI18n();
-  const index = projects.findIndex((item) => item.slug === project.slug);
-  const next = projects[(index + 1) % projects.length] ?? project;
   const facts = [
     [t("client"), project.client],
     [t("discipline"), project.discipline],
@@ -105,7 +103,7 @@ function CaseStudy() {
           </Reveal>
         ))}
       </section>
-      {projects.length > 1 && (
+      {next && (
         <Link to="/work/$slug" params={{ slug: next.slug }} data-cursor="Next" className="group mt-32 block border-t border-border px-6 py-24 md:px-12">
           <p className="eyebrow">{t("nextProject")}</p>
           {isCampaignDiscipline(next.discipline) && <p className="mt-4 max-w-4xl font-display text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.9] tracking-tight transition-colors group-hover:text-primary">{next.title}</p>}

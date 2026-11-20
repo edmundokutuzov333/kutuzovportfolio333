@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PageHero, Reveal } from "@/components/Reveal";
 import { ProjectCard } from "@/components/ProjectCard";
@@ -23,6 +23,8 @@ function Work() {
 
   const filters = ["All", "Social Media", "Campaign design", "Manipulation", "Some dezaines*", "Video"];
   const [filter, setFilter] = useState("All");
+  const [filtersReady, setFiltersReady] = useState(false);
+  useEffect(() => { setFiltersReady(true); }, []);
   const projects = data.projects.filter((project) => filter === "All" || project.discipline === filter);
 
   return (
@@ -42,6 +44,7 @@ function Work() {
           <button
             key={value}
             type="button"
+            disabled={!filtersReady}
             onClick={() => setFilter(value)}
             aria-pressed={filter === value}
             className="liquid-glass-button rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest"

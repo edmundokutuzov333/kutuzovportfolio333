@@ -46,7 +46,7 @@ describe("Supabase quota outage — published portfolio continuity", () => {
     const work = await loadWorkContent();
     expect(home.page.route_path).toBe("/");
     expect(home.sections.some(section => section.section_type === "hero")).toBe(true);
-    expect(home.projects.length).toBe(155);
+    expect(home.projects.map(({ slug }) => slug)).toEqual(work.projects.filter(({ featured }) => featured).map(({ slug }) => slug));
     expect(work.page.route_path).toBe("/work");
     expect(work.projects.length).toBe(155);
     expect(work.projects[0]?.slug).toBe(firstPublishedProject.slug);
@@ -55,6 +55,10 @@ describe("Supabase quota outage — published portfolio continuity", () => {
   it("preserves project pages and every additional public route during quota suspension", async () => {
     const project = await loadProjectDetailContent(firstPublishedProject.slug);
     expect(project.project?.slug).toBe(firstPublishedProject.slug);
+    const { projects } = await loadWorkContent();
+    const [, next] = projects;
+    expect(project).not.toHaveProperty("projects");
+    expect(project).toHaveProperty("nextProject", { slug: next?.slug, title: next?.title, discipline: next?.discipline });
     const [about, services, process, clients, contact] = await Promise.all([
       loadAboutContent(), loadServicesContent(), loadProcessContent(),
       loadClientsContent(), loadContactContent(),

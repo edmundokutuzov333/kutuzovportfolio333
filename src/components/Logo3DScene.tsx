@@ -58,6 +58,26 @@ function Monogram() {
 
 export default function Logo3DScene() {
   const [jarvisOpen, setJarvisOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [foreground, setForeground] = useState(true);
+  const sceneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateVisibility = () => setForeground(document.visibilityState !== "hidden");
+    updateVisibility();
+    document.addEventListener("visibilitychange", updateVisibility);
+    const target = sceneRef.current;
+    const observer = target && typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => { if (entry) setVisible(entry.isIntersecting); }, {
+        rootMargin: "160px 0px",
+      })
+      : undefined;
+    if (target) observer?.observe(target);
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener("visibilitychange", updateVisibility);
+    };
+  }, []);
   useEffect(() => {
     const pause = () => setJarvisOpen(true);
     const resume = () => setJarvisOpen(false);
@@ -71,18 +91,20 @@ export default function Logo3DScene() {
   }, []);
 
   return (
-    <Canvas frameloop={jarvisOpen ? "never" : "always"} camera={{ position: [0, 0, 7], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
-      <ambientLight intensity={0.2} />
-      <directionalLight position={[4, 5, 6]} intensity={1.2} />
-      <pointLight position={[-5, -2, 3]} intensity={30} color="#1d4ed8" />
-      <Monogram />
-      <ContactShadows position={[0, -1.6, 0]} opacity={0.5} scale={12} blur={2.6} far={3} />
-      <Environment resolution={128}>
-        <Lightformer form="rect" intensity={4} position={[0, 4, -4]} scale={[10, 2, 1]} />
-        <Lightformer form="rect" intensity={2} position={[-6, 0, 2]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} />
-        <Lightformer form="rect" intensity={3} color="#93c5fd" position={[6, -1, 1]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
-        <Lightformer form="ring" intensity={2} position={[0, 0, 6]} scale={3} />
-      </Environment>
-    </Canvas>
+    <div ref={sceneRef} className="h-full w-full" data-logo-rendering={visible && foreground && !jarvisOpen ? "active" : "paused"}>
+      <Canvas frameloop={visible && foreground && !jarvisOpen ? "always" : "never"} camera={{ position: [0, 0, 7], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
+        <ambientLight intensity={0.2} />
+        <directionalLight position={[4, 5, 6]} intensity={1.2} />
+        <pointLight position={[-5, -2, 3]} intensity={30} color="#1d4ed8" />
+        <Monogram />
+        <ContactShadows position={[0, -1.6, 0]} opacity={0.5} scale={12} blur={2.6} far={3} />
+        <Environment resolution={128}>
+          <Lightformer form="rect" intensity={4} position={[0, 4, -4]} scale={[10, 2, 1]} />
+          <Lightformer form="rect" intensity={2} position={[-6, 0, 2]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} />
+          <Lightformer form="rect" intensity={3} color="#93c5fd" position={[6, -1, 1]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
+          <Lightformer form="ring" intensity={2} position={[0, 0, 6]} scale={3} />
+        </Environment>
+      </Canvas>
+    </div>
   );
 }
