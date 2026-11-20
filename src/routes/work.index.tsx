@@ -27,7 +27,7 @@ function Work() {
 
   return (
     <>
-      <PageHero eyebrow={hero.config.eyebrow} lines={hero.config.lines} intro={hero.config.intro ?? ""} />
+      <PageHero eyebrow={hero.config.eyebrow} lines={language === "pt-PT" && hero.config.lines.join(" ") === "Selected work." ? ["Trabalhos", "seleccionados."] : hero.config.lines} intro={hero.config.intro ?? ""} />
       <ImmersiveArchiveCTA
         size={98}
         text={language === "pt-PT" ? "ENTRAR" : "ENTER"}

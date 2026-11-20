@@ -48,6 +48,10 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      if (new URL(request.url).pathname === "/sitemap.xml") {
+        const { handleSitemapRequest } = await import("./lib/server/sitemap.server");
+        return handleSitemapRequest(request);
+      }
       const mediaResponse = await handleBackblazeMedia(request);
       if (mediaResponse) return mediaResponse;
       const handler = await getServerEntry();
