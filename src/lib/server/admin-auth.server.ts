@@ -57,14 +57,17 @@ function readDatabaseConfig(): AdminDatabaseConfig | null {
   return { url, serviceRoleKey };
 }
 
+let localSessionKey: string | undefined;
+
 function sessionSigningKey(): string {
-  // Use stronger existing server-side material when present, but never block PIN sign-in on it.
-  return (
-    process.env["ADMIN_SESSION_SECRET"]?.trim() ||
-    process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim() ||
-    process.env["SUPABASE_SECRET_KEY"]?.trim() ||
-    "kutuzov-admin-session-v1:" + ADMIN_ACCESS_CODE
-  );
+  const configured = process.env["ADMIN_SESSION_SECRET"]?.trim();
+  if (configured && configured.length >= 32) return configured;
+  if (process.env["VERCEL_ENV"] === "production" || process.env["NODE_ENV"] === "production") {
+    throw new Error("ADMIN_SESSION_SECRET is missing or too short");
+  }
+  localSessionKey ??= Array.from(crypto.getRandomValues(new Uint8Array(32)),
+    byte => byte.toString(16).padStart(2, "0")).join("");
+  return localSessionKey;
 }
 
 function cookieOptions() {
